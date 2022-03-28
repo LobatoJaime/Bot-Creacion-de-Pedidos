@@ -1,0 +1,52 @@
+from multiprocessing import Process, Queue, freeze_support
+from tkinter import messagebox
+import sys
+import pandas as pd
+
+# -----------para poder empaquetarla sin errores----------------
+import tkinter as tk
+from tkinter import ttk, messagebox
+from ttkbootstrap import Style
+import pandas as pd
+import ctypes
+import importlib.resources
+from PIL import ImageTk, ImageDraw, ImageFont
+import ttkbootstrap
+import ttkbootstrap.widgets.calendar
+from ttkbootstrap.widgets.calendar import DateEntry
+import pymssql
+# --------------------------------------------------------------
+from Packages.apply_to_sap.check_order_exists import check_order_exists
+from Packages.apply_to_sap.check_sap_changes import check_sap_changes
+from Packages.apply_to_sap.create_new_order_changes import create_new_order_changes
+from Packages.apply_to_sap.create_order import create_order
+from Packages.apply_to_sap.edit_changes_table import edit_changes_table
+from Packages.apply_to_sap.edit_existing_order import edit_existing_order
+from Packages.format_data.format_data import FormatData
+from Packages.get_planes_entrega import get_planes_entrega
+from Packages.gui.gui import Gui
+from Packages.process_invoice.calculate_ship_out_date import calculate_ship_out_date
+from Packages.process_invoice.change_client_name import change_client_name
+from Packages.process_invoice.get_client_number import get_client_number
+from Packages.save_deleted_order_changes import save_deleted_order_changes
+from Packages.save_order_to_history import save_order_to_history
+from Packages.script_download_new_planes_entrega_from_sap import script_download_new_planes_entrega_from_sap
+from Packages.script_download_planes_entrega_from_sap import download_planes_entrega_from_sap
+from Packages.close_splash_screen import close_splash_screen
+from Packages.close_excel import close_excel
+
+
+class App:
+    def __init__(self):
+        """Clase principal donde se ejecuta la aplicacion"""
+        pd.options.mode.chained_assignment = None
+        freeze_support()
+        gui = Gui()
+        gui.run(gui)
+        while gui.app_running:  # Loop principal de la applicacion
+            gui.update()
+
+
+if __name__ == '__main__':
+    close_splash_screen()
+    app = App()
