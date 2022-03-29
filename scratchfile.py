@@ -12,3 +12,5 @@ for index in df.index:
         print('Externo')
     else:
         print('No externo')
+
+print('TEsts')
