@@ -1,9 +1,11 @@
+import datetime
 import tkinter as tk
 from tkinter import ttk
 from ttkbootstrap import Style
 import pandas as pd
 import numpy as np
 from tkinter import filedialog
+import datetime as dt
 
 
 class CreateOrderTable:
@@ -176,8 +178,16 @@ class CreateOrderTable:
 
     def save_table(self):
         from ...constants import exports_folder
+        self.read_table()
+        order_number = self.orders['order_number'][self.orders.index[0]]
+        reference = self.orders['reference'][self.orders.index[0]]
+        today_date = dt.datetime.now().strftime('%d.%m.%y_%H.%M')
+        if (str(order_number), str(reference)) != (str(np.nan), str(np.nan)):
+            default_name = '{}_{}_{}'.format(order_number, reference, today_date)
+        else:
+            default_name = 'export'
         file = filedialog.asksaveasfile(mode='w', defaultextension=".xlsx",
-                                        initialfile='export', initialdir=exports_folder,
+                                        initialfile=default_name, initialdir=exports_folder,
                                         filetypes=(("excel files", "*.xlsx"), ("all files", "*.*")))
         try:
             save_root = file.name
