@@ -39,8 +39,8 @@ from Packages.close_excel import close_excel
 class App:
     def __init__(self):
         """Clase principal donde se ejecuta la aplicacion"""
-        pd.options.mode.chained_assignment = None
-        freeze_support()
+        pd.options.mode.chained_assignment = None  # Para poder editar tablas en pandas mas facil
+        freeze_support()  # Ajuste necesario del modulo multiprocessing
         gui = Gui()
         gui.run(gui)
         while gui.app_running:  # Loop principal de la applicacion

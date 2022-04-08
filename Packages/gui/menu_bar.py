@@ -44,7 +44,7 @@ class MenuBar:
                                            command=lambda: [self.orders_history_pressed()])
         orders_history_button.grid(column=3, row=0, pady=0)
         installation_button = ttk.Button(self.frame, text='Guia de instalacion', width=30,
-                                         command=lambda :[self.installation_guide_pressed()])
+                                         command=lambda: [self.installation_guide_pressed()])
         installation_button.grid(column=4, row=0, pady=0)
         self.next_button = ttk.Button(self.frame, text='Siguiente paso', style='success.TButton',
                                       command=lambda: [self.import_important_vars(),
@@ -105,7 +105,7 @@ class MenuBar:
                 return
         self.gui.active_window = 'installation_guide'
         self.gui.installation_guide_window.show()
-
+        self.gui.installation_guide_window.menu_bar.next_button.destroy()
 
     def next_pressed(self):
         if self.gui.active_window == 'create_order':
@@ -200,6 +200,7 @@ class MenuBar:
         if self.gui.active_window == 'process_complete':
             self.gui.root.focus_force()
             self.gui.process_complete_window.show()
+            self.gui.process_complete_window.menu_bar.next_button.destroy()
             save_deleted_order_changes(self.backup_order_changes, self.rows_to_delete,
                                        self.deleted_rows_log)
 
