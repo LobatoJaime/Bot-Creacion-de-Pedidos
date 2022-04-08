@@ -155,3 +155,5 @@ cython_debug/
 .idea/
 .idea/workspace.xml
 scratchfile.py
+/venv_v2/
+/venv_3.8/
