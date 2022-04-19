@@ -1,7 +1,10 @@
+import os.path
 import tkinter as tk
 from tkinter import ttk
 from .menu_bar import MenuBar
 from PIL import ImageTk, Image
+from ..constants import images_folder, resources_folder
+from .scrollable_image import ScrollableImage
 
 
 class InstallationGuideWindow:
@@ -15,20 +18,15 @@ class InstallationGuideWindow:
         self.window_frame.tkraise()
         self.menu_bar = MenuBar(self.window_frame, gui)
         self.menu_bar.frame.place(relwidth=1)
-        # -------------------------Titulo---------------------------
-        title = ttk.Label(self.window_frame, text='Guia de Instalación', font=('Arial', 30))
-        title.place(relx=0, rely=.1)
-        # -------------------------Texto 1---------------------------
-        data1 = 'Antes de empezar a utilizar la aplicación es muy importante tener los siguientes ' \
-                'ajustes seleccionados en la aplicacion de SAP\n\n' \
-                '- Paso 1: Ir a los ajustes de SAP'
-        text1 = ttk.Label(self.window_frame, text=data1, font=('Arial', 15))
-        text1.place(relx=0, rely=.2)
-        # img_path = ''
-        # img1 = ImageTk.PhotoImage(Image.open('path'))
-        # image_label = ttk.Label(self.window_frame, image=img1)
-        # image_label.place(relx=0, rely=.25)
-        # -------------------------Texto 2---------------------------
+        # -------------------------MOSTRAR IMAGEN---------------------------
+        img_path = os.path.join(images_folder, 'instructions.png')
+        img = ImageTk.PhotoImage(file=img_path)
+        scrollbar_width = 25
+        width = root.winfo_screenwidth()-scrollbar_width
+        height = root.winfo_screenheight()
+        image = ScrollableImage(self.window_frame, image=img, scrollbarwidth=scrollbar_width,
+                               width=width, height=height)
+        image.place(relx=0, rely=.03)
 
     def show(self):
         self.window_frame.tkraise()
