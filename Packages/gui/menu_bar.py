@@ -23,7 +23,9 @@ from ..save_deleted_order_changes import save_deleted_order_changes
 from ..save_order_to_history import save_order_to_history
 from ..script_download_new_planes_entrega_from_sap import script_download_new_planes_entrega_from_sap
 from ..validate_data.validate_data import validate_data
-
+from..create_changes_excel import create_changes_excel
+from ..find_newest_dir import find_newest_dir
+from ..constants import changes_history_folder
 
 class MenuBar:
     def __init__(self, parent_window: tk.Frame, gui):
@@ -199,10 +201,14 @@ class MenuBar:
                 self.gui.active_window = 'process_complete'
         if self.gui.active_window == 'process_complete':
             self.gui.root.focus_force()
-            self.gui.process_complete_window.show()
-            self.gui.process_complete_window.menu_bar.next_button.destroy()
             save_deleted_order_changes(self.backup_order_changes, self.rows_to_delete,
                                        self.deleted_rows_log)
+            folder = find_newest_dir(changes_history_folder)
+            create_changes_excel(folder_root=folder)
+            self.gui.process_complete_window.show()
+            self.gui.process_complete_window.menu_bar.next_button.destroy()
+
+
 
     def save_important_vars(self):
         self.gui.uploaded_file_root = self.uploaded_file_root
