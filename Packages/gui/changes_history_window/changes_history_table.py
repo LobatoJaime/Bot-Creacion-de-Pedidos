@@ -167,8 +167,8 @@ class ChangesHistoryTable:
         clicked_row = self.sub_tree.item(current_item)
         ship_out_date = clicked_row['values'][0]
         reference = clicked_row['values'][1]
-        old_quantity = clicked_row['values'][2]
-        new_quantity = clicked_row['values'][3]
+        old_quantity = str(clicked_row['values'][2])
+        new_quantity = str(clicked_row['values'][3])
         tag = clicked_row['tags'][0]
         if tag == 'rejected':
             selected_row: pd.DataFrame = self.comparison_table.loc[

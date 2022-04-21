@@ -4,10 +4,10 @@ import pandas as pd
 import numpy as np
 
 
-def create_changes_excel(folder_root: str):
+def create_comparison_table_excel(folder_root: str):
     """Funcion que compara el plan de entregas antes de realizar
-    los cambios con el plan de entregas despues de ejectuar el script y crea una tabla c
-    omparativa entre ambos en la carpeta del historial"""
+    los cambios con el plan de entregas despues de ejectuar el script y crea una tabla
+    comparativa entre ambos en la carpeta del historial"""
     files = os.listdir(folder_root)
 
     # leer planes de entrega viejos
@@ -41,6 +41,7 @@ def create_changes_excel(folder_root: str):
     status_list = []
     messages = []
     file_roots = []
+    prices = []
 
     for index in planes_entrega_new.index:
         new_row = planes_entrega_new.iloc[index]
@@ -65,6 +66,11 @@ def create_changes_excel(folder_root: str):
         status_list.append('ACCEPTED')
         messages.append(np.NaN)
         file_roots.append(np.NaN)
+        price = planes_entrega_new['Prc. Neto'][planes_entrega_new.index[0]]
+        if price not in ('0', 0, ' ', '', np.NaN, str(np.NaN)):
+            price = price
+        else:
+            price = 0
     for index in planes_entrega_old.index:
         old_row = planes_entrega_old.iloc[index]
         # comprobar si la fecha ya existe para esa referencia
@@ -103,7 +109,7 @@ def create_changes_excel(folder_root: str):
             message = deleted_order_changes['message'][index]
             file_root = deleted_order_changes['file_root'][index]
             if quantity not in [0, '0', 0.0]:
-                if action != 'NONE':
+                if action not in ('NONE', 'IN TRANSIT'):
                     if action == 'CREATE':
                         old_quantities.append(0)
                         new_quantities.append(quantity)
@@ -120,14 +126,15 @@ def create_changes_excel(folder_root: str):
     new_quantities = [int(float(i)) for i in new_quantities]
 
     # ship_out_dates = [dt.datetime.strptime(ship_out_date, '%Y-%m-%d').strftime('%d.%m.%Y') for ship_out_date in ship_out_dates]
-
+    prices = [price]*len(references)
     data_comparison = {'ship_out_date': ship_out_dates,
                        'reference': references,
                        'old_quantity': old_quantities,
                        'new_quantity': new_quantities,
                        'status': status_list,
                        'message': messages,
-                       'file_root': file_roots}
+                       'file_root': file_roots,
+                       'price': prices}
     comparison_table = pd.DataFrame(data_comparison)
     comparison_table = comparison_table.drop_duplicates()
     comparison_table = comparison_table.sort_values(by='ship_out_date')

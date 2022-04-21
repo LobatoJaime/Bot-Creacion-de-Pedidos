@@ -7,7 +7,7 @@ from .changes_history_window.changes_history_window import ChangesHistoryWindow
 from .orders_history_window.orders_history_window import OrdersHistoryWindow
 from .edit_order_window.edit_order_window import EditOrderWindow
 from .select_client_window.select_client_window import SelectClientWindow
-from .process_complete_window import ProcessCompleteWindow
+from ..gui.process_complete_window.process_complete_window import ProcessCompleteWindow
 from .settings_window import SettingsWindow
 from .installation_guide_window import InstallationGuideWindow
 import ctypes
