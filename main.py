@@ -34,7 +34,12 @@ from Packages.script_download_new_planes_entrega_from_sap import script_download
 from Packages.script_download_planes_entrega_from_sap import download_planes_entrega_from_sap
 from Packages.close_splash_screen import close_splash_screen
 from Packages.close_excel import close_excel
+from Packages.check_latest_version import check_latest_version
 import traceback
+
+
+
+
 
 
 class App:
@@ -44,9 +49,12 @@ class App:
         freeze_support()  # Ajuste necesario del modulo multiprocessing
         self.gui = Gui()
         self.gui.run(self.gui)
+        up_to_date = check_latest_version()
+        if not up_to_date:
+            self.gui.close_app()
         while self.gui.app_running:  # Loop principal de la applicacion
             self.gui.update()
-            if self.gui.error_found: # Error inesperado en la aplicacion
+            if self.gui.error_found:  # Error inesperado en la aplicacion
                 self.gui.close_app()
                 raise Exception(self.gui.error_message)
 
