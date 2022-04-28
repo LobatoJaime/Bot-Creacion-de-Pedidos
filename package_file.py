@@ -4,8 +4,9 @@ import shutil
 from Packages.constants import download_latest_ver_folder
 
 
-def package_file(version: str):
-    """Funcion para empaquetar de manera mas sencilla la aplicacion"""
+def package_file(version: str, dist_folder: str):
+    """Funcion para empaquetar de manera mas sencilla la aplicacion\n.
+    dist_folder: carpeta donde se va a a empaquetar el distribuible"""
     # Modificar la version del archivo en constants
     constants_read = open(r'Packages/constants.py', 'r')
     data = constants_read.readlines()
@@ -26,7 +27,7 @@ def package_file(version: str):
                               'main.spec'])
 
     # Cambiar el nombre
-    dist_folder = r'C:\Users\IRDGFRM\OneDrive-Deere&Co\OneDrive - Deere & Co\Documents\Python Projects\Bot Creacion de Pedidos\dist'
+    dist_folder = dist_folder  # Carpeta donde esta el distribuible
     file_path = os.path.join(dist_folder, 'AutomatizacionSAP latest_release.exe')
     new_path = os.path.join(dist_folder, 'AutomatizacionSAP {}.exe'.format(version))
     os.rename(file_path, new_path)
@@ -46,4 +47,5 @@ def package_file(version: str):
     shutil.copy(file_path, source_path)
 
 
-package_file(version='v4.4.5')
+package_file(version='v4.4.5',
+             dist_folder=r'C:\Users\IRDGFRM\OneDrive-Deere&Co\OneDrive - Deere & Co\Documents\Python Projects\Bot Creacion de Pedidos\dist')
