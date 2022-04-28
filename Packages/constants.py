@@ -23,4 +23,4 @@ orders_history_folder = os.path.join(resources_folder, 'orders_history')
 downloads_folder = os.path.join(os.getenv('USERPROFILE'), 'Downloads')
 images_folder = os.path.join(resources_folder, 'images')
 github_repo_adress = 'https://github.com/luisguareschi/Bot-Creacion-de-Pedidos'
-actual_version = 'v4.3.0'
+actual_version = 'v4.4.0'
