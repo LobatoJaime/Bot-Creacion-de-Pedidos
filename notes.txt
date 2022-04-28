@@ -1,6 +1,4 @@
 
 --------- USAR ESTE CODIGO PARA EMPAQUETAR -------------
 pyinstaller --onefile -F main.spec
-pyinstaller --onefile -F splash_screen.spec
 --------------------------------------------------------
-pyinstaller --onefile -F --splash sps.png  main.spec
