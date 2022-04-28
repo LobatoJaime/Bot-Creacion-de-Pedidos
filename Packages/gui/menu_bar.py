@@ -1,4 +1,6 @@
+import shutil
 import tkinter as tk
+import traceback
 from tkinter import ttk, messagebox
 from ttkbootstrap import Style
 import pandas as pd
@@ -23,9 +25,11 @@ from ..save_deleted_order_changes import save_deleted_order_changes
 from ..save_order_to_history import save_order_to_history
 from ..script_download_new_planes_entrega_from_sap import script_download_new_planes_entrega_from_sap
 from ..validate_data.validate_data import validate_data
-from..create_comparison_table_excel import create_comparison_table_excel
+from ..create_comparison_table_excel import create_comparison_table_excel
 from ..find_newest_dir import find_newest_dir
-from ..constants import changes_history_folder
+from ..constants import changes_history_folder, orders_history_folder
+import os
+
 
 class MenuBar:
     def __init__(self, parent_window: tk.Frame, gui):
@@ -134,7 +138,7 @@ class MenuBar:
                                        icon='warning')
         if self.gui.active_window == 'create_order_loading_screen':
             self.queue = Queue()
-            thread = Process(target=check_sap_database_in_bg, args=(self.orders, self.queue))
+            thread = Process(target=check_sap_database_in_bg, args=(self.orders, self.queue), daemon=True)
             thread.start()
             print('empezando loop ')
             # gui.draw_order_window2(thread, self.queue)
@@ -145,8 +149,14 @@ class MenuBar:
             self.orders: pd.DataFrame = result[0]
             self.order_exists: bool = result[1]
             self.planes_entrega: pd.DataFrame = result[2]
+            self.gui.error_found = result[3]
+            self.gui.error_message = result[4]
             thread.terminate()
             thread.kill()
+            if self.gui.error_found:  # Significa que hubo un error con el script
+                if 'comparison_table.xlsx' not in os.listdir(find_newest_dir(changes_history_folder)):
+                    shutil.rmtree(find_newest_dir(changes_history_folder))
+                return
             # thread.join()
             self.gui.root.focus_force()
             if self.order_exists:
@@ -184,20 +194,37 @@ class MenuBar:
                 self.backup_order_changes = self.order_changes
                 self.order_changes = edit_changes_table(self.order_changes, self.rows_to_delete)
                 print(self.order_changes.to_string())
-                thread = Process(target=run_in_bg_sap_changes, args=(self.order_changes, self.order_exists))
+                self.error_queue = Queue()
+                thread = Process(target=run_in_bg_sap_changes, args=(self.order_changes, self.order_exists,
+                                                                     self.error_queue), daemon=True)
                 thread.start()
                 apply_changes_loading_window = ApplyChangesLoadingWindow(self.gui.root, self.gui, thread)
-                apply_changes_loading_window.show()
-                # self.gui.draw_order_window4(thread)
+                apply_changes_loading_window.show()  # Queda esperando aqui a que se apliquen los cambios a SAP
+                errors_queue: list = self.error_queue.get()
+                self.gui.error_found = errors_queue[0]
+                self.gui.error_message = errors_queue[1]
+                if self.gui.error_found:  # Significa que hubo un error con el script
+                    if 'comparison_table.xlsx' not in os.listdir(find_newest_dir(changes_history_folder)):
+                        shutil.rmtree(find_newest_dir(changes_history_folder))
+                    return
                 self.gui.root.focus_force()
                 if not self.order_exists:
                     client = self.order_changes['client'][self.order_changes.index[0]]
                     self.orders['client'] = client
                 save_order_to_history(self.orders, self.uploaded_file_root)
-                thread = Process(target=run_in_bg_save_sap_changes, args=(self.order_changes,))
+                self.error_queue = Queue()
+                thread = Process(target=run_in_bg_save_sap_changes, args=(self.order_changes,self.error_queue),
+                                 daemon=True)
                 thread.start()
                 apply_changes_loading_window = ApplyChangesLoadingWindow(self.gui.root, self.gui, thread)
                 apply_changes_loading_window.show()
+                errors_queue: list = self.error_queue.get()
+                self.gui.error_found = errors_queue[0]
+                self.gui.error_message = errors_queue[1]
+                if self.gui.error_found:  # Significa que hubo un error con el script
+                    if 'comparison_table.xlsx' not in os.listdir(find_newest_dir(changes_history_folder)):
+                        shutil.rmtree(find_newest_dir(changes_history_folder))
+                    return
                 self.gui.active_window = 'process_complete'
         if self.gui.active_window == 'process_complete':
             self.gui.root.focus_force()
@@ -207,8 +234,6 @@ class MenuBar:
             create_comparison_table_excel(folder_root=folder)
             self.gui.process_complete_window.show()
             self.gui.process_complete_window.menu_bar.next_button.destroy()
-
-
 
     def save_important_vars(self):
         self.gui.uploaded_file_root = self.uploaded_file_root
@@ -236,31 +261,60 @@ def check_sap_database_in_bg(orders: pd.DataFrame, queue: Queue):
     """Funcion que se va a correr en el un procesador separado para que
     la interfaz no se congele mientras se corre el script para chequear los cambios
     necesarios"""
-    order_number = str(orders['order_number'][orders.index[0]])
-    download_planes_entrega_from_sap(order_number)
-    planes_entrega = get_planes_entrega()
-    # Formatear cada campo de la tabla para poder subirlo a SAP
-    format_data = FormatData(orders)
-    orders = format_data.format_all()
-    # Calcular la fecha de envio de ship_out_date
-    orders = calculate_ship_out_date(orders)
-    orders = get_client_number(orders, planes_entrega)
-    orders = change_client_name(orders, planes_entrega)
-    print(orders.to_string())
-    # orders, planes_entrega = self.process_invoice()
-    order_exists = check_order_exists(orders, planes_entrega)
-    result = [orders, order_exists, planes_entrega]
-    queue.put(result)
+    error_found = False
+    error_message = None
+    try:
+        order_number = str(orders['order_number'][orders.index[0]])
+        download_planes_entrega_from_sap(order_number)
+        planes_entrega = get_planes_entrega()
+        # Formatear cada campo de la tabla para poder subirlo a SAP
+        format_data = FormatData(orders)
+        orders = format_data.format_all()
+        # Calcular la fecha de envio de ship_out_date
+        orders = calculate_ship_out_date(orders)
+        orders = get_client_number(orders, planes_entrega)
+        orders = change_client_name(orders, planes_entrega)
+        print(orders.to_string())
+        # orders, planes_entrega = self.process_invoice()
+        order_exists = check_order_exists(orders, planes_entrega)
+        result = [orders, order_exists, planes_entrega, error_found, error_message]
+        queue.put(result)
+    except Exception as e:
+        error_found = True
+        error_message = traceback.format_exc()
+        result = [None, None, None, error_found, error_message]
+        queue.put(result)
+    return
 
 
-def run_in_bg_sap_changes(order_changes: pd.DataFrame, order_exists: bool):
-    if order_exists:
-        edit_existing_order(order_changes)
-    else:
-        create_order(order_changes)
+def run_in_bg_sap_changes(order_changes: pd.DataFrame, order_exists: bool, error_queue: Queue):
+    """Funcion que se va a correr en el un procesador separado para que
+        la interfaz no se congele mientras se corre el script para aplicar los cambios
+        necesarios"""
+    try:
+        if order_exists:
+            edit_existing_order(order_changes)
+        else:
+            create_order(order_changes)
+        error_queue.put([False, None])
+    except Exception as e:
+        print('Ha ocurrido un error al ejecutar el script:')
+        error = traceback.format_exc()
+        error_queue.put([True, error])
+    return
 
 
-def run_in_bg_save_sap_changes(order_changes: pd.DataFrame):
-    order_number = str(order_changes['order_number'][order_changes.index[0]])
-    script_download_new_planes_entrega_from_sap(order_number)
+def run_in_bg_save_sap_changes(order_changes: pd.DataFrame, error_queue: Queue):
+    try:
+        """Funcion que se va a correr en el un procesador separado para que
+                la interfaz no se congele mientras se corre el script para descargar
+                el nuevo plan de entregas"""
+        order_number = str(order_changes['order_number'][order_changes.index[0]])
+        script_download_new_planes_entrega_from_sap(order_number)
+        error_queue.put([False, None])
+    except Exception as e:
+        error = traceback.format_exc()
+        error_queue.put([True, error])
+    return
+
 # ------------------------------------------------------------------------

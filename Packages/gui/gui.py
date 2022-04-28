@@ -8,7 +8,7 @@ from .orders_history_window.orders_history_window import OrdersHistoryWindow
 from .edit_order_window.edit_order_window import EditOrderWindow
 from .select_client_window.select_client_window import SelectClientWindow
 from ..gui.process_complete_window.process_complete_window import ProcessCompleteWindow
-from .settings_window import SettingsWindow
+from .settings_window.settings_window import SettingsWindow
 from .installation_guide_window import InstallationGuideWindow
 import ctypes
 import os
@@ -53,6 +53,8 @@ class Gui:
         self.backup_order_changes = None
         self.rows_to_delete = None
         self.deleted_rows_log = None
+        self.error_found = False
+        self.error_message = None
 
     def run(self, gui):
         """Funcion donde se crean los objetos de cada ventana"""

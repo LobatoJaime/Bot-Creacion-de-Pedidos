@@ -12,7 +12,6 @@ import datetime
 import shutil
 
 
-
 def create_order(order_changes: pd.DataFrame):
     """Funcion en la cual se realiza la conexion a SAP y donde se crea el pedido"""
     # Copiar planes de entrega al historial antes de descargar el nuevo

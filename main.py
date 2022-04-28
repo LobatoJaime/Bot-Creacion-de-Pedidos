@@ -34,6 +34,7 @@ from Packages.script_download_new_planes_entrega_from_sap import script_download
 from Packages.script_download_planes_entrega_from_sap import download_planes_entrega_from_sap
 from Packages.close_splash_screen import close_splash_screen
 from Packages.close_excel import close_excel
+import traceback
 
 
 class App:
@@ -41,12 +42,23 @@ class App:
         """Clase principal donde se ejecuta la aplicacion"""
         pd.options.mode.chained_assignment = None  # Para poder editar tablas en pandas mas facil
         freeze_support()  # Ajuste necesario del modulo multiprocessing
-        gui = Gui()
-        gui.run(gui)
-        while gui.app_running:  # Loop principal de la applicacion
-            gui.update()
+        self.gui = Gui()
+        self.gui.run(self.gui)
+        while self.gui.app_running:  # Loop principal de la applicacion
+            self.gui.update()
+            if self.gui.error_found: # Error inesperado en la aplicacion
+                self.gui.close_app()
+                raise Exception(self.gui.error_message)
 
 
 if __name__ == '__main__':
     close_splash_screen()
-    app = App()
+    try:
+        app = App()
+    except Exception as e:
+        traceback.print_exc()
+        error = traceback.format_exc()
+        msg = messagebox.showerror('Error',
+                                   'La aplicacion ha encontrado un error y se tiene que cerrar inmediatamente\n\n'
+                                   'Informacion del error:\n'
+                                   '{}'.format(error))
