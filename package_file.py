@@ -7,12 +7,21 @@ from Packages.constants import download_latest_ver_folder
 def package_file(version: str, dist_folder: str):
     """Funcion para empaquetar de manera mas sencilla la aplicacion\n.
     dist_folder: carpeta donde se va a a empaquetar el distribuible"""
+    # Comprobar si la version ya existe
+    try:
+        files = os.listdir(dist_folder)
+        filename = 'AutomatizacionSAP {}.exe'.format(version)
+        if filename in files:
+            print('Error, no se pueden crear dos aplicaciones con la misma version')
+            return
+    except FileNotFoundError:
+        pass
+
     # Modificar la version del archivo en constants
     constants_read = open(r'Packages/constants.py', 'r')
     data = constants_read.readlines()
     new_version = "actual_version = '{}'\n".format(version)
     for n, line in enumerate(data):
-        print(n, line)
         if 'actual_version' in line:
             data[n] = new_version
 
@@ -47,5 +56,5 @@ def package_file(version: str, dist_folder: str):
     shutil.copy(file_path, source_path)
 
 
-package_file(version='v4.4.5',
+package_file(version='v4.4.6',
              dist_folder=r'C:\Users\IRDGFRM\OneDrive-Deere&Co\OneDrive - Deere & Co\Documents\Python Projects\Bot Creacion de Pedidos\dist')
