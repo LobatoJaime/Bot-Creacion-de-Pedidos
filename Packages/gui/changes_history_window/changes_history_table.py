@@ -95,7 +95,6 @@ class ChangesHistoryTable:
         folder_root = os.path.join(changes_history_folder, folder_name)
         data = pd.read_excel(os.path.join(folder_root, 'comparison_table.xlsx'))
         self.comparison_table = pd.DataFrame(data, dtype=str)
-
         print(self.comparison_table.to_string())
         self.table_frame = ttk.Frame(self.parent_window)
         self.table_frame.rowconfigure(0, weight=1)
@@ -115,6 +114,12 @@ class ChangesHistoryTable:
             self.sub_tree.insert('', tk.END, values=(ship_out_date, reference,
                                                      old_quantity, new_quantity), tags=(tag,))
         self.sub_tree.grid(row=0, column=0, sticky='ns')
+        try:
+            user_info = self.comparison_table['user_info'][self.comparison_table.index[0]]
+        except KeyError:
+            user_info = 'No disponible'
+        user_label = tk.Label(self.table_frame, text='Subido por: {}'.format(user_info), justify='right', bg='#ecf0f1')
+        user_label.grid(row=0, column=0, sticky='es', padx=5, pady=5)
         self.sub_tree.tag_configure('add', background='#79ffb2')
         self.sub_tree.tag_configure('del', background='#ff8080')
         self.sub_tree.tag_configure('change', background='#ffc143')

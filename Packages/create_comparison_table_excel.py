@@ -2,6 +2,7 @@ from Packages.constants import resources_folder, changes_history_folder
 import os
 import pandas as pd
 import numpy as np
+from .get_user_info import get_user_info
 
 
 def create_comparison_table_excel(folder_root: str):
@@ -127,6 +128,9 @@ def create_comparison_table_excel(folder_root: str):
 
     # ship_out_dates = [dt.datetime.strptime(ship_out_date, '%Y-%m-%d').strftime('%d.%m.%Y') for ship_out_date in ship_out_dates]
     prices = [price]*len(references)
+    user = get_user_info()
+    user_info = '{}/{}'.format(user[0], user[1])
+    user_info = [user_info]*len(references)
     data_comparison = {'ship_out_date': ship_out_dates,
                        'reference': references,
                        'old_quantity': old_quantities,
@@ -134,7 +138,8 @@ def create_comparison_table_excel(folder_root: str):
                        'status': status_list,
                        'message': messages,
                        'file_root': file_roots,
-                       'price': prices}
+                       'price': prices,
+                       'user_info': user_info}
     comparison_table = pd.DataFrame(data_comparison)
     comparison_table = comparison_table.drop_duplicates()
     comparison_table = comparison_table.sort_values(by='ship_out_date')

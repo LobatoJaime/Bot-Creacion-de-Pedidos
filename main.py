@@ -38,10 +38,6 @@ from Packages.check_latest_version import check_latest_version
 import traceback
 
 
-
-
-
-
 class App:
     def __init__(self):
         """Clase principal donde se ejecuta la aplicacion"""
