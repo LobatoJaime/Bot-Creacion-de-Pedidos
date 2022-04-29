@@ -6,8 +6,8 @@ from tkinter import messagebox
 
 def check_latest_version() -> bool:
     """Funcion que comprueba la ultima version en GitHub
-    con la version actual de la aplicacion
-    -Devuelve True si la version esta actualizada
+    con la version actual de la aplicacion\n
+    -Devuelve True si la version esta actualizada\n
     -Devuelve false en caso de que no"""
     last_ver = lastversion.latest(github_repo_adress, output_format='tag')
     if last_ver != actual_version:
