@@ -7,6 +7,8 @@ GUI creada en python que a traves de los scripts de SAP facilita la subida de pe
 3. Ejecutar el script `package_file.py` dando como argumentos la version nueva deseada del archivo y la carpeta donde va a estar el ejecutable \
 Ejemplo: 
 ```python
-package_file(version='v4.4.5',
-             dist_folder=r'C:\Users\IRDGFRM\OneDrive-Deere&Co\OneDrive - Deere & Co\Documents\Python Projects\Bot Creacion de Pedidos\dist')
+local_folder = r'C:\Users\IRDGFRM\OneDrive-Deere&Co\OneDrive - Deere & Co\Documents\Python Projects\Bot Creacion de Pedidos\dist'  # Cambiar a disposicion
+online_folder = r'\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\dist'
+package_file(version='v4.4.6',
+             dist_folder=online_folder)
 ```
