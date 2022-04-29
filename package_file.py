@@ -2,6 +2,7 @@ import PyInstaller.__main__
 import os
 import shutil
 from Packages.constants import download_latest_ver_folder
+import PyInstaller.config
 
 
 def package_file(version: str, dist_folder: str):
@@ -31,6 +32,8 @@ def package_file(version: str, dist_folder: str):
     constants_read.close()
 
     # Empaquetar la aplicacion usando pyinstaller
+    PyInstaller.DEFAULT_DISTPATH = dist_folder
+    # PyInstaller.config.CONF['distpath'] = dist_folder
     PyInstaller.__main__.run(['--onefile',
                               '-F',
                               'main.spec'])
@@ -48,13 +51,20 @@ def package_file(version: str, dist_folder: str):
             old_path = os.path.join(download_latest_ver_folder, file_name)
             break
     previous_versions_folder = os.path.join(download_latest_ver_folder, 'PreviousVersions')
-    shutil.move(old_path, os.path.join(previous_versions_folder, file_name))
+    if old_path is not None:
+        shutil.move(old_path, os.path.join(previous_versions_folder, file_name))
 
     # Copiar a la carpeta en linea de la app
     file_path = new_path
     source_path = os.path.join(download_latest_ver_folder, 'AutomatizacionSAP {}.exe'.format(version))
     shutil.copy(file_path, source_path)
 
+    print('El archivo ha sido empaquetado de manera exitosa.\n'
+          'Ubicacion del archivo:\n'
+          ' {}'.format(dist_folder))
 
+
+local_folder = r'C:\Users\IRDGFRM\OneDrive-Deere&Co\OneDrive - Deere & Co\Documents\Python Projects\Bot Creacion de Pedidos\dist'
+online_folder = r'\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\dist'
 package_file(version='v4.4.6',
-             dist_folder=r'C:\Users\IRDGFRM\OneDrive-Deere&Co\OneDrive - Deere & Co\Documents\Python Projects\Bot Creacion de Pedidos\dist')
+             dist_folder=online_folder)
