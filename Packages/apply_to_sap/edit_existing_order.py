@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 from .edit_order_script import add_order_script
 from .delete_order_script import delete_oder_script
@@ -7,6 +9,8 @@ import datetime
 import os
 from ..constants import changes_history_folder, resources_folder
 import shutil
+from ..get_user_info import get_user_info
+import traceback
 
 
 def edit_existing_order(order_changes: pd.DataFrame):
@@ -33,7 +37,29 @@ def edit_existing_order(order_changes: pd.DataFrame):
         separator = ''
         for i in range(500):
             separator = separator + '='
-        if action == 'CREATE' and quantity not in ['0', 0, '', ' ']:
-            add_order_script(session, plan_entrega, ship_out_date, quantity)
-        elif action == 'DELETE':
-            delete_oder_script(session, plan_entrega, ship_out_date)
+        try:
+            if action == 'CREATE' and quantity not in ['0', 0, '', ' ']:
+                add_order_script(session, plan_entrega, ship_out_date, quantity)
+            elif action == 'DELETE':
+                delete_oder_script(session, plan_entrega, ship_out_date)
+        except Exception as e:
+            print('Error inesperado al subir el pedido, intentandolo de nuevo...')
+            time.sleep(5)
+            initial_error = traceback.format_exc()
+            try:
+                if action == 'CREATE' and quantity not in ['0', 0, '', ' ']:
+                    add_order_script(session, plan_entrega, ship_out_date, quantity)
+                elif action == 'DELETE':
+                    delete_oder_script(session, plan_entrega, ship_out_date)
+            except Exception as ee:
+                bar_error_text = session.FindById("wnd[0]/sbar").text
+                login = get_user_info()[1]
+                print(bar_error_text)
+                if login in bar_error_text:
+                    raise Exception(initial_error)
+                else:
+                    raise Exception('El pedido ya esta abierto por otro usuario\n'
+                                    'Informacion de SAP: {}'.format(bar_error_text))
+
+
+
