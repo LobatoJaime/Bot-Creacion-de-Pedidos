@@ -14,10 +14,11 @@ class ChangesHistoryWindow:
         self.menu_bar.frame.place(relwidth=1)
         # Tabla de historial de cambios
         self.history_changes_table = ChangesHistoryTable(self.window_frame, self.root)
-        self.history_changes_table.list_frame.place(rely=0.05, relx=0, relheight=0.92)
+        self.history_changes_table.list_frame.place(rely=0.05, relx=0, relheight=0.92, relwidth=.31)
         # Leyenda
         color_guide = ColorGuideWidget(self.window_frame, title_font=None, text_font=None)
         color_guide.place(rely=.3, relx=.77, relwidth=.2)
+
     def show(self):
         try:
             self.history_changes_table.sub_tree.destroy()
@@ -28,5 +29,5 @@ class ChangesHistoryWindow:
         self.history_changes_table = None
         self.window_frame.tkraise()
         self.history_changes_table = ChangesHistoryTable(self.window_frame, self.root)
-        self.history_changes_table.list_frame.place(rely=0.05, relx=0, relheight=0.92)
+        self.history_changes_table.list_frame.place(rely=0.05, relx=0, relheight=0.92, relwidth=.31)
 

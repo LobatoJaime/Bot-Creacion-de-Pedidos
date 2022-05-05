@@ -3,6 +3,7 @@ from tkinter import ttk
 from Packages.gui.create_order_window.create_order_table import CreateOrderTable
 from ..menu_bar import MenuBar
 from ..save_order_file import save_order_file
+from ...constants import ai_supported_clients
 
 
 class CreateOrderWindow:
@@ -26,7 +27,7 @@ class CreateOrderWindow:
         self.root.bind('<Left>', self.create_order_table.move_left)
         self.root.bind('<Down>', self.create_order_table.move_down)
         self.root.bind('<Up>', self.create_order_table.move_up)
-        self.create_order_table.frame.place(rely=0.05, relx=0)
+        self.create_order_table.frame.place(rely=0.05, relx=0, relwidth=1-0.3)
         # Cuadro de ajustes
         self.settings_label_frame = ttk.Labelframe(self.window_frame, text='Ajustes')
         self.settings_label_frame.place(rely=0.05, relx=0.72, relwidth=0.25)
@@ -49,6 +50,14 @@ class CreateOrderWindow:
         # Texto con la ruta del archivo adjuntado
         self.file_uploaded_text = ttk.Label(self.settings_label_frame, text='Ningun archivo seleccionado')
         self.file_uploaded_text.grid(row=4, column=0, sticky='w', pady=6, padx=15)
+        # Usar AI para subir un pdf
+        self.ai_button = ttk.Button(self.settings_label_frame, text='Escanear PDF',
+                                             command=lambda: [self.create_order_table.scan_pdf(self.ai_client_name.get(), self.file_uploaded_text)], style='success.TButton')
+        self.ai_button.grid(row=6, column=0, sticky='w', pady=6, padx=15)
+        self.ai_client_name = ttk.Combobox(self.settings_label_frame, values=ai_supported_clients, state='readonly')
+        self.ai_client_name.set('Cliente a escanear')
+        self.ai_client_name.grid(row=5, column=0, sticky='w', pady=6, padx=15)
+        self.ai_client_name.bind("<<ComboboxSelected>>", lambda event: [self.ai_client_name.selection_clear()])
 
     def show(self):
         self.window_frame.tkraise()

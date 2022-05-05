@@ -16,8 +16,9 @@ class OrdersHistoryTable:
         self.parent_window = parent_window
         self.client_names = []
         # Hacer lista de los cambios hechos
-        self.list_frame = ttk.Frame(parent_window, height=190)
+        self.list_frame = ttk.Frame(parent_window)
         self.list_frame.rowconfigure(0, weight=1)
+        self.list_frame.columnconfigure(0, weight=1)
         folders_names = os.listdir(orders_history_folder)
         folders_names = sorted(folders_names,
                                key=lambda x: os.path.getmtime(os.path.join(orders_history_folder, x)), reverse=True)
@@ -38,11 +39,14 @@ class OrdersHistoryTable:
             reference = folder_splitted[2]
             self.order_numbers.append(order_number)
             self.tree.insert('', tk.END, values=(client_name, order_number, reference))
-        self.tree.grid(row=0, column=0, sticky='ns')
+        self.tree.grid(row=0, column=0, sticky='nsew')
         # add a scrollbar
         scrollbar = ttk.Scrollbar(self.list_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=scrollbar.set)
         scrollbar.grid(row=0, column=1, sticky='ns')
+        scrollbarX = ttk.Scrollbar(self.list_frame, orient=tk.HORIZONTAL, command=self.tree.xview)
+        self.tree.configure(xscroll=scrollbarX.set)
+        scrollbarX.grid(row=1, column=0, sticky='ew')
         self.tree.bind("<Double-1>", self.value_clicked)
         self.tree.bind("<Button-3>", self.on_right_click)
         # -----------------Filtros---------------------------------------------
@@ -50,6 +54,10 @@ class OrdersHistoryTable:
         self.client_names.append('Ver todos')
         self.filter_box = ttk.Labelframe(self.parent_window, text='Ajustes de Filtros', padding=10)
         self.filter_box.place(relx=0.83, rely=0.05, relwidth=.15)
+        self.filter_box.rowconfigure(0, weight=1)
+        self.filter_box.rowconfigure(1, weight=1)
+        self.filter_box.columnconfigure(0, weight=1)
+        self.filter_box.columnconfigure(1, weight=1)
         client_title = ttk.Label(self.filter_box, text='Cliente:').grid(row=0, column=0, sticky='w')
         self.client_filter = ttk.Combobox(self.filter_box, values=self.client_names, state='readonly')
         self.client_filter.bind("<<ComboboxSelected>>", lambda event: self.filter_clicked())
@@ -90,8 +98,9 @@ class OrdersHistoryTable:
                 file_names.append(file)
 
         # Crear sublista
-        self.sub_list_frame = ttk.Frame(self.parent_window, height=190)
+        self.sub_list_frame = ttk.Frame(self.parent_window)
         self.sub_list_frame.rowconfigure(0, weight=1)
+        self.sub_list_frame.columnconfigure(0, weight=1)
         headers = ['Fecha de pedido']
         self.sub_tree = ttk.Treeview(self.sub_list_frame, columns=headers,
                                      show='headings')
@@ -112,9 +121,12 @@ class OrdersHistoryTable:
         scrollbar = ttk.Scrollbar(self.sub_list_frame, orient=tk.VERTICAL, command=self.sub_tree.yview)
         self.sub_tree.configure(yscroll=scrollbar.set)
         scrollbar.grid(row=0, column=1, sticky='ns')
+        scrollbarX = ttk.Scrollbar(self.sub_list_frame, orient=tk.HORIZONTAL, command=self.sub_tree.xview)
+        self.sub_tree.configure(xscroll=scrollbarX.set)
+        scrollbarX.grid(row=1, column=0, sticky='ew')
         self.sub_tree.bind("<Double-1>", self.sub_value_clicked)
         self.sub_tree.bind("<Button-3>", self.on_right_click)
-        self.sub_list_frame.place(rely=0.05, relx=0.273, relheight=0.92)
+        self.sub_list_frame.place(rely=0.05, relx=0.27, relheight=0.92, relwidth=.1)
         self.sub_tree.configure(selectmode='none')
         self.sub_tree.bind("<Button-3>", self.on_right_sub_click)
         # Hacer diccionario para ver a que elementos se les ha hecho click
@@ -230,7 +242,7 @@ class OrdersHistoryTable:
         self.history_tree.configure(xscroll=scrollbar_x.set)
         scrollbar_x.grid(row=1, column=0, sticky='wes', columnspan=2)
 
-        self.history_tree_frame.place(rely=0.05, relx=0.39, relheight=0.92, relwidth=(1 - .575))
+        self.history_tree_frame.place(rely=0.05, relx=0.37, relheight=0.92, relwidth=(1 - .56))
         self.history_tree.configure(selectmode='none')
         self.history_tree.tag_configure(tagname=1, background='lightgrey')
 

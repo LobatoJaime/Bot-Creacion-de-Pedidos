@@ -4,8 +4,10 @@ from tkinter import ttk
 from ttkbootstrap import Style
 import pandas as pd
 import numpy as np
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 import datetime as dt
+from AI_Engine.main import main
+from ...constants import downloads_folder
 
 
 class CreateOrderTable:
@@ -19,6 +21,7 @@ class CreateOrderTable:
             self.headers = headers
         self.frame = ttk.Frame(parent_window)
         self.frame.bind('<Return>', self.on_enter)
+        # Hacer encabezado
         for col in range(len(headers)):
             entry = ttk.Label(self.frame, width=20, text=headers[col], style='primary.Inverse.TLabel')
             entry.grid(row=0, column=col, sticky='ew', padx=1)
@@ -59,6 +62,8 @@ class CreateOrderTable:
         self.add_button.grid(row=self.latest_index + 1, column=len(headers) - 1, sticky='e', pady=10)
         self.delete_button = ttk.Button(self.frame, text='Eliminar entrada', style='danger.TButton',
                                         command=lambda: [self.delete_row()])
+        for col_n in range(8):
+            self.frame.columnconfigure(col_n, weight=1)
 
     def add_row(self):
         """Funcion que agrega una fila en la tabla"""
@@ -279,7 +284,7 @@ class CreateOrderTable:
                     try:
                         if col == 0:
                             self.entries[index][col + 2].focus_set()
-                        elif col not in [5,6]:
+                        elif col not in [5, 6]:
                             self.entries[index][col + 1].focus_set()
                     except IndexError:
                         pass
@@ -296,9 +301,9 @@ class CreateOrderTable:
                 if e == focus:
                     try:
                         if col == 2:
-                            self.entries[index][col-2].focus_set()
+                            self.entries[index][col - 2].focus_set()
                         elif col != 0:
-                            self.entries[index][col-1].focus_set()
+                            self.entries[index][col - 1].focus_set()
                     except IndexError:
                         pass
             index = index + 1
@@ -313,7 +318,7 @@ class CreateOrderTable:
                 e = self.entries[index][col]
                 if e == focus:
                     try:
-                        self.entries[index+1][col].focus_set()
+                        self.entries[index + 1][col].focus_set()
                     except IndexError:
                         pass
             index = index + 1
@@ -328,7 +333,72 @@ class CreateOrderTable:
                 e = self.entries[index][col]
                 if e == focus:
                     try:
-                        self.entries[index-1][col].focus_set()
+                        self.entries[index - 1][col].focus_set()
                     except IndexError:
                         pass
             index = index + 1
+
+    def scan_pdf(self, client_name: str, file_uploaded_text: tk.Label):
+        """Se llama el engine de AI para escanear el pdf"""
+        if client_name == 'Cliente a escanear':
+            messagebox.showinfo(title='Error', message='Es necesario seleccionar un cliente para escanear un pedido')
+            return
+        # Usar AI
+        # path = filedialog.askdirectory(initialdir='Descargas')
+        path = filedialog.askopenfilename(initialdir=downloads_folder)
+        if path == '':
+            return
+        # path = r'C:\Users\IRDGFRM\Downloads\Prueba'
+        orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
+        if orders.empty:
+            messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
+                                                        'Posibles errores:\n'
+                                                        '- Comprueba que hayas seleccionado el cliente correcto\n'
+                                                        '- La I.A no esta entrenada para este pedido')
+            return
+        orders = orders.drop('archivo', 1)  # Borrar columna archivo
+        orders.insert(loc=1,
+                      column='client',
+                      value=['manual' for x in orders.index])  # Insertar columna client
+        orders['confidence'] = 1  # Insertar columna confidence
+        print(orders.to_string())
+
+        # Borrar tabla existente
+        for row in self.entries:
+            for entry in row:
+                entry.destroy()
+
+        # Escribir la tabla importada
+        self.entries = []
+        for index in range(1):
+            row = []
+            for col in range(len(self.headers)):
+                if col in [1, 6]:
+                    if col == 1:
+                        text = 'manual'
+                    elif col == 6:
+                        text = '1'
+                    entry = ttk.Label(self.frame, text=text, width=20, background='grey',
+                                      padding=5, relief='sunken')
+                    entry.grid(row=index + 1, column=col)
+                    row.append(entry)
+                else:
+                    entry = ttk.Entry(self.frame, width=20)
+                    entry.grid(row=index + 1, column=col)
+                    row.append(entry)
+            self.entries.append(row)
+        self.latest_index = 1
+        for index in orders.index:
+            if index > 0:
+                self.add_row()
+
+        index = 0
+        for row in self.entries:
+            for col in range(len(row)):
+                if col not in [1, 6]:
+                    text = str(orders[orders.columns[col]][index])
+                    self.entries[index][col].insert(0, text)
+            index = index + 1
+
+        # Guardar la direction del archivo en el Label de la interfaz
+        file_uploaded_text.configure(text=path)

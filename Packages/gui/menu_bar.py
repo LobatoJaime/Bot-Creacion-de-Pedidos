@@ -37,26 +37,28 @@ class MenuBar:
         self.gui = gui
         self.upload_order_window_names = (
             'create_order', 'create_order_loading_screen', 'edit_order', 'edit_order_2', 'select_client')
-        main_menu_button = ttk.Button(self.frame, text='Subir Nuevo Pedido', width=30,
+        button_width = 30
+        main_menu_button = ttk.Button(self.frame, text='Subir Nuevo Pedido',
                                       command=lambda: [self.new_order_pressed()])
         main_menu_button.grid(column=0, row=0, pady=0)
-        settings_button = ttk.Button(self.frame, text='Ajustes', width=30,
+        settings_button = ttk.Button(self.frame, text='Ajustes',
                                      command=lambda: [self.settings_pressed()])
         settings_button.grid(column=1, row=0, pady=0)
-        history_button = ttk.Button(self.frame, text='Historial de Cambios', width=30,
+        history_button = ttk.Button(self.frame, text='Historial de Cambios',
                                     command=lambda: [self.changes_history_pressed()])
         history_button.grid(column=2, row=0, pady=0)
-        orders_history_button = ttk.Button(self.frame, text='Historial de Ordenes', width=30,
+        orders_history_button = ttk.Button(self.frame, text='Historial de Ordenes',
                                            command=lambda: [self.orders_history_pressed()])
         orders_history_button.grid(column=3, row=0, pady=0)
-        installation_button = ttk.Button(self.frame, text='Guia de instalacion', width=30,
+        installation_button = ttk.Button(self.frame, text='Guia de instalacion',
                                          command=lambda: [self.installation_guide_pressed()])
         installation_button.grid(column=4, row=0, pady=0)
         self.next_button = ttk.Button(self.frame, text='Siguiente paso', style='success.TButton',
                                       command=lambda: [self.import_important_vars(),
                                                        self.next_pressed(), self.save_important_vars()])
         self.next_button.grid(column=5, row=0, sticky='E')
-        self.frame.columnconfigure(5, weight=1)
+        for col_number in range(6):
+            self.frame.columnconfigure(col_number, weight=1)
         self.import_important_vars()
 
     def new_order_pressed(self):

@@ -12,7 +12,7 @@ class OrdersHistoryWindow:
         self.menu_bar = MenuBar(self.window_frame, gui)
         self.menu_bar.frame.place(relwidth=1)
         self.history_changes_table = OrdersHistoryTable(self.window_frame)
-        self.history_changes_table.list_frame.place(rely=0.05, relx=0, relheight=0.92)
+        self.history_changes_table.list_frame.place(rely=0.05, relx=0, relheight=0.92, relwidth=.27)
 
     def show(self):
         self.window_frame.destroy()
@@ -24,4 +24,4 @@ class OrdersHistoryWindow:
         self.history_changes_table = None
         self.window_frame.tkraise()
         self.history_changes_table = OrdersHistoryTable(self.window_frame)
-        self.history_changes_table.list_frame.place(rely=0.05, relx=0, relheight=0.92)
+        self.history_changes_table.list_frame.place(rely=0.05, relx=0, relheight=0.92, relwidth=.27)

@@ -25,6 +25,14 @@ class Gui:
         self.root.iconbitmap(os.path.join(resources_folder, 'application.ico'))
         self.root.protocol("WM_DELETE_WINDOW", self.close_app)
         style = Style(theme='flatly', master=self.root)
+        # ---------INVENTANDO--------
+        # font_size = 10
+        # widget_names = ('TButton', 'TLabel', 'TCheckbutton', 'TCombobox', 'TEntry', 'TLabelFrame', 'TMenubutton',
+        #                 'TNotebook', 'TPanedwindow', 'Horizontal.TProgressbar', 'TRadiobutton', 'Horizontal.TScrollbar',
+        #                 'Vertical.TScrollbar', 'Treeview')
+        # for widget_name in widget_names:
+        #     style.configure(widget_name, font=('Helvetica', font_size))
+        # ---------------------------
         self.root.resizable(True, True)
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()

@@ -19,8 +19,9 @@ class ChangesHistoryTable:
         self.parent_window = parent_window
         self.root = root
         # Hacer lista de los cambios hechos
-        self.list_frame = ttk.Frame(parent_window, height=190)
+        self.list_frame = tk.Frame(parent_window)
         self.list_frame.rowconfigure(0, weight=1)
+        self.list_frame.columnconfigure(0, weight=1)
         folders_names = os.listdir(changes_history_folder)
         folders_names = sorted(folders_names,
                                key=lambda x: os.path.getmtime(os.path.join(changes_history_folder, x)), reverse=True)
@@ -49,6 +50,9 @@ class ChangesHistoryTable:
         scrollbar = ttk.Scrollbar(self.list_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=scrollbar.set)
         scrollbar.grid(row=0, column=1, sticky='ns')
+        scrollbarX = ttk.Scrollbar(self.list_frame, orient=tk.HORIZONTAL, command=self.tree.xview)
+        self.tree.configure(xscroll=scrollbarX.set)
+        scrollbarX.grid(row=1, column=0, sticky='ew')
         self.tree.bind("<Double-1>", self.value_clicked)
         self.tree.bind("<Button-3>", self.on_right_click)
         # -----------------Filtros---------------------------------------------
@@ -57,6 +61,10 @@ class ChangesHistoryTable:
         self.dates.append('Ver todos')
         self.filter_box = ttk.Labelframe(self.parent_window, text='Ajustes de Filtros', padding=10)
         self.filter_box.place(relx=0.77, rely=0.05, relwidth=.2)
+        self.filter_box.rowconfigure(0, weight=1)
+        self.filter_box.rowconfigure(1, weight=1)
+        self.filter_box.columnconfigure(0, weight=1)
+        self.filter_box.columnconfigure(1, weight=1)
         client_title = ttk.Label(self.filter_box, text='Cliente:').grid(row=0, column=0, sticky='w')
         self.client_filter = ttk.Combobox(self.filter_box, values=self.client_names, state='readonly')
         self.client_filter.bind("<<ComboboxSelected>>", lambda event: self.filter_clicked(event))
@@ -98,6 +106,10 @@ class ChangesHistoryTable:
         print(self.comparison_table.to_string())
         self.table_frame = ttk.Frame(self.parent_window)
         self.table_frame.rowconfigure(0, weight=1)
+        # self.table_frame.rowconfigure(1, weight=1)
+        self.table_frame.columnconfigure(0, weight=1)
+        # self.table_frame.columnconfigure(1, weight=1)
+        self.table_frame.place(rely=0.05, relx=0.31, relheight=0.92, relwidth=.42)
         headers = ['Fecha de reparto', 'Referencia', 'Cantidad vieja', 'Cantidad nueva']
         self.sub_tree = ttk.Treeview(self.table_frame, columns=headers,
                                      show='headings', selectmode='none')
@@ -113,7 +125,7 @@ class ChangesHistoryTable:
             tag = self.comparison_table['tags'][index]
             self.sub_tree.insert('', tk.END, values=(ship_out_date, reference,
                                                      old_quantity, new_quantity), tags=(tag,))
-        self.sub_tree.grid(row=0, column=0, sticky='ns')
+        self.sub_tree.grid(row=0, column=0, sticky='nswe')
         try:
             user_info = self.comparison_table['user_info'][self.comparison_table.index[0]]
         except KeyError:
@@ -127,8 +139,10 @@ class ChangesHistoryTable:
         # add a scrollbar
         scrollbar = ttk.Scrollbar(self.table_frame, orient=tk.VERTICAL, command=self.sub_tree.yview)
         self.sub_tree.configure(yscroll=scrollbar.set)
-        scrollbar.grid(row=0, column=1, sticky='ns')
-        self.table_frame.place(rely=0.05, relx=0.325, relheight=0.92)
+        scrollbar.grid(row=0, column=1, sticky='ns', rowspan=2)
+        scrollbarX = ttk.Scrollbar(self.table_frame, orient=tk.HORIZONTAL, command=self.sub_tree.xview)
+        self.sub_tree.configure(xscroll=scrollbarX.set)
+        scrollbarX.grid(row=1, column=0, sticky='ew')
         self.sub_tree.bind("<Double-1>", self.sub_value_clicked)
 
     def get_client_name(self, folder_name: str, order_number) -> str:
