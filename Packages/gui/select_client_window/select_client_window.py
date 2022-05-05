@@ -25,7 +25,7 @@ class SelectClientWindow:
         description.place(rely=.13, relx=.01)
         # Tabla de clientes
         self.select_client_table = SelectClientTable(self.window_frame)
-        self.select_client_table.frame.place(rely=0.2, relx=0.01, relheight=.6)
+        self.select_client_table.frame.place(rely=0.2, relx=0.01, relheight=.6, relwidth=.22)
 
     def show(self):
         self.window_frame.tkraise()
