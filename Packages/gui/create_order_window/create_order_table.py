@@ -350,6 +350,12 @@ class CreateOrderTable:
             return
         # path = r'C:\Users\IRDGFRM\Downloads\Prueba'
         orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
+        if orders is None:
+            messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
+                                                        'Posibles errores:\n'
+                                                        '- Comprueba que hayas seleccionado el cliente correcto\n'
+                                                        '- La I.A no esta entrenada para este pedido')
+            return
         if orders.empty:
             messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
                                                         'Posibles errores:\n'
