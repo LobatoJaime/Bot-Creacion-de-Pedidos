@@ -14,24 +14,20 @@ from AI_Engine.sample import modulo_general as modg
 
 def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = False) -> pd.DataFrame:
     """
-    Proveedores:\n
-    -Engine Power Compoments\n
-    -Thyssenkrupp Campo Limpo\n
-    -WorldClass Industries\n
-    -EMP\n
-    -Thyssenkrupp Crankshaft\n
+    Metodo principal de extraccion de datos de proveedores
+    Argumentos:
+        proveedor: Nombre del proveedor del cual se extraera la informacion. Proveedores disponibles:
+            - Engine Power Compoments
+            - Thyssenkrupp Campo Limpo
+            - WorldClass Industries
+            - EMP
+            - Thyssenkrupp Crankshaft
+        path_archivos: Ruta de la carpeta donde se encuentran los archivos o ruta del propio archivo
+        is_img_shown: Variable para visualizar la extraccion de datos
+    Returns:
+        Dataframe de los datos extraidos. None si ha habido algun error
     """
-    if proveedor is None:
-        proveedor = "Engine Power Compoments"
-        proveedor = "Thyssenkrupp Campo Limpo"
-        proveedor = "WorldClass Industries"
-        proveedor = "EMP"
-        proveedor = "Thyssenkrupp Crankshaft"
-    if path_archivos is not None:
-        path_archivos = os.path.normpath(path_archivos)
-    else:
-        path_archivos = r"Proveedores\orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
-        path_archivos = r"Proveedores\CLIIENTES JOHN DEERE\Thyssenkrupp Crankshaft"
+    path_archivos = os.path.normpath(path_archivos)
     # %% Constantes
     PEDIDOS_WINDOW = 'PDF pedidos'
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
@@ -50,9 +46,14 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
     # %% Definicion variables
     df = pd.DataFrame(columns=COLUMNAS)
 
+    # Listo los archivos del directorio
     # proveedor = os.path.basename(os.path.normpath(pathArchivos))
-    # files = os.listdir(path_archivos)
-    files = [path_archivos]
+    files = []
+    if os.path.isdir(path_archivos):
+        files = os.listdir(path_archivos)
+        files = list(map(lambda name: os.path.join(path_archivos, name), files))
+    else:
+        files.append(path_archivos)
 
     # %% Main
     print("-------------- " + proveedor + " --------------")
@@ -100,7 +101,7 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
         print(filename + ":")
 
         # Conversion PDF a imagen
-        img_list = modg.pdf_to_img(os.path.join(path_archivos, filename))
+        img_list = modg.pdf_to_img(os.path.join(filename))
 
         if is_img_shown:
             # Calculo las dimensiones de la primera hoja
@@ -224,3 +225,18 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
     modg.close_windows("Aplicacion terminada")
     return df
 
+
+# proveedor = "Engine Power Compoments"
+# proveedor = "WorldClass Industries"
+# proveedor = "EMP"
+# proveedor = "Thyssenkrupp Crankshaft"
+# proveedor = "Thyssenkrupp Campo Limpo"
+# proveedor = "ESP"
+#
+# path_archivos = r"Proveedores\orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
+# path_archivos = r"Proveedores\extra\Thyssenkrupp Campo Limpo"
+# path_archivos = r"Proveedores\CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
+# path_archivos = r"Proveedores\extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
+# path_archivos = r"Proveedores\CLIIENTES JOHN DEERE\ESP"
+#
+# main(proveedor, path_archivos, True)
