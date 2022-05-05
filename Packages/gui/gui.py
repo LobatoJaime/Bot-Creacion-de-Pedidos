@@ -79,6 +79,7 @@ class Gui:
         # Empezar en la pantalla de crear pedido
         self.create_order_window.show()
 
+
     def update(self):
         """Funcion que actualiza la parte visual de la GUI"""
         self.root.update_idletasks()

@@ -18,5 +18,5 @@ class EditOrderWindow:
         self.menu_bar = MenuBar(self.window_frame, self.gui)
         self.menu_bar.frame.place(relwidth=1)
         self.edit_order_table = EditOrderTable(self.window_frame, self.orders, self.root)
-        self.edit_order_table.frame.place(rely=0.05, relx=0)
+        self.edit_order_table.frame.place(rely=0.05, relx=0, relwidth=.85)
         self.window_frame.tkraise()
