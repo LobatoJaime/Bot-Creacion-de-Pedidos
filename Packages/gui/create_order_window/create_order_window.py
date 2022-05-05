@@ -61,5 +61,10 @@ class CreateOrderWindow:
 
     def show(self):
         self.window_frame.tkraise()
+        self.root.bind('<Return>', self.create_order_table.on_enter)
+        self.root.bind('<Right>', self.create_order_table.move_right)
+        self.root.bind('<Left>', self.create_order_table.move_left)
+        self.root.bind('<Down>', self.create_order_table.move_down)
+        self.root.bind('<Up>', self.create_order_table.move_up)
         self.create_order_table.clear_table()
         self.file_uploaded_text.configure(text='Ningun archivo seleccionado')
