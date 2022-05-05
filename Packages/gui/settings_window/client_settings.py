@@ -14,7 +14,7 @@ class ClientSettings:
         self.widget_frame = tk.Frame(self.window_frame)
         # Mostrar tabla de clientes ya creados
         self.clients_table = ClientsTable(self.widget_frame)
-        self.clients_table.place(relx=0.005, rely=0, relheight=.9)
+        self.clients_table.place(relx=0.005, rely=0, relheight=.9, relwidth=.245)
         self.clients_df = self.clients_table.get_df()
         print(self.clients_df.to_string())
         # Boton de agregar cliente
@@ -92,8 +92,9 @@ class ClientsTable:
         clients_table = pd.DataFrame(data, dtype=str)
         self.df = clients_table
         self.headers = list(clients_table)
-        self.frame = ttk.Frame(parent_window, height=190)
+        self.frame = ttk.Frame(parent_window)
         self.frame.rowconfigure(0, weight=1)
+        self.frame.columnconfigure(0, weight=1)
         self.entries = []
         self.tree = ttk.Treeview(self.frame, columns=self.headers, show='headings', selectmode='none')
         for value in self.headers:
@@ -106,7 +107,10 @@ class ClientsTable:
         # add a scrollbar
         scrollbar = ttk.Scrollbar(self.frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=scrollbar.set)
-        scrollbar.grid(row=0, column=1, sticky='ns')
+        scrollbar.grid(row=0, column=1, sticky='ns', rowspan=2)
+        scrollbarX = ttk.Scrollbar(self.frame, orient=tk.HORIZONTAL, command=self.tree.xview)
+        self.tree.configure(xscroll=scrollbarX.set)
+        scrollbarX.grid(row=1, column=0, sticky='ew')
 
     def place(self, relx=None, rely=None, relwidth=None, relheight=None):
         self.frame.place(rely=rely, relx=relx, relheight=relheight, relwidth=relwidth)
