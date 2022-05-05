@@ -19,7 +19,8 @@ class ChangesTable:
         headers = ['Fecha de reparto', 'Referencia', 'Cantidad vieja', 'Cantidad nueva']
         # hacer tabla
         self.tree_frame = tk.Frame(window_frame)
-        self.tree_frame.rowconfigure(1, weight=1)
+        self.tree_frame.rowconfigure(2, weight=1)
+        self.tree_frame.columnconfigure(0, weight=1)
         tree = ttk.Treeview(self.tree_frame, columns=headers,
                             show='headings', selectmode='none')
         for value in headers:
@@ -34,7 +35,7 @@ class ChangesTable:
             tag = self.comparison_table['tags'][index]
             tree.insert('', tk.END, values=(ship_out_date, reference,
                                                      old_quantity, new_quantity), tags=(tag,))
-        tree.grid(row=1, column=0, sticky='ns')
+        tree.grid(row=2, column=0, sticky='nsew')
         tree.tag_configure('add', background='#79ffb2')
         tree.tag_configure('del', background='#ff8080')
         tree.tag_configure('change', background='#ffc143')
@@ -42,11 +43,19 @@ class ChangesTable:
         # add a scrollbar
         scrollbar = ttk.Scrollbar(self.tree_frame, orient=tk.VERTICAL, command=tree.yview)
         tree.configure(yscroll=scrollbar.set)
-        scrollbar.grid(row=1, column=1, sticky='ns')
+        scrollbar.grid(row=2, column=1, sticky='ns', rowspan=2)
+        scrollbarX = ttk.Scrollbar(self.tree_frame, orient=tk.HORIZONTAL, command=tree.xview)
+        tree.configure(xscroll=scrollbarX.set)
+        scrollbarX.grid(row=3, column=0, sticky='ew')
+        # Title success
+        self.success = tk.Label(self.tree_frame, text='Proceso Finalizado',
+                                font=('Arial Bold', 24))
+        self.success.grid(row=0, column=0, columnspan=2, pady=10)
         # title
         title = ttk.Label(self.tree_frame, text='Cambios Realizados', font=("Arial", 18))
-        title.grid(row=0, column=0, columnspan=2)
+        title.grid(row=1, column=0, columnspan=2)
 
     def place(self, relx=None, rely=None, relwidth=None, relheight=None):
+        self.tree_frame.grid_propagate(False)
         self.tree_frame.place(rely=rely, relx=relx, relheight=relheight, relwidth=relwidth)
 

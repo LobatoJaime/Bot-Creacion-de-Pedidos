@@ -19,14 +19,10 @@ class ProcessCompleteWindow:
         self.window_frame.tkraise()
         self.menu_bar = MenuBar(self.window_frame, gui)
         self.menu_bar.frame.place(relwidth=1)
-        # Title
-        self.success = tk.Label(self.window_frame, text='Proceso Finalizado',
-                                font=('Arial Bold', 24))
-        self.success.place(rely=.1, relx=.4)
         # Changes table
         self.changes_table = ChangesTable(self.window_frame)
-        # self.changes_table.place(rely=.2, relx=0.01, relheight=0.5)
-        self.changes_table.place(rely=.2, relx=.27, relheight=0.5)
+        # self.changes_table.place(rely=.2, relx=.27, relheight=0.5, relwidth=.1)
+        self.changes_table.tree_frame.place(rely=.1, relx=.27, relheight=0.6, relwidth=.42)
         # Warnings
         gray_color = '#CCCCCC'
         self.warnings_frame = tk.Frame(self.window_frame, background=gray_color)
