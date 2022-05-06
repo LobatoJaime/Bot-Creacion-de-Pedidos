@@ -34,8 +34,10 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
     COLUMNAS = ("archivo",) + CAMPOS
     HEIGHT_TO_SHOW = 800
     # Paths
-    PATH_CONFIG = os.path.join(os.path.dirname(__file__), 'Config')
-    PATH_RESULTADOS = os.path.join(os.path.dirname(__file__), 'Resultados')
+    # PATH_CONFIG = os.path.join(os.path.dirname(__file__), 'Config')
+    PATH_CONFIG = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files\Config"
+    # PATH_RESULTADOS = os.path.join(os.path.dirname(__file__), 'Resultados')
+    PATH_RESULTADOS = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files\Resultados"
     # Files
     FILE_TABLE_HEADER = r"header.jpg"
     FILE_TABLE_END = r"end.jpg"
@@ -227,16 +229,18 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
 
 
 # proveedor = "Engine Power Compoments"
-# proveedor = "WorldClass Industries"
 # proveedor = "EMP"
 # proveedor = "Thyssenkrupp Crankshaft"
 # proveedor = "Thyssenkrupp Campo Limpo"
 # proveedor = "ESP"
+# proveedor = "WorldClass Industries"
 #
-# path_archivos = r"Proveedores\orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
-# path_archivos = r"Proveedores\extra\Thyssenkrupp Campo Limpo"
-# path_archivos = r"Proveedores\CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
-# path_archivos = r"Proveedores\extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
-# path_archivos = r"Proveedores\CLIIENTES JOHN DEERE\ESP"
+# path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
+# path_archivos = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
+# path_archivos = r"extra\Thyssenkrupp Campo Limpo"
+# path_archivos = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
+# path_archivos = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
+# path_archivos = r"CLIIENTES JOHN DEERE\WorldClass Industries"
+# path_archivos = os.path.join(path_root, path_archivos)
 #
 # main(proveedor, path_archivos, True)
