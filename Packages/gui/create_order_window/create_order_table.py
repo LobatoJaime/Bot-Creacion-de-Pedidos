@@ -114,7 +114,7 @@ class CreateOrderTable:
         for row_n, row in enumerate(self.entries):
             for widget in row:
                 if str(widget) == str(active_widget):
-                    if row_n == 0:
+                    if len(self.entries) < 2:
                         return
                     active_row = row
                     for entry in active_row:
@@ -214,6 +214,8 @@ class CreateOrderTable:
                                         filetypes=(("excel files", "*.xlsx"), ("all files", "*.*")))
         try:
             save_root = file.name
+            if '.xlsx' not in save_root:
+                save_root = save_root+'.xlsx'
             orders = self.read_table()
             orders.to_excel(save_root, index=False)
         except AttributeError:
@@ -289,6 +291,7 @@ class CreateOrderTable:
                     row.append(entry)
             self.entries.append(row)
         self.latest_index = 1
+        self.delete_button.grid_forget()
 
     def move_right(self, event):
         """Evento que hace que se seleccione la celda de la derecha
