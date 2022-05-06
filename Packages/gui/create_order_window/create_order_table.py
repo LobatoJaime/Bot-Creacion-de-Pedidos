@@ -8,6 +8,7 @@ from tkinter import filedialog, messagebox
 import datetime as dt
 from AI_Engine.main import main
 from ...constants import downloads_folder
+import numpy as np
 
 
 class CreateOrderTable:
@@ -68,7 +69,7 @@ class CreateOrderTable:
     def add_row(self):
         """Funcion que agrega una fila en la tabla"""
         order_number = self.entries[0][0].get()
-        reference = self.entries[0][2].get()
+        reference = self.entries[-1][2].get()
         row = []
         for col in range(len(self.headers)):
             if col in [1, 6]:
@@ -106,6 +107,23 @@ class CreateOrderTable:
             self.delete_button.grid_forget()
         if self.latest_index >= 2:
             self.delete_button.grid(row=self.latest_index + 1, column=len(self.headers) - 2, sticky='e', pady=10)
+
+    def delete_current_row(self, event):
+        """Borra la fila que se esta escribiendo actualmente"""
+        active_widget = event.widget
+        for row_n, row in enumerate(self.entries):
+            for widget in row:
+                if str(widget) == str(active_widget):
+                    if row_n == 0:
+                        return
+                    active_row = row
+                    for entry in active_row:
+                        entry.destroy()
+                    self.entries.pop(row_n)
+                    self.latest_index = self.latest_index - 1
+                    if self.latest_index < 2:
+                        self.delete_button.grid_forget()
+                    return
 
     def update_cells(self):
         """Funcion que actualiza los valores de order number y

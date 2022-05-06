@@ -66,5 +66,6 @@ class CreateOrderWindow:
         self.root.bind('<Left>', self.create_order_table.move_left)
         self.root.bind('<Down>', self.create_order_table.move_down)
         self.root.bind('<Up>', self.create_order_table.move_up)
+        self.root.bind('<Delete>', self.create_order_table.delete_current_row)
         self.create_order_table.clear_table()
         self.file_uploaded_text.configure(text='Ningun archivo seleccionado')
