@@ -14,6 +14,8 @@ class ChangesTable:
         self.window_frame = window_frame
         # leer archivo
         newest_folder = find_newest_dir(changes_history_folder)
+        print('Carpeta usada para el process complete window...')
+        print(newest_folder)
         data = pd.read_excel(os.path.join(newest_folder, 'comparison_table.xlsx'))
         self.comparison_table = pd.DataFrame(data, dtype=str)
         headers = ['Fecha de reparto', 'Referencia', 'Cantidad vieja', 'Cantidad nueva']

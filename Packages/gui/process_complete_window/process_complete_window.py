@@ -1,3 +1,4 @@
+import time
 import tkinter as tk
 from ..menu_bar import MenuBar
 from .changes_table import ChangesTable
@@ -14,6 +15,7 @@ class ProcessCompleteWindow:
 
     def __init__(self, root: tk.Tk, gui):
         self.root = root
+        self.gui = gui
         self.window_frame = tk.Frame(self.root)
         self.window_frame.place(relwidth=1, relheight=1)
         self.window_frame.tkraise()
@@ -21,7 +23,6 @@ class ProcessCompleteWindow:
         self.menu_bar.frame.place(relwidth=1)
         # Changes table
         self.changes_table = ChangesTable(self.window_frame)
-        # self.changes_table.place(rely=.2, relx=.27, relheight=0.5, relwidth=.1)
         self.changes_table.tree_frame.place(rely=.1, relx=.27, relheight=0.6, relwidth=.42)
         # Warnings
         gray_color = '#CCCCCC'
@@ -54,7 +55,6 @@ class ProcessCompleteWindow:
     def show(self):
         # Changes table
         self.changes_table = ChangesTable(self.window_frame)
-        # self.changes_table.place(rely=.2, relx=0.01, relheight=0.5)
         self.changes_table.place(rely=.2, relx=.27, relheight=0.5)
         # Warnings
         gray_color = '#CCCCCC'

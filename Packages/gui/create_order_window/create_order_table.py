@@ -118,9 +118,9 @@ class CreateOrderTable:
                 if col == 0:
                     self.entries[index][col].delete(0, 1000)
                     self.entries[index][col].insert(0, order_number)
-                elif col == 2:
-                    self.entries[index][col].delete(0, 1000)
-                    self.entries[index][col].insert(0, reference)
+                # elif col == 2:
+                #     self.entries[index][col].delete(0, 1000)
+                #     self.entries[index][col].insert(0, reference)
             index = index + 1
 
     def on_enter(self, event):

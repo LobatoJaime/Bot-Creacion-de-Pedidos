@@ -10,13 +10,15 @@ def validate_data(orders: pd.DataFrame) -> (bool, str):
     all_data_ok = True
     err_msg = None
     # -------------------------- VALIDAR REFERENCIA --------------------------------
-    reference = str(orders['reference'][orders.index[0]])
-    reference_exists = validate_ref(reference)
-    if not reference_exists:
-        all_data_ok = False
-        err_msg = 'Error. La referencia que has escrito no existe,' \
-                  '\ncomprueba que la has escrito de la manera correcta'
-        return all_data_ok, err_msg
+    references = orders['reference'].tolist()
+    references = set(references)
+    for reference in references:
+        reference_exists = validate_ref(reference)
+        if not reference_exists:
+            all_data_ok = False
+            err_msg = 'Error. La referencia que has escrito no existe,' \
+                      '\ncomprueba que la has escrito de la manera correcta'
+            return all_data_ok, err_msg
     # -------------------------- VALIDAR CANTIDADES --------------------------------
     quantities_ok = validate_quantities(orders)
     if not quantities_ok:

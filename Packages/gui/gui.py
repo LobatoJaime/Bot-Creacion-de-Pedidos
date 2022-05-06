@@ -73,12 +73,11 @@ class Gui:
         self.orders_history_window = OrdersHistoryWindow(self.root, self.gui)
         self.edit_order_window = EditOrderWindow(self.root, self.gui)
         self.select_client_window = SelectClientWindow(self.root, self.gui)
-        self.process_complete_window = ProcessCompleteWindow(self.root, self.gui)
+        # self.process_complete_window = ProcessCompleteWindow(self.root, self.gui)
         self.settings_window = SettingsWindow(self.root, self.gui)
         self.installation_guide_window = InstallationGuideWindow(self.root, self.gui)
         # Empezar en la pantalla de crear pedido
         self.create_order_window.show()
-
 
     def update(self):
         """Funcion que actualiza la parte visual de la GUI"""
