@@ -29,7 +29,7 @@ from ..create_comparison_table_excel import create_comparison_table_excel
 from ..find_newest_dir import find_newest_dir
 from ..constants import changes_history_folder, orders_history_folder
 import os
-from .process_complete_window.process_complete_window import ProcessCompleteWindow
+
 
 
 class MenuBar:
@@ -235,6 +235,7 @@ class MenuBar:
                                        self.deleted_rows_log)
             folder = find_newest_dir(changes_history_folder)
             create_comparison_table_excel(folder_root=folder)
+            from .process_complete_window.process_complete_window import ProcessCompleteWindow
             process_complete_window = ProcessCompleteWindow(self.gui.root, self.gui)
             process_complete_window.show()
             # self.gui.process_complete_window.show()
