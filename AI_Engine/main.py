@@ -27,11 +27,13 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
     Returns:
         Dataframe de los datos extraidos. None si ha habido algun error
     """
+    # Adaptacion de parametros
     path_archivos = os.path.normpath(path_archivos)
     # %% Constantes
     PEDIDOS_WINDOW = 'PDF pedidos'
+    COLUMNAS = ("archivo",) + ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
+    COLUMNAS = ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
-    COLUMNAS = ("archivo",) + CAMPOS
     HEIGHT_TO_SHOW = 800
     # Paths
     # PATH_CONFIG = os.path.join(os.path.dirname(__file__), 'Config')
@@ -200,8 +202,11 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
 
             # Creo el dataframe con los datos extraidos de la pagina
             df_n = pd.DataFrame(pag_campos_data[n_pag], columns=COLUMNAS)
-            # Relleno el valor de la columna de archivo
-            df_n["archivo"] = filename
+            # Relleno el valor de las columnas extra
+            if "archivo" in COLUMNAS:
+                df_n["archivo"] = filename
+            df_n["client"] = "manual"
+            df_n["confidence"] = 1
             # Uno el data frame con el dataframe global
             df = pd.concat([df, df_n], ignore_index=True)
             print("Dataframe pag " + str(n_pag + 1) + ":")
