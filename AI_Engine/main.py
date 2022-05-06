@@ -34,8 +34,10 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
     COLUMNAS = ("archivo",) + CAMPOS
     HEIGHT_TO_SHOW = 800
     # Paths
-    PATH_CONFIG = os.path.join(os.path.dirname(__file__), 'Config')
-    PATH_RESULTADOS = os.path.join(os.path.dirname(__file__), 'Resultados')
+    # PATH_CONFIG = os.path.join(os.path.dirname(__file__), 'Config')
+    PATH_CONFIG = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files\Config"
+    # PATH_RESULTADOS = os.path.join(os.path.dirname(__file__), 'Resultados')
+    PATH_RESULTADOS = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files\Resultados"
     # Files
     FILE_TABLE_HEADER = r"header.jpg"
     FILE_TABLE_END = r"end.jpg"
