@@ -65,6 +65,8 @@ class CreateOrderTable:
                                         command=lambda: [self.delete_row()])
         for col_n in range(8):
             self.frame.columnconfigure(col_n, weight=1)
+        for row_n in range(50):
+            self.frame.columnconfigure(row_n, weight=1)
 
     def add_row(self):
         """Funcion que agrega una fila en la tabla"""
