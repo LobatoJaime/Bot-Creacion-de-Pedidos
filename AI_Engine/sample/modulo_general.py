@@ -5,6 +5,7 @@ import sys
 import cv2 as cv
 from AI_Engine.sample.modulo_ocr import lectura_texto
 from pdf2image import convert_from_path
+from Packages.constants import poppler_online_path
 
 
 def apply_template_matching(img, template):
@@ -103,7 +104,7 @@ def pdf_to_img(path):
     list_img = []
 
     # Conversion pdf a jpg
-    images = convert_from_path(path, poppler_path=r'C:\Program Files\poppler-0.68.0\bin')
+    images = convert_from_path(path, poppler_path=poppler_online_path)
     # Recorro la lista de imagenes
     for i in range(len(images)):
         path_img = path + '-' + str(i) + '.jpg'

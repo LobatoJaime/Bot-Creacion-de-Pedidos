@@ -12,7 +12,7 @@ import json
 from AI_Engine.sample import modulo_general as modg
 
 
-def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = False) -> pd.DataFrame:
+def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_root: str = None) -> pd.DataFrame:
     """
     Metodo principal de extraccion de datos de proveedores
     Argumentos:
@@ -24,20 +24,24 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
             - Thyssenkrupp Crankshaft
         path_archivos: Ruta de la carpeta donde se encuentran los archivos o ruta del propio archivo
         is_img_shown: Variable para visualizar la extraccion de datos
+        path_root: Ruta donde se encuentran las carpetas que vaya a usar la apliacacion (Config, Resultados, etc.)
     Returns:
         Dataframe de los datos extraidos. None si ha habido algun error
     """
+    # Adaptacion de parametros
     path_archivos = os.path.normpath(path_archivos)
+    if path_root is None:
+        path_root = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files"
+    path_root = os.path.normpath(path_root)
     # %% Constantes
     PEDIDOS_WINDOW = 'PDF pedidos'
+    COLUMNAS = ("archivo",) + ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
+    COLUMNAS = ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
-    COLUMNAS = ("archivo",) + CAMPOS
     HEIGHT_TO_SHOW = 800
     # Paths
-    # PATH_CONFIG = os.path.join(os.path.dirname(__file__), 'Config')
-    PATH_CONFIG = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files\Config"
-    # PATH_RESULTADOS = os.path.join(os.path.dirname(__file__), 'Resultados')
-    PATH_RESULTADOS = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files\Resultados"
+    PATH_CONFIG = os.path.join(path_root, 'Config')
+    PATH_RESULTADOS = os.path.join(path_root, 'Resultados')
     # Files
     FILE_TABLE_HEADER = r"header.jpg"
     FILE_TABLE_END = r"end.jpg"
@@ -200,8 +204,11 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
 
             # Creo el dataframe con los datos extraidos de la pagina
             df_n = pd.DataFrame(pag_campos_data[n_pag], columns=COLUMNAS)
-            # Relleno el valor de la columna de archivo
-            df_n["archivo"] = filename
+            # Relleno el valor de las columnas extra
+            if "archivo" in COLUMNAS:
+                df_n["archivo"] = filename
+            df_n["client"] = "manual"
+            df_n["confidence"] = 1
             # Uno el data frame con el dataframe global
             df = pd.concat([df, df_n], ignore_index=True)
             print("Dataframe pag " + str(n_pag + 1) + ":")
@@ -229,16 +236,18 @@ def main(proveedor: str = None, path_archivos: str = None, is_img_shown: bool = 
 
 
 # proveedor = "Engine Power Compoments"
-# proveedor = "WorldClass Industries"
 # proveedor = "EMP"
 # proveedor = "Thyssenkrupp Crankshaft"
 # proveedor = "Thyssenkrupp Campo Limpo"
 # proveedor = "ESP"
+# proveedor = "WorldClass Industries"
 #
-# path_archivos = r"Proveedores\orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
-# path_archivos = r"Proveedores\extra\Thyssenkrupp Campo Limpo"
-# path_archivos = r"Proveedores\CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
-# path_archivos = r"Proveedores\extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
-# path_archivos = r"Proveedores\CLIIENTES JOHN DEERE\ESP"
+# path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
+# path_archivos = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
+# path_archivos = r"extra\Thyssenkrupp Campo Limpo"
+# path_archivos = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
+# path_archivos = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
+# path_archivos = r"CLIIENTES JOHN DEERE\WorldClass Industries"
+# path_archivos = os.path.join(path_root, path_archivos)
 #
-# main(proveedor, path_archivos, True)
+# main(proveedor, path_archivos, is_img_shown=False, path_root=".")
