@@ -14,7 +14,9 @@ class EditOrderTable:
         orders.pop('confidence')
         self.headers = list(orders)
         self.frame = ttk.Frame(parent_window)
+        self.frame.rowconfigure(0, weight=1)
         for col in range(len(self.headers)):
+            self.frame.columnconfigure(col, weight=1)
             entry = ttk.Label(self.frame, width=18, text=self.headers[col], style='primary.Inverse.TLabel')
             entry.grid(row=0, column=col, sticky='ew', padx=1)
         self.entries = []
@@ -23,6 +25,7 @@ class EditOrderTable:
             row = []
             en_periodo_congelado = orders['en_periodo_congelado'][index]
             for col in range(len(orders.columns)):
+                self.frame.rowconfigure(row_n+1, weight=1)
                 column_title = orders.columns[col]
                 text = orders[orders.columns[col]][index]
                 if col == 6:

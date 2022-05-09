@@ -37,3 +37,9 @@ class ScrollableImage(tkinter.Frame):
         #     self.cnvs.xview_scroll(-1 * (evt.delta), 'units')  # For MacOS
         #     self.cnvs.xview_scroll(int(-1 * (evt.delta / 120)), 'units')  # For windows
         self.cnvs.yview_scroll(int(-1 * (evt.delta / 120)), "units")
+
+    def right_arrow(self, evt):
+        self.cnvs.xview_scroll(1, "units")
+
+    def left_arrow(self, evt):
+        self.cnvs.xview_scroll(-1, "units")

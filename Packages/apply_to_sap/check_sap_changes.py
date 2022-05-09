@@ -142,6 +142,7 @@ def check_sap_changes(orders: pd.DataFrame, planes_entrega: pd.DataFrame) -> pd.
             "action": actions}
     order_changes = pd.DataFrame(data, dtype=str)
     order_changes['ship_out_date'] = pd.to_datetime(order_changes['ship_out_date'])
-    order_changes = order_changes.sort_values(by=['ship_out_date', 'action'], ascending=[True, False])
+    order_changes = order_changes.sort_values(by=['reference', 'ship_out_date', 'action'],
+                                              ascending=[True, True, False])
 
     return order_changes

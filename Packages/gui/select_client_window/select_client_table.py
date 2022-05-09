@@ -17,10 +17,13 @@ class SelectClientTable:
         self.headers = list(clients_table)
         self.frame = ttk.Frame(parent_window, height=190)
         self.frame.rowconfigure(0, weight=1)
+        self.frame.columnconfigure(0, weight=1)
+        self.frame.grid_propagate(False)
         self.entries = []
         self.tree = ttk.Treeview(self.frame, columns=self.headers, show='headings')
         for value in self.headers:
             self.tree.heading(value, text=value)
+            # self.tree.column(value, minwidth=400, width=400, stretch=False)
         for index in clients_table.index:
             client_name = clients_table['Customer'][index]
             sap_code = clients_table['sap_code'][index]
@@ -29,7 +32,10 @@ class SelectClientTable:
         # add a scrollbar
         scrollbar = ttk.Scrollbar(self.frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=scrollbar.set)
-        scrollbar.grid(row=0, column=1, sticky='ns')
+        scrollbar.grid(row=0, column=1, sticky='ns', rowspan=2)
+        scrollbarX = ttk.Scrollbar(self.frame, orient=tk.HORIZONTAL, command=self.tree.xview)
+        self.tree.configure(xscroll=scrollbarX.set)
+        scrollbarX.grid(row=1, column=0, sticky='ew')
 
     def get_sap_code(self):
         current_item = self.tree.focus()

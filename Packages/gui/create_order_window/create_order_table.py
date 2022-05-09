@@ -8,6 +8,7 @@ from tkinter import filedialog, messagebox
 import datetime as dt
 from AI_Engine.main import main
 from ...constants import downloads_folder
+import numpy as np
 
 
 class CreateOrderTable:
@@ -64,11 +65,13 @@ class CreateOrderTable:
                                         command=lambda: [self.delete_row()])
         for col_n in range(8):
             self.frame.columnconfigure(col_n, weight=1)
+        for row_n in range(50):
+            self.frame.columnconfigure(row_n, weight=1)
 
     def add_row(self):
         """Funcion que agrega una fila en la tabla"""
         order_number = self.entries[0][0].get()
-        reference = self.entries[0][2].get()
+        reference = self.entries[-1][2].get()
         row = []
         for col in range(len(self.headers)):
             if col in [1, 6]:
@@ -107,6 +110,23 @@ class CreateOrderTable:
         if self.latest_index >= 2:
             self.delete_button.grid(row=self.latest_index + 1, column=len(self.headers) - 2, sticky='e', pady=10)
 
+    def delete_current_row(self, event):
+        """Borra la fila que se esta escribiendo actualmente"""
+        active_widget = event.widget
+        for row_n, row in enumerate(self.entries):
+            for widget in row:
+                if str(widget) == str(active_widget):
+                    if len(self.entries) < 2:
+                        return
+                    active_row = row
+                    for entry in active_row:
+                        entry.destroy()
+                    self.entries.pop(row_n)
+                    self.latest_index = self.latest_index - 1
+                    if self.latest_index < 2:
+                        self.delete_button.grid_forget()
+                    return
+
     def update_cells(self):
         """Funcion que actualiza los valores de order number y
         reference para que tengas todos los mismos valores"""
@@ -118,9 +138,9 @@ class CreateOrderTable:
                 if col == 0:
                     self.entries[index][col].delete(0, 1000)
                     self.entries[index][col].insert(0, order_number)
-                elif col == 2:
-                    self.entries[index][col].delete(0, 1000)
-                    self.entries[index][col].insert(0, reference)
+                # elif col == 2:
+                #     self.entries[index][col].delete(0, 1000)
+                #     self.entries[index][col].insert(0, reference)
             index = index + 1
 
     def on_enter(self, event):
@@ -196,6 +216,8 @@ class CreateOrderTable:
                                         filetypes=(("excel files", "*.xlsx"), ("all files", "*.*")))
         try:
             save_root = file.name
+            if '.xlsx' not in save_root:
+                save_root = save_root+'.xlsx'
             orders = self.read_table()
             orders.to_excel(save_root, index=False)
         except AttributeError:
@@ -271,6 +293,7 @@ class CreateOrderTable:
                     row.append(entry)
             self.entries.append(row)
         self.latest_index = 1
+        self.delete_button.grid_forget()
 
     def move_right(self, event):
         """Evento que hace que se seleccione la celda de la derecha
@@ -350,6 +373,12 @@ class CreateOrderTable:
             return
         # path = r'C:\Users\IRDGFRM\Downloads\Prueba'
         orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
+        if orders is None:
+            messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
+                                                        'Posibles errores:\n'
+                                                        '- Comprueba que hayas seleccionado el cliente correcto\n'
+                                                        '- La I.A no esta entrenada para este pedido')
+            return
         if orders.empty:
             messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
                                                         'Posibles errores:\n'

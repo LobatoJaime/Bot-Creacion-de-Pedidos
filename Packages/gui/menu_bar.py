@@ -31,6 +31,7 @@ from ..constants import changes_history_folder, orders_history_folder
 import os
 
 
+
 class MenuBar:
     def __init__(self, parent_window: tk.Frame, gui):
         self.frame = ttk.Frame(parent_window, style='primary.TFrame')
@@ -234,8 +235,11 @@ class MenuBar:
                                        self.deleted_rows_log)
             folder = find_newest_dir(changes_history_folder)
             create_comparison_table_excel(folder_root=folder)
-            self.gui.process_complete_window.show()
-            self.gui.process_complete_window.menu_bar.next_button.destroy()
+            from .process_complete_window.process_complete_window import ProcessCompleteWindow
+            process_complete_window = ProcessCompleteWindow(self.gui.root, self.gui)
+            process_complete_window.show()
+            # self.gui.process_complete_window.show()
+            process_complete_window.menu_bar.next_button.destroy()
 
     def save_important_vars(self):
         self.gui.uploaded_file_root = self.uploaded_file_root
