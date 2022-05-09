@@ -385,11 +385,6 @@ class CreateOrderTable:
                                                         '- Comprueba que hayas seleccionado el cliente correcto\n'
                                                         '- La I.A no esta entrenada para este pedido')
             return
-        orders = orders.drop('archivo', 1)  # Borrar columna archivo
-        orders.insert(loc=1,
-                      column='client',
-                      value=['manual' for x in orders.index])  # Insertar columna client
-        orders['confidence'] = 1  # Insertar columna confidence
         print(orders.to_string())
 
         # Borrar tabla existente
