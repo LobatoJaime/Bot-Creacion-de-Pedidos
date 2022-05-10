@@ -1,6 +1,7 @@
 import cv2
 import pytesseract
 import numpy as np
+import pandas as pd
 
 
 def aumentar_box(box, img_shape):
@@ -131,28 +132,9 @@ def lectura_texto(gray, method=0, is_multiple=False, is_img_shown=False):
                 custom_config = custom_config_aux
             # Leo el texto dentro de la region y elimino los espacios a los lados del texto
             text = pytesseract.image_to_string(img_procesada, config=custom_config).strip()
-
-            # data = pytesseract.image_to_data(img_procesada, config=custom_config, output_type='data.frame')
-            # print(data)
-            # data2 = data[data.conf != -1]
-            # print("=================================")
-            # print(data2)
-            # print("=================================")
-            # print(data2.head())
-            # lines = data2.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['text'] \
-            #     .apply(lambda x: ' '.join(list(str(x)))).tolist()
-            # confs = data2.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['conf'].mean().tolist()
-            #
-            # line_conf = []
-            #
-            # for i in range(len(lines)):
-            #     if lines[i].strip():
-            #         line_conf.append((lines[i], round(confs[i], 3)))
-            # print("=================================")
-            # print(line_conf)
-
-            result.append(text)
-            if is_img_shown:print(text)
+            output_data = lectura_texto_data(img_procesada, custom_config)
+            result.append(output_data)
+            if is_img_shown:print(output_data)
             if is_img_shown:print('-------------------------')
             if is_img_shown: cv2.imshow("img_procesada", img_procesada)
             if is_img_shown: cv2.waitKey(0)
@@ -164,29 +146,10 @@ def lectura_texto(gray, method=0, is_multiple=False, is_img_shown=False):
             custom_config = custom_config_aux
         # Leo el texto dentro de la region y elimino los espacios a los lados del texto
         text = pytesseract.image_to_string(img_procesada, config=custom_config).strip()
+        print(text)
 
-        # print(text)
-        # data = pytesseract.image_to_data(img_procesada, config=custom_config, output_type='data.frame')
-        # print(data)
-        # data2 = data[data.conf != -1]
-        # print("=================================")
-        # print(data2)
-        # print("=================================")
-        # print(data2.head())
-        # lines = data2.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['text'] \
-        #     .apply(lambda x: ' '.join(list(x))).tolist()
-        # confs = data2.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['conf'].mean().tolist()
-        #
-        # line_conf = []
-        #
-        # for i in range(len(lines)):
-        #     if lines[i].strip():
-        #         line_conf.append((lines[i], round(confs[i], 3)))
-        # print("=================================")
-        # print(line_conf)
-
-        result = text
-        if is_img_shown:print(text)
+        result = lectura_texto_data(img_procesada, custom_config)
+        if is_img_shown:print(result)
 
     if is_img_shown:print('############################################')
     if is_img_shown:print("")
@@ -197,3 +160,32 @@ def lectura_texto(gray, method=0, is_multiple=False, is_img_shown=False):
     if is_img_shown: cv2.destroyWindow("ROI")
 
     return result
+
+
+def lectura_texto_data(img_procesada, custom_config):
+    line_conf = []
+    # Leo el texto y extraigo la informacion en un diccionario
+    data_dict = pytesseract.image_to_data(img_procesada, config=custom_config, output_type='dict')
+    # Convierto el campo de conf de string a float
+    data_dict["conf"] = [float(x) for x in data_dict["conf"]]
+    # Creo el dataframe a partir del diccionario
+    data = pd.DataFrame(data_dict)
+    # Elimino las filas con valor de confianza -1
+    data = data[data.conf != -1]
+    # data.to_excel(r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\dataFrameTESERACT.xlsx")
+    # Creo las listas de texto extraido con su valor de confianza
+    lines = data.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['text'] \
+        .apply(lambda x: ' '.join(list(x))).tolist()
+    # El valor de confianza lo saco a partir del valor minimo
+    confs = data.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['conf'].min().tolist()
+    print("lines")
+    print(lines)
+    print("confs")
+    print(confs)
+    # Creo la lista con el texto final y su valor de confianza
+    if lines[0].strip():
+        line_conf.append(lines[0])
+        line_conf.append(round(confs[0], 3))
+    print("=================================")
+    print(line_conf)
+    return line_conf
