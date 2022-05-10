@@ -27,7 +27,7 @@ class CreateOrderWindow:
         self.root.bind('<Left>', self.create_order_table.move_left)
         self.root.bind('<Down>', self.create_order_table.move_down)
         self.root.bind('<Up>', self.create_order_table.move_up)
-        self.create_order_table.frame.place(rely=0.05, relx=0, relwidth=1-0.3)
+        self.create_order_table.table_frame.place(rely=0.05, relx=0, relwidth=1-0.3, relheight=.85)
         # Cuadro de ajustes
         self.settings_label_frame = ttk.Labelframe(self.window_frame, text='Ajustes')
         self.settings_label_frame.place(rely=0.05, relx=0.72, relwidth=0.25)

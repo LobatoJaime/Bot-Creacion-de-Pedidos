@@ -9,6 +9,7 @@ import datetime as dt
 from AI_Engine.main import main
 from ...constants import downloads_folder
 import numpy as np
+from ..scrollable_frame import ScrollFrame
 
 
 class CreateOrderTable:
@@ -20,7 +21,10 @@ class CreateOrderTable:
             headers = list(orders)
         elif headers is not None:
             self.headers = headers
-        self.frame = ttk.Frame(parent_window)
+        self.table_frame = tk.Frame(parent_window)
+        scrollframe = ScrollFrame(self.table_frame, scrollspeed=10, r=0, c=0, cspan=1).colcfg(range(1), weight=1).frame
+        self.frame = ttk.Frame(scrollframe)
+        self.frame.grid(row=0, column=0, sticky='nsew')
         self.frame.bind('<Return>', self.on_enter)
         # Hacer encabezado
         for col in range(len(headers)):
@@ -373,17 +377,12 @@ class CreateOrderTable:
             return
         # path = r'C:\Users\IRDGFRM\Downloads\Prueba'
         orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
-        if orders is None:
+        if orders is None or orders.empty:
             messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
                                                         'Posibles errores:\n'
                                                         '- Comprueba que hayas seleccionado el cliente correcto\n'
                                                         '- La I.A no esta entrenada para este pedido')
-            return
-        if orders.empty:
-            messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
-                                                        'Posibles errores:\n'
-                                                        '- Comprueba que hayas seleccionado el cliente correcto\n'
-                                                        '- La I.A no esta entrenada para este pedido')
+            self.clear_table()
             return
         print(orders.to_string())
 
