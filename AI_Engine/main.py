@@ -9,6 +9,7 @@ import cv2 as cv
 import os
 import pandas as pd
 import json
+import re
 from AI_Engine.sample import modulo_general as modg
 
 
@@ -35,10 +36,22 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
     path_root = os.path.normpath(path_root)
     # %% Constantes
     PEDIDOS_WINDOW = 'PDF pedidos'
-    COLUMNAS = ("archivo",) + ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
+    COLUMNAS = ("archivo",) +\
+               ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
     COLUMNAS = ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
     HEIGHT_TO_SHOW = 800
+    FORMATO_CAMPOS = {
+        "order_number": r"^\w*\d+$",
+        "reference": r"^\w+\d+$",
+        "quantity": r"^[\d.,]+$",
+        "ship_out_date": r"^(\d{1,2}\/)?\d{1,2}\/\d{2,4}$|"
+                         r"^(\d{1,2}\.)?\d{1,2}\.\d{2,4}$|"
+                         r"^(\d{1,2}\-)?\d{1,2}\-\d{2,4}$",
+        "arrival_date": r"^(\d{1,2}\/)?\d{1,2}\/\d{2,4}$|"
+                        r"^(\d{1,2}\.)?\d{1,2}\.\d{2,4}$|"
+                        r"^(\d{1,2}\-)?\d{1,2}\-\d{2,4}$"
+    }
     # Paths
     PATH_CONFIG = os.path.join(path_root, 'Config')
     PATH_RESULTADOS = os.path.join(path_root, 'Resultados')
@@ -100,7 +113,7 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
             continue
         # if not filename == "10-02-2022_11h-06m.pdf":
         #     continue
-        # if n_files > 0:
+        # if n_files > 5:
         #     break
 
         # Imprimo nombre del archivo
@@ -209,6 +222,15 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
                 df_n["archivo"] = filename
             df_n["client"] = "manual"
             df_n["confidence"] = 1
+            # Recorro todas las filas del dataframe para comprobar si el formato del campo es correcto
+            for i in range(len(df_n)):
+                for campo in campos_validos:
+                    # Aplico regex para comprobar el formato
+                    reg_res = modg.regex_group(FORMATO_CAMPOS[campo], df_n.loc[i, campo])
+                    # Si el formato no es correcto, el valor de confianza es -1
+                    if reg_res is None or df_n.loc[i, campo] is None or len(reg_res) != len(df_n.loc[i, campo]):
+                        print(campo + " format not matching: " + df_n.loc[i, campo])
+                        df_n.loc[i, "confidence"] = -1
             # Uno el data frame con el dataframe global
             df = pd.concat([df, df_n], ignore_index=True)
             print("Dataframe pag " + str(n_pag + 1) + ":")
@@ -238,16 +260,16 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
 # proveedor = "Engine Power Compoments"
 # proveedor = "EMP"
 # proveedor = "Thyssenkrupp Crankshaft"
-# proveedor = "Thyssenkrupp Campo Limpo"
 # proveedor = "ESP"
 # proveedor = "WorldClass Industries"
+# proveedor = "Thyssenkrupp Campo Limpo"
 #
 # path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # path_archivos = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
 # path_archivos = r"extra\Thyssenkrupp Campo Limpo"
-# path_archivos = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
 # path_archivos = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
 # path_archivos = r"CLIIENTES JOHN DEERE\WorldClass Industries"
+# path_archivos = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
 # path_archivos = os.path.join(path_root, path_archivos)
 #
 # main(proveedor, path_archivos, is_img_shown=False, path_root=".")
