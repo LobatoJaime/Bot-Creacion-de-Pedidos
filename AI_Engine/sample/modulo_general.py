@@ -60,10 +60,27 @@ def lectura_campo(img, points, method=0, regex=[], is_multiple=False, is_img_sho
     for reg in regex:
         if type(result) is list:
             for i in range(len(result)):
-                result[i] = re.search(reg, result[i]).group()
+                result[i] = regex_group(reg, result[i])
         else:
-            result = re.search(reg, result).group()
+            result = regex_group(reg, result)
     #print(result)
+    return result
+
+
+def regex_group(reg, input):
+    """
+    Arguments:
+        reg: Regex string
+        input: String to apply the regex
+    Result:
+        First string result of applying the regex. None if not found
+    """
+    result = None
+    if input is not None:
+        input = re.search(reg, input)
+        if input is not None:
+            result = input.group()
+
     return result
 
 
