@@ -27,7 +27,7 @@ class CreateOrderTable:
         # Hacer encabezado
         for col in range(len(headers)):
             entry = ttk.Label(self.frame, text=headers[col], style='primary.Inverse.TLabel', width=20)
-            entry.grid(row=0, column=col, sticky='ew', padx=0)
+            entry.grid(row=0, column=col, sticky='ew', padx=1)
         # Hacer primera fila para escribir
         self.entries = []
         for index in range(1):
