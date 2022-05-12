@@ -23,7 +23,7 @@ orders_history_folder = os.path.join(resources_folder, 'orders_history')
 downloads_folder = os.path.join(os.getenv('USERPROFILE'), 'Downloads')
 images_folder = os.path.join(resources_folder, 'images')
 github_repo_adress = 'https://github.com/luisguareschi/Bot-Creacion-de-Pedidos'
-actual_version = 'v5.3.0'
+actual_version = 'v5.3.1'
 ai_supported_clients = ["Engine Power Compoments", "Thyssenkrupp Campo Limpo", "WorldClass Industries", "EMP", "Thyssenkrupp Crankshaft"]
 ai_supported_clients.sort()
 poppler_online_path = r'\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\poppler-0.68.0\bin'
