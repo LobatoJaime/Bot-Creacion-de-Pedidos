@@ -259,6 +259,13 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
 
         n_files = n_files + 1
 
+    # Sacar un promedio de la columna de confianza
+    confidences = df['confidence'].to_list()
+    total_confidence = (sum(confidences)/len(confidences))/100  # Dividirlo por 100 para tener valores entre [0-1]
+    total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
+    df['confidence'] = [total_confidence]*len(confidences)
+
+
     # Imprimo el dataframe
     print()
     print()
