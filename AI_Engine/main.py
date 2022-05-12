@@ -42,8 +42,8 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
     HEIGHT_TO_SHOW = 800
     FORMATO_CAMPOS = {
-        "order_number": r"^\w*\d+$",
-        "reference": r"^\w+\d+$",
+        "order_number": r"^[a-zA-Z]*\d+$",
+        "reference": r"^[a-zA-Z]+\d+$",
         "quantity": r"^[\d.,]+$",
         "ship_out_date": r"^(\d{1,2}\/)?\d{1,2}\/\d{2,4}$|"
                          r"^(\d{1,2}\.)?\d{1,2}\.\d{2,4}$|"
@@ -200,7 +200,7 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
             is_table_empty = False
             for campo_tabla in campos_tabla:
                 # Si estan vacios no creo el dataframe
-                if pag_campos_data[n_pag][campo_tabla] is None or len(pag_campos_data[n_pag][campo_tabla]) < 1:
+                if pag_campos_data[n_pag][campo_tabla] is None or len(pag_campos_data[n_pag][campo_tabla][0]) < 1:
                     is_table_empty = True
                     break
             # Si alguna lista de tabla no tiene valores, saltamos a la siguiente pagina
@@ -215,13 +215,31 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
                             pag_campos_data[n_pag][campo_hoja] = pag_campos_data[n_pag_prev][campo_hoja]
                             break
 
+            # Extraigo el diccionario con el texto
+            pag_campos_dict = {}
+            for campo in pag_campos_data[n_pag]:
+                if type(pag_campos_data[n_pag][campo][0]) is list:
+                    pag_campos_dict[campo] = []
+                    pag_campos_dict["conf_" + campo] = []
+                    for i in range(len(pag_campos_data[n_pag][campo])):
+                        pag_campos_dict[campo].append(pag_campos_data[n_pag][campo][i][0])
+                        pag_campos_dict["conf_" + campo].append(pag_campos_data[n_pag][campo][i][1])
+                else:
+                    pag_campos_dict[campo] = pag_campos_data[n_pag][campo][0]
+                    pag_campos_dict["conf_" + campo] = pag_campos_data[n_pag][campo][1]
             # Creo el dataframe con los datos extraidos de la pagina
-            df_n = pd.DataFrame(pag_campos_data[n_pag], columns=COLUMNAS)
+            df_n = pd.DataFrame(pag_campos_dict)
+            print(df_n)
+            # Creo la lista de los nombres de las columnas auxiliares de confianza
+            conf_columnas = [x for x in list(pag_campos_dict.keys()) if x.startswith("conf_")]
+            print(df_n[conf_columnas])
+            # Creo la columna de confianza
+            df_n["confidence"] = df_n[conf_columnas].min(axis=1)
+            df_n = pd.DataFrame(df_n, columns=COLUMNAS)
             # Relleno el valor de las columnas extra
             if "archivo" in COLUMNAS:
                 df_n["archivo"] = filename
             df_n["client"] = "manual"
-            df_n["confidence"] = 1
             # Recorro todas las filas del dataframe para comprobar si el formato del campo es correcto
             for i in range(len(df_n)):
                 for campo in campos_validos:
@@ -261,15 +279,15 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
 # proveedor = "EMP"
 # proveedor = "Thyssenkrupp Crankshaft"
 # proveedor = "ESP"
-# proveedor = "WorldClass Industries"
 # proveedor = "Thyssenkrupp Campo Limpo"
+# proveedor = "WorldClass Industries"
 #
 # path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # path_archivos = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
 # path_archivos = r"extra\Thyssenkrupp Campo Limpo"
 # path_archivos = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
-# path_archivos = r"CLIIENTES JOHN DEERE\WorldClass Industries"
 # path_archivos = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
+# path_archivos = r"CLIIENTES JOHN DEERE\WorldClass Industries"
 # path_archivos = os.path.join(path_root, path_archivos)
 #
 # main(proveedor, path_archivos, is_img_shown=False, path_root=".")

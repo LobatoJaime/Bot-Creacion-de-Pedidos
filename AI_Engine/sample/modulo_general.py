@@ -58,11 +58,11 @@ def lectura_campo(img, points, method=0, regex=[], is_multiple=False, is_img_sho
     result = lectura_texto(roi, method, is_multiple, is_img_shown)
     # Aplico regex
     for reg in regex:
-        if type(result) is list:
+        if type(result[0]) is list:
             for i in range(len(result)):
-                result[i] = regex_group(reg, result[i])
+                result[i][0] = regex_group(reg, result[i][0])
         else:
-            result = regex_group(reg, result)
+            result[0] = regex_group(reg, result[0])
     #print(result)
     return result
 
