@@ -18,7 +18,7 @@ class CreateOrderWindow:
         self.menu_bar = MenuBar(self.window_frame, gui)
         self.menu_bar.frame.place(relwidth=1)
         # Tabla para crear pedido
-        self.create_order_table = CreateOrderTable(self.window_frame, orders=None,
+        self.create_order_table = CreateOrderTable(self.window_frame,
                                                    headers=['order_number', 'client', 'reference', 'quantity',
                                                             'ship_out_date',
                                                             'arrival_date', 'confidence'])
