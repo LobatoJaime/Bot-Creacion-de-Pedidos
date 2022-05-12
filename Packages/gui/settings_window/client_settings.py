@@ -103,7 +103,7 @@ class ClientsTable:
             client_name = clients_table['Customer'][index]
             sap_code = clients_table['sap_code'][index]
             self.tree.insert('', tk.END, values=(client_name, sap_code))
-        self.tree.grid(row=0, column=0, sticky='ns')
+        self.tree.grid(row=0, column=0, sticky='nsew')
         # add a scrollbar
         scrollbar = ttk.Scrollbar(self.frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=scrollbar.set)
