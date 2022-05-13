@@ -69,7 +69,8 @@ class CreateOrderWindow:
                'Clientes con Shipping Date:\n' \
                '-Thyssen Brasil\n' \
                '-Concentric\n' \
-               '-EPC\n\n' \
+               '-EPC\n' \
+               '-WorldClass EU\n\n' \
                'Clientes con Delivery/Arrival Date:\n' \
                '-Skyway\n' \
                '-EMP\n' \
