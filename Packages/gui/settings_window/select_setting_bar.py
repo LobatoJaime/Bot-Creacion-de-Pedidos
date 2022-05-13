@@ -17,7 +17,7 @@ class SelectSettingsBar:
         self.listbox = tk.Listbox(self.widget_frame, bd=0, font=("Helvetica", 12))
         for i, setting in enumerate(settings):
             self.listbox.insert(i, setting)
-        self.listbox.grid(row=0, column=0, sticky='ns')
+        self.listbox.grid(row=0, column=0, sticky='nsew')
         self.listbox.bind("<Double-Button-1>", self.on_selection)
         self.selection = str
         self.right_widgets_window = tk.Frame(self.window_frame)

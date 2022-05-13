@@ -2,6 +2,7 @@ import cv2
 import pytesseract
 import numpy as np
 import pandas as pd
+from Packages.constants import tesseract_exe_path
 
 
 def aumentar_box(box, img_shape):
@@ -107,7 +108,7 @@ def lectura_texto(gray, method=0, is_multiple=False, is_img_shown=False):
     if is_img_shown: roi_to_show = gray.copy()
 
     # Tesseract configuracion
-    pytesseract.pytesseract.tesseract_cmd = ("C:/Program Files/Tesseract-OCR/tesseract.exe")
+    pytesseract.pytesseract.tesseract_cmd = tesseract_exe_path
     #custom_config = r'--psm 7 -c tessedit_char_whitelist=0123456789.'
     custom_config = r'--psm 7'
 

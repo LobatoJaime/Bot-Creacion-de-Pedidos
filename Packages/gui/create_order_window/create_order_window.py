@@ -18,7 +18,7 @@ class CreateOrderWindow:
         self.menu_bar = MenuBar(self.window_frame, gui)
         self.menu_bar.frame.place(relwidth=1)
         # Tabla para crear pedido
-        self.create_order_table = CreateOrderTable(self.window_frame, orders=None,
+        self.create_order_table = CreateOrderTable(self.window_frame,
                                                    headers=['order_number', 'client', 'reference', 'quantity',
                                                             'ship_out_date',
                                                             'arrival_date', 'confidence'])
@@ -27,7 +27,7 @@ class CreateOrderWindow:
         self.root.bind('<Left>', self.create_order_table.move_left)
         self.root.bind('<Down>', self.create_order_table.move_down)
         self.root.bind('<Up>', self.create_order_table.move_up)
-        self.create_order_table.frame.place(rely=0.05, relx=0, relwidth=1-0.3)
+        self.create_order_table.table_frame.place(rely=0.05, relx=0, relwidth=1-0.3, relheight=.85)
         # Cuadro de ajustes
         self.settings_label_frame = ttk.Labelframe(self.window_frame, text='Ajustes')
         self.settings_label_frame.place(rely=0.05, relx=0.72, relwidth=0.25)
@@ -58,6 +58,31 @@ class CreateOrderWindow:
         self.ai_client_name.set('Cliente a escanear')
         self.ai_client_name.grid(row=5, column=0, sticky='w', pady=6, padx=15)
         self.ai_client_name.bind("<<ComboboxSelected>>", lambda event: [self.ai_client_name.selection_clear()])
+        # cuadro de instrucciones
+        self.instructions_frame = ttk.Labelframe(self.window_frame, text='Instrucciones')
+        self.instructions_frame.place(rely=0.4, relx=0.72, relwidth=0.25)
+        text = 'Para subir un pedido es necesario llenar todo los campos con \n' \
+               'los valores correspondientes. \n\n' \
+               'Nota importante: Ahora solo se puede crear una orden para \n' \
+               'una referencia al mismo tiempo, pero para editar\\eliminar\n' \
+               'ordenes se pueden subir varias referencias por cada orden.\n\n' \
+               'Clientes con Shipping Date:\n' \
+               '-Thyssen Brasil\n' \
+               '-Concentric\n' \
+               '-EPC\n' \
+               '-WorldClass EU\n\n' \
+               'Clientes con Delivery/Arrival Date:\n' \
+               '-Skyway\n' \
+               '-EMP\n' \
+               '-Reman\n' \
+               '-WorldClass\n' \
+               '-Thyssen Danville\n' \
+               '-ESP\n' \
+               '-TIG'
+        self.instructions_text = ttk.Label(self.instructions_frame, text=text)
+        self.instructions_text.grid(row=0, column=0, sticky='nwew', padx=8, pady=8)
+        self.instructions_frame.columnconfigure(0, weight=1)
+        self.instructions_frame.rowconfigure(0, weight=1)
 
     def show(self):
         self.window_frame.tkraise()

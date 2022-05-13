@@ -11,17 +11,19 @@ def check_latest_version() -> bool:
     -Devuelve false en caso de que no"""
     last_ver = lastversion.latest(github_repo_adress, output_format='tag')
     if last_ver != actual_version:
-        msg = messagebox.askyesno('Version no compatible',
-                                  'Hay una nueva version disponible. '
-                                  'Actualiza la aplicacion para evitar posibles errores.\n\n'
+        msg = messagebox.askyesno('Versión no compatible',
+                                  'Hay una nueva versión disponible. '
+                                  'Actualiza la aplicación para evitar posibles errores.\n\n'
                                   'Puedes descargarla en:\n'
                                   '1. GitHub (recomendado): {}\n'
                                   '2. Carpeta de JD: {}\n\n'
-                                  'Quieres ir a la pagina de descarga?'.format(github_repo_adress,
-                                                                               download_latest_ver_folder))
+                                  'Quieres descargar la última versión?'.format(github_repo_adress,
+                                                                                download_latest_ver_folder))
         if msg:
-            # open link in default browser
-            webbrowser.open(github_repo_adress)
+            download_link = 'https://github.com/luisguareschi/Bot-Creacion-de-Pedidos/releases/download/{}/AutomatizacionSAP.{}.exe'.format(
+                last_ver, last_ver)
+            # open download_link in default browser
+            webbrowser.open(download_link)
         return False
     else:
         return True

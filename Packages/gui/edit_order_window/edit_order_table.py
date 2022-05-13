@@ -3,6 +3,7 @@ from tkinter import ttk
 import pandas as pd
 import numpy as np
 from Packages.gui.edit_order_window.delete_entry_pop_up import DeleteEntryPopUp
+from ..scrollable_frame import ScrollFrame
 
 
 class EditOrderTable:
@@ -13,7 +14,10 @@ class EditOrderTable:
         self.orders = orders
         orders.pop('confidence')
         self.headers = list(orders)
-        self.frame = ttk.Frame(parent_window)
+        self.table_frame = tk.Frame(parent_window)
+        self.scrollframe = ScrollFrame(self.table_frame, scrollspeed=10, r=0, c=0, cspan=1).colcfg(range(1), weight=1).frame
+        self.frame = ttk.Frame(self.scrollframe)
+        self.frame.grid(row=0, column=0, sticky='nsew')
         self.frame.rowconfigure(0, weight=1)
         for col in range(len(self.headers)):
             self.frame.columnconfigure(col, weight=1)

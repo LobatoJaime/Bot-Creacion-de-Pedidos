@@ -23,6 +23,7 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
             - WorldClass Industries
             - EMP
             - Thyssenkrupp Crankshaft
+            - WorldClass Industries EU
         path_archivos: Ruta de la carpeta donde se encuentran los archivos o ruta del propio archivo
         is_img_shown: Variable para visualizar la extraccion de datos
         path_root: Ruta donde se encuentran las carpetas que vaya a usar la apliacacion (Config, Resultados, etc.)
@@ -258,6 +259,13 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
         if is_img_shown: cv.destroyWindow(PEDIDOS_WINDOW)
 
         n_files = n_files + 1
+
+    # Sacar un promedio de la columna de confianza
+    confidences = df['confidence'].to_list()
+    total_confidence = (sum(confidences)/len(confidences))/100  # Dividirlo por 100 para tener valores entre [0-1]
+    total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
+    df['confidence'] = [total_confidence]*len(confidences)
+
 
     # Imprimo el dataframe
     print()

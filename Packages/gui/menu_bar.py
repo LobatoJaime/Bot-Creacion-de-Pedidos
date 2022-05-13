@@ -167,6 +167,8 @@ class MenuBar:
                 self.gui.active_window = 'edit_order'
             elif not self.order_exists:
                 self.gui.active_window = 'select_client'
+                self.gui.select_client_window.show()
+                return
         if self.gui.active_window == 'select_client':
             self.gui.select_client_window.show()
             sap_code = None

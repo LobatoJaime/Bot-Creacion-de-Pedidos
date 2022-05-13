@@ -9,53 +9,44 @@ import datetime as dt
 from AI_Engine.main import main
 from ...constants import downloads_folder
 import numpy as np
+from ..scrollable_frame import ScrollFrame
 
 
 class CreateOrderTable:
     """Clase para la tabla incial donde se escribe la orden manualmente"""
 
-    def __init__(self, parent_window: tk.Frame, orders: pd.DataFrame = None, headers: list = None):
+    def __init__(self, parent_window: tk.Frame, headers: list):
         self.parent_window = parent_window
-        if orders is not None:
-            headers = list(orders)
-        elif headers is not None:
+        if headers is not None:
             self.headers = headers
-        self.frame = ttk.Frame(parent_window)
+        self.table_frame = tk.Frame(parent_window)
+        scrollframe = ScrollFrame(self.table_frame, scrollspeed=10, r=0, c=0, cspan=1).colcfg(range(1), weight=1).frame
+        self.frame = ttk.Frame(scrollframe)
+        self.frame.grid(row=0, column=0, sticky='nsew')
         self.frame.bind('<Return>', self.on_enter)
         # Hacer encabezado
         for col in range(len(headers)):
-            entry = ttk.Label(self.frame, width=20, text=headers[col], style='primary.Inverse.TLabel')
+            entry = ttk.Label(self.frame, text=headers[col], style='primary.Inverse.TLabel', width=20)
             entry.grid(row=0, column=col, sticky='ew', padx=1)
-        if orders is not None:
-            self.entries = []
-            for index in orders.index:
-                row = []
-                for col in range(len(orders.columns)):
-                    text = orders[orders.columns[col]][index]
-                    entry = ttk.Entry(self.frame, width=20)
-                    entry.insert(0, text)
-                    entry.grid(row=index + 1, column=col)
+        # Hacer primera fila para escribir
+        self.entries = []
+        for index in range(1):
+            row = []
+            for col in range(len(headers)):
+                if col in [1, 6]:
+                    if col == 1:
+                        text = 'manual'
+                    elif col == 6:
+                        text = '1'
+                    entry = ttk.Label(self.frame, text=text, background='grey',
+                                      padding=5, relief='sunken')
+                    entry.grid(row=index + 1, column=col, sticky='ew')
                     row.append(entry)
-                self.entries.append(row)
-        else:
-            self.entries = []
-            for index in range(1):
-                row = []
-                for col in range(len(headers)):
-                    if col in [1, 6]:
-                        if col == 1:
-                            text = 'manual'
-                        elif col == 6:
-                            text = '1'
-                        entry = ttk.Label(self.frame, text=text, width=20, background='grey',
-                                          padding=5, relief='sunken')
-                        entry.grid(row=index + 1, column=col)
-                        row.append(entry)
-                    else:
-                        entry = ttk.Entry(self.frame, width=20)
-                        entry.grid(row=index + 1, column=col)
-                        row.append(entry)
-                self.entries.append(row)
+                else:
+                    entry = ttk.Entry(self.frame)
+                    entry.grid(row=index + 1, column=col, sticky='ew')
+                    row.append(entry)
+            self.entries.append(row)
 
         self.latest_index = 1
         self.add_button = ttk.Button(self.frame, text='Agregar entrada',
@@ -63,7 +54,7 @@ class CreateOrderTable:
         self.add_button.grid(row=self.latest_index + 1, column=len(headers) - 1, sticky='e', pady=10)
         self.delete_button = ttk.Button(self.frame, text='Eliminar entrada', style='danger.TButton',
                                         command=lambda: [self.delete_row()])
-        for col_n in range(8):
+        for col_n in range(len(headers)):
             self.frame.columnconfigure(col_n, weight=1)
         for row_n in range(50):
             self.frame.columnconfigure(row_n, weight=1)
@@ -76,12 +67,14 @@ class CreateOrderTable:
         for col in range(len(self.headers)):
             if col in [1, 6]:
                 if col == 1:
-                    text = 'manual'
+                    label: tk.Label = self.entries[-1][1]
+                    text = label["text"]
                 elif col == 6:
-                    text = '1'
+                    label: tk.Label = self.entries[-1][6]
+                    text = label["text"]
                 entry = ttk.Label(self.frame, text=text, width=20, background='grey',
                                   padding=5, relief='sunken')
-                entry.grid(row=self.latest_index + 1, column=col)
+                entry.grid(row=self.latest_index + 1, column=col, sticky='ew')
                 row.append(entry)
             else:
                 entry = ttk.Entry(self.frame, width=20)
@@ -89,7 +82,7 @@ class CreateOrderTable:
                     entry.insert(0, order_number)
                 elif col == 2:
                     entry.insert(0, reference)
-                entry.grid(row=self.latest_index + 1, column=col)
+                entry.grid(row=self.latest_index + 1, column=col, sticky='ew')
                 row.append(entry)
         self.entries.append(row)
         self.latest_index = self.latest_index + 1
@@ -178,7 +171,8 @@ class CreateOrderTable:
                 if col == 0:
                     order_numbers.append(value)
                 elif col == 1:
-                    clients.append('manual')
+                    value = self.entries[index][col]['text']
+                    clients.append(value)
                 elif col == 2:
                     references.append(value)
                 elif col == 3:
@@ -188,7 +182,8 @@ class CreateOrderTable:
                 elif col == 5:
                     arrival_dates.append(value)
                 elif col == 6:
-                    confidences.append('1')
+                    value = self.entries[index][col]['text']
+                    confidences.append(value)
             index = index + 1
 
         data = {"order_number": order_numbers,
@@ -232,42 +227,7 @@ class CreateOrderTable:
             orders = pd.DataFrame(data, dtype=str)
         except FileNotFoundError:
             return
-        # Borrar tabla existente
-        for row in self.entries:
-            for entry in row:
-                entry.destroy()
-
-        # Escribir la tabla importada
-        self.entries = []
-        for index in range(1):
-            row = []
-            for col in range(len(self.headers)):
-                if col in [1, 6]:
-                    if col == 1:
-                        text = 'manual'
-                    elif col == 6:
-                        text = '1'
-                    entry = ttk.Label(self.frame, text=text, width=20, background='grey',
-                                      padding=5, relief='sunken')
-                    entry.grid(row=index + 1, column=col)
-                    row.append(entry)
-                else:
-                    entry = ttk.Entry(self.frame, width=20)
-                    entry.grid(row=index + 1, column=col)
-                    row.append(entry)
-            self.entries.append(row)
-        self.latest_index = 1
-        for index in orders.index:
-            if index > 0:
-                self.add_row()
-
-        index = 0
-        for row in self.entries:
-            for col in range(len(row)):
-                if col not in [1, 6]:
-                    text = str(orders[orders.columns[col]][index])
-                    self.entries[index][col].insert(0, text)
-            index = index + 1
+        self.write_df_to_table(orders)
 
     def clear_table(self):
         # Borrar tabla existente
@@ -283,13 +243,13 @@ class CreateOrderTable:
                         text = 'manual'
                     elif col == 6:
                         text = '1'
-                    entry = ttk.Label(self.frame, text=text, width=20, background='grey',
+                    entry = ttk.Label(self.frame, text=text, background='grey',
                                       padding=5, relief='sunken')
-                    entry.grid(row=index + 1, column=col)
+                    entry.grid(row=index + 1, column=col, sticky='ew')
                     row.append(entry)
                 else:
-                    entry = ttk.Entry(self.frame, width=20)
-                    entry.grid(row=index + 1, column=col)
+                    entry = ttk.Entry(self.frame)
+                    entry.grid(row=index + 1, column=col, sticky='ew')
                     row.append(entry)
             self.entries.append(row)
         self.latest_index = 1
@@ -373,25 +333,21 @@ class CreateOrderTable:
             return
         # path = r'C:\Users\IRDGFRM\Downloads\Prueba'
         orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
-        if orders is None:
+        if orders is None or orders.empty:
             messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
                                                         'Posibles errores:\n'
                                                         '- Comprueba que hayas seleccionado el cliente correcto\n'
                                                         '- La I.A no esta entrenada para este pedido')
+            self.clear_table()
             return
-        if orders.empty:
-            messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
-                                                        'Posibles errores:\n'
-                                                        '- Comprueba que hayas seleccionado el cliente correcto\n'
-                                                        '- La I.A no esta entrenada para este pedido')
-            return
-        orders = orders.drop('archivo', 1)  # Borrar columna archivo
-        orders.insert(loc=1,
-                      column='client',
-                      value=['manual' for x in orders.index])  # Insertar columna client
-        orders['confidence'] = 1  # Insertar columna confidence
         print(orders.to_string())
+        self.write_df_to_table(orders)
+        # Guardar la direction del archivo en el Label de la interfaz
+        file_uploaded_text.configure(text=path)
 
+    def write_df_to_table(self, orders: pd.DataFrame):
+        """Agarra el dataframe de orders y lo inserta en la tabla
+        donde el usuario crea el pedido"""
         # Borrar tabla existente
         for row in self.entries:
             for entry in row:
@@ -399,28 +355,32 @@ class CreateOrderTable:
 
         # Escribir la tabla importada
         self.entries = []
+        # Escribir encabezados
         for index in range(1):
             row = []
             for col in range(len(self.headers)):
                 if col in [1, 6]:
                     if col == 1:
-                        text = 'manual'
+                        text = str(orders['client'][orders.index[0]])
                     elif col == 6:
-                        text = '1'
+                        text = str(orders['confidence'][orders.index[0]])
                     entry = ttk.Label(self.frame, text=text, width=20, background='grey',
                                       padding=5, relief='sunken')
-                    entry.grid(row=index + 1, column=col)
+                    entry.grid(row=index + 1, column=col, sticky='ew')
                     row.append(entry)
                 else:
                     entry = ttk.Entry(self.frame, width=20)
-                    entry.grid(row=index + 1, column=col)
+                    entry.grid(row=index + 1, column=col, sticky='ew')
                     row.append(entry)
             self.entries.append(row)
         self.latest_index = 1
+
+        # Insertar filas vacias
         for index in orders.index:
             if index > 0:
                 self.add_row()
 
+        # Escribir el texto dentro de las filas
         index = 0
         for row in self.entries:
             for col in range(len(row)):
@@ -428,6 +388,3 @@ class CreateOrderTable:
                     text = str(orders[orders.columns[col]][index])
                     self.entries[index][col].insert(0, text)
             index = index + 1
-
-        # Guardar la direction del archivo en el Label de la interfaz
-        file_uploaded_text.configure(text=path)
