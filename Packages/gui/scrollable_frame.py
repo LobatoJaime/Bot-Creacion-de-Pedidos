@@ -28,12 +28,12 @@ class ScrollFrame(tk.Frame):
         self.frame = tk.Frame(self.canvas, **kwargs)
         self.frame_id = self.canvas.create_window((0, 0), window=self.frame, anchor="nw")
 
-        vsb = tk.Scrollbar(self, orient="vertical")
-        vsb.grid(row=0, column=1, sticky='ns')
-        vsb.configure(command=self.canvas.yview)
+        self.vsb = tk.Scrollbar(self, orient="vertical")
+        self.vsb.grid(row=0, column=1, sticky='ns')
+        self.vsb.configure(command=self.canvas.yview)
 
         # attach scrollbar to canvas
-        self.canvas.configure(yscrollcommand=vsb.set)
+        self.canvas.configure(yscrollcommand=self.vsb.set)
 
         # _BINDS
         # canvas resize
@@ -53,6 +53,10 @@ class ScrollFrame(tk.Frame):
 
     # add scrollwheel feature
     def on_mousewheel(self, event):
+        value = self.vsb.get()
+        if value == (0.0, 1.0):
+            return
+
         self.canvas.yview_scroll(int(-event.delta / abs(event.delta)), 'units')
 
     # configure self.frame row(s)
@@ -71,12 +75,17 @@ class ScrollFrame(tk.Frame):
         # so this can be used inline
         return self
 
+
 # EXAMPLE:
 # root = tk.Tk()
-# frame = ScrollableFrame(root).frame
+# root.columnconfigure(0, weight=1)
+# window_frame = tk.Frame(root)
+# window_frame.place(relheight=1, relwidth=1)
+# scrollframe = ScrollFrame(window_frame, scrollspeed=10, r=0, c=0, cspan=1).colcfg(range(1), weight=1).frame
+# frame = tk.Frame(scrollframe)
+# frame.grid(row=0, column=0, sticky='nsew')
 # frame.columnconfigure(0, weight=1)
-# for i in range(50):
+# for i in range(1):
 #     b = ttk.Button(frame, text="Sample scrolling label")
 #     b.grid(row=i, column=0, sticky='ew')
-# frame.place(relheight=1, relwidth=1)
 # root.mainloop()
