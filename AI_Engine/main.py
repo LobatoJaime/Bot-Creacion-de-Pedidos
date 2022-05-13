@@ -23,6 +23,7 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
             - WorldClass Industries
             - EMP
             - Thyssenkrupp Crankshaft
+            - WorldClass Industries EU
         path_archivos: Ruta de la carpeta donde se encuentran los archivos o ruta del propio archivo
         is_img_shown: Variable para visualizar la extraccion de datos
         path_root: Ruta donde se encuentran las carpetas que vaya a usar la apliacacion (Config, Resultados, etc.)
