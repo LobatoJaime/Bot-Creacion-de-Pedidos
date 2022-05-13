@@ -1,6 +1,7 @@
 import datetime
 import pandas as pd
 from Packages.constants import formats_table_path
+import numpy as np
 
 
 class FormatTable:
@@ -9,12 +10,27 @@ class FormatTable:
 
     def __init__(self, orders: pd.DataFrame):
         self.orders = orders
-        # self.client = self.orders['client'][self.orders.index[0]]
+        self.client = self.orders['client'][self.orders.index[0]]
         data = pd.read_excel(formats_table_path, dtype=str)
-        self.formats_table = pd.DataFrame(data, dtype=str)
-        print(self.formats_table.to_string())
+        formats_table = pd.DataFrame(data, dtype=str)
+        self.client_formats = formats_table[formats_table['client'] == self.client]
+        print(self.client_formats.to_string())
 
     def format(self) -> pd.DataFrame:
+        date_format = self.client_formats['date_format'][self.client_formats.index[0]]
+        for index in self.orders.index:
+            arrival_date = str(self.orders['arrival_date'][index])
+            shipping_date = str(self.orders['ship_out_date'][index])
+            quantity = str(self.orders['quantity'][index])
+
+            if arrival_date != str(np.nan):
+                new_date = format_date(arrival_date, date_format)
+                self.orders['arrival_date'][index] = new_date
+
+            if shipping_date != str(np.nan):
+                new_date = format_date(shipping_date, date_format)
+                self.orders['ship_out_date'][index] = new_date
+
         return self.orders
 
 
@@ -65,7 +81,3 @@ def format_date(date: str, date_format: str) -> str:
         year = '20' + year
     formatted_date = '{}/{}/{}'.format(day, month, year)
     return formatted_date
-
-if __name__ == '__main__':
-    orders = pd.DataFrame()
-    FormatTable(orders)
