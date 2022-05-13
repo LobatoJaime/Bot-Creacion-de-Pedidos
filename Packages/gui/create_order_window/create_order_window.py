@@ -58,6 +58,30 @@ class CreateOrderWindow:
         self.ai_client_name.set('Cliente a escanear')
         self.ai_client_name.grid(row=5, column=0, sticky='w', pady=6, padx=15)
         self.ai_client_name.bind("<<ComboboxSelected>>", lambda event: [self.ai_client_name.selection_clear()])
+        # cuadro de instrucciones
+        self.instructions_frame = ttk.Labelframe(self.window_frame, text='Instrucciones')
+        self.instructions_frame.place(rely=0.4, relx=0.72, relwidth=0.25)
+        text = 'Para subir un pedido es necesario llenar todo los campos con \n' \
+               'los valores correspondientes. \n\n' \
+               'Nota importante: Ahora solo se puede crear una orden para \n' \
+               'una referencia al mismo tiempo, pero para editar\\eliminar\n' \
+               'ordenes se pueden subir varias referencias por cada orden.\n\n' \
+               'Clientes con Shipping Date:\n' \
+               '-Thyssen Brasil\n' \
+               '-Concentric\n' \
+               '-EPC\n\n' \
+               'Clientes con Delivery/Arrival Date:\n' \
+               '-Skyway\n' \
+               '-EMP\n' \
+               '-Reman\n' \
+               '-WorldClass\n' \
+               '-Thyssen Danville\n' \
+               '-ESP\n' \
+               '-TIG'
+        self.instructions_text = ttk.Label(self.instructions_frame, text=text)
+        self.instructions_text.grid(row=0, column=0, sticky='nwew', padx=8, pady=8)
+        self.instructions_frame.columnconfigure(0, weight=1)
+        self.instructions_frame.rowconfigure(0, weight=1)
 
     def show(self):
         self.window_frame.tkraise()
