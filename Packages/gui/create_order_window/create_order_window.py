@@ -21,7 +21,7 @@ class CreateOrderWindow:
         self.create_order_table = CreateOrderTable(self.window_frame,
                                                    headers=['order_number', 'client', 'reference', 'quantity',
                                                             'ship_out_date',
-                                                            'arrival_date', 'confidence'])
+                                                            'arrival_date', 'confidence'], gui=gui)
         self.root.bind('<Return>', self.create_order_table.on_enter)
         self.root.bind('<Right>', self.create_order_table.move_right)
         self.root.bind('<Left>', self.create_order_table.move_left)

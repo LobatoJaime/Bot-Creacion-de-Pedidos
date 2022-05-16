@@ -10,12 +10,15 @@ from AI_Engine.main import main
 from ...constants import downloads_folder
 import numpy as np
 from ..scrollable_frame import ScrollFrame
+from .scan_pdf_loading_pop_up import LoadingPopUp
+from multiprocessing import Queue, Process
 
 
 class CreateOrderTable:
     """Clase para la tabla incial donde se escribe la orden manualmente"""
 
-    def __init__(self, parent_window: tk.Frame, headers: list):
+    def __init__(self, parent_window: tk.Frame, headers: list, gui=None):
+        self.gui = gui
         self.parent_window = parent_window
         if headers is not None:
             self.headers = headers
@@ -212,7 +215,7 @@ class CreateOrderTable:
         try:
             save_root = file.name
             if '.xlsx' not in save_root:
-                save_root = save_root+'.xlsx'
+                save_root = save_root + '.xlsx'
             orders = self.read_table()
             orders.to_excel(save_root, index=False)
         except AttributeError:
@@ -332,7 +335,15 @@ class CreateOrderTable:
         if path == '':
             return
         # path = r'C:\Users\IRDGFRM\Downloads\Prueba'
-        orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
+        self.queue = Queue()
+        process = Process(target=run_ai_in_bg, args=(client_name, path, self.queue), daemon=True)
+        process.start()
+        popup = LoadingPopUp(self.parent_window.master, self.queue, self.gui, process)
+        result = self.queue.get()
+        orders = result
+        if isinstance(orders, bool) and not orders:  # En caso de escaneado manualmente cancelado
+            return
+        # orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
         if orders is None or orders.empty:
             messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
                                                         'Posibles errores:\n'
@@ -388,3 +399,8 @@ class CreateOrderTable:
                     text = str(orders[orders.columns[col]][index])
                     self.entries[index][col].insert(0, text)
             index = index + 1
+
+
+def run_ai_in_bg(client_name: str, path: str, queue: Queue):
+    orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
+    queue.put(orders)
