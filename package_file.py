@@ -66,5 +66,5 @@ def package_file(version: str, dist_folder: str):
 if __name__ == '__main__':
     local_folder = r'C:\Users\IRDGFRM\OneDrive-Deere&Co\OneDrive - Deere & Co\Documents\Python Projects\Bot Creacion de Pedidos\dist'  # Cambiar a disposicion
     online_folder = r'\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\dist'
-    package_file(version='v5.4.0',
+    package_file(version='v5.5.0',
                  dist_folder=online_folder)
