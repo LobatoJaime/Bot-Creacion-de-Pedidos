@@ -18,6 +18,7 @@ class FormatTable:
 
     def format(self) -> pd.DataFrame:
         date_format = self.client_formats['date_format'][self.client_formats.index[0]]
+        decimal_separator = self.client_formats['decimal_separator'][self.client_formats.index[0]]
         for index in self.orders.index:
             arrival_date = str(self.orders['arrival_date'][index])
             shipping_date = str(self.orders['ship_out_date'][index])
@@ -30,6 +31,9 @@ class FormatTable:
             if shipping_date != str(np.nan):
                 new_date = format_date(shipping_date, date_format)
                 self.orders['ship_out_date'][index] = new_date
+
+            new_quantity = format_quantity(quantity, decimal_separator)
+            self.orders['quantity'][index] = new_quantity
 
         return self.orders
 
@@ -81,3 +85,16 @@ def format_date(date: str, date_format: str) -> str:
         year = '20' + year
     formatted_date = '{}/{}/{}'.format(day, month, year)
     return formatted_date
+
+
+def format_quantity(number: str, decimal_separator: str) -> str:
+    """Funcion que toma en cuenta el
+    separador decimal del cliente y reescribe el numero como
+    entero"""
+    formatted_number = ''
+    for char in number:
+        if char.isdigit():
+            formatted_number = formatted_number + char
+        elif char == decimal_separator:
+            break
+    return formatted_number

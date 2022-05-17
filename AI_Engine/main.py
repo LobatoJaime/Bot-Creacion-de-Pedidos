@@ -268,7 +268,7 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
         df['confidence'] = [total_confidence]*len(confidences)
 
     # Formatear las columnas de la tabla
-    # df = FormatTable(orders=df).format()
+    df = FormatTable(orders=df).format()
 
 
     # Imprimo el dataframe
