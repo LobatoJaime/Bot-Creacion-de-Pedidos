@@ -31,7 +31,6 @@ from ..constants import changes_history_folder, orders_history_folder
 import os
 
 
-
 class MenuBar:
     def __init__(self, parent_window: tk.Frame, gui):
         self.frame = ttk.Frame(parent_window, style='primary.TFrame')
@@ -150,22 +149,23 @@ class MenuBar:
             print('loop terminado')
             result: list = self.queue.get()
             self.orders: pd.DataFrame = result[0]
-            self.order_exists: bool = result[1]
+            self.order_exists: str = result[1]  # 'True', 'False' o 'Mixed|Rxxxxxx'
             self.planes_entrega: pd.DataFrame = result[2]
             self.gui.error_found = result[3]
             self.gui.error_message = result[4]
             thread.terminate()
             thread.kill()
+            print('Orden Existe: ', self.order_exists)
             if self.gui.error_found:  # Significa que hubo un error con el script
                 if 'comparison_table.xlsx' not in os.listdir(find_newest_dir(changes_history_folder)):
                     shutil.rmtree(find_newest_dir(changes_history_folder))
                 return
             # thread.join()
             self.gui.root.focus_force()
-            if self.order_exists:
+            if self.order_exists == 'True' or 'Mixed' in self.order_exists:
                 self.order_changes = check_sap_changes(self.orders, self.planes_entrega)
                 self.gui.active_window = 'edit_order'
-            elif not self.order_exists:
+            if self.order_exists == 'False':
                 self.gui.active_window = 'select_client'
                 self.gui.select_client_window.show()
                 return
@@ -213,12 +213,12 @@ class MenuBar:
                         shutil.rmtree(find_newest_dir(changes_history_folder))
                     return
                 self.gui.root.focus_force()
-                if not self.order_exists:
+                if self.order_exists == 'False':
                     client = self.order_changes['client'][self.order_changes.index[0]]
                     self.orders['client'] = client
                 save_order_to_history(self.orders, self.uploaded_file_root)
                 self.error_queue = Queue()
-                thread = Process(target=run_in_bg_save_sap_changes, args=(self.order_changes,self.error_queue),
+                thread = Process(target=run_in_bg_save_sap_changes, args=(self.order_changes, self.error_queue),
                                  daemon=True)
                 thread.start()
                 apply_changes_loading_window = ApplyChangesLoadingWindow(self.gui.root, self.gui, thread)
@@ -295,15 +295,18 @@ def check_sap_database_in_bg(orders: pd.DataFrame, queue: Queue):
     return
 
 
-def run_in_bg_sap_changes(order_changes: pd.DataFrame, order_exists: bool, error_queue: Queue):
+def run_in_bg_sap_changes(order_changes: pd.DataFrame, order_exists: str, error_queue: Queue):
     """Funcion que se va a correr en el un procesador separado para que
         la interfaz no se congele mientras se corre el script para aplicar los cambios
         necesarios"""
     try:
-        if order_exists:
+        if order_exists == 'True':
             edit_existing_order(order_changes)
-        else:
+        elif order_exists == 'False':
             create_order(order_changes)
+        elif 'Mixed' in order_exists:
+            references_to_create = order_exists.split('|')[1:]
+            create_order(order_changes, references_to_create)
         error_queue.put([False, None])
     except Exception as e:
         print('Ha ocurrido un error al ejecutar el script:')

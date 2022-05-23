@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime
+import numpy as np
 
 
 def check_sap_changes(orders: pd.DataFrame, planes_entrega: pd.DataFrame) -> pd.DataFrame:
@@ -41,7 +42,9 @@ def check_sap_changes(orders: pd.DataFrame, planes_entrega: pd.DataFrame) -> pd.
             pending_qty = None
         plan_entrega_row = planes_entrega.loc[(planes_entrega['Número pedido cliente'] == order_number)
                                               & (planes_entrega['Referencia'] == reference)]
-        plan_entrega = plan_entrega_row['Documento de Ventas'][plan_entrega_row.index[0]]
+        plan_entrega = str(np.NaN)
+        if not plan_entrega_row.empty:
+            plan_entrega = plan_entrega_row['Documento de Ventas'][plan_entrega_row.index[0]]
         if filtered_row.empty:
             order_numbers.append(order_number)
             planes_entrega_list.append(plan_entrega)

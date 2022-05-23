@@ -34,9 +34,6 @@ def edit_existing_order(order_changes: pd.DataFrame):
         ship_out_date = ship_out_date_dt.strftime('%d.%m.%Y')
         quantity = str(order_changes['quantity'][index])
         en_periodo_congelado = str(order_changes['en_periodo_congelado'][index])
-        separator = ''
-        for i in range(500):
-            separator = separator + '='
         try:
             if action == 'CREATE' and quantity not in ['0', 0, '', ' ']:
                 add_order_script(session, plan_entrega, ship_out_date, quantity)
