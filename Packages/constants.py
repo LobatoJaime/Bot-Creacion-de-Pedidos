@@ -23,7 +23,7 @@ orders_history_folder = os.path.join(resources_folder, 'orders_history')
 downloads_folder = os.path.join(os.getenv('USERPROFILE'), 'Downloads')
 images_folder = os.path.join(resources_folder, 'images')
 github_repo_adress = 'https://github.com/luisguareschi/Bot-Creacion-de-Pedidos'
-actual_version = 'v5.3.2'
+actual_version = 'v5.6.0'
 ai_supported_clients = ["Engine Power Compoments", "Thyssenkrupp Campo Limpo",
                         "WorldClass Industries", "EMP", "Thyssenkrupp Crankshaft", "WorldClass Industries EU"]
 ai_supported_clients.sort()

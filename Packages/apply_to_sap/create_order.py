@@ -14,7 +14,7 @@ import time, traceback
 from ..get_user_info import get_user_info
 
 
-def create_order(order_changes: pd.DataFrame):
+def create_order(order_changes: pd.DataFrame, references_to_create=None):
     """Funcion en la cual se realiza la conexion a SAP y donde se crea el pedido"""
     # Copiar planes de entrega al historial antes de descargar el nuevo
     order_number = order_changes['order_number'][order_changes.index[0]]
@@ -28,7 +28,12 @@ def create_order(order_changes: pd.DataFrame):
     # shutil.copy(old_file_root, os.path.join(save_folder_root, 'old_planes_entrega.xlsx'))
     save_old_plan_entrega(order_number, client)
     session = connect_to_sap()
-    order_created = False
+    references_created = []
+    if references_to_create is None:
+        references_to_create = set(order_changes['reference'].to_list())
+    else:
+        references_to_create = references_to_create
+
     for index in order_changes.index:
         action = str(order_changes['action'][index])
         order_number = str(order_changes['order_number'][index])
@@ -37,11 +42,8 @@ def create_order(order_changes: pd.DataFrame):
         quantity = str(order_changes['quantity'][index])
         en_periodo_congelado = str(order_changes['en_periodo_congelado'][index])
         reference = str(order_changes['reference'][index])
-        separator = ''
         sap_code = str(order_changes['sap_code'][index])
-        for i in range(500):
-            separator = separator + '='
-        if not order_created:
+        if reference not in references_created and reference in references_to_create:
             create_order_script(session, order_number, ship_out_date,
                                 quantity, sap_code, reference)
             # Obtener numero de plan de entrega
@@ -50,8 +52,10 @@ def create_order(order_changes: pd.DataFrame):
             planes_entrega = get_planes_entrega()
             filtered_row = planes_entrega[planes_entrega['Referencia'] == reference]
             plan_entrega = filtered_row['Documento de Ventas'][filtered_row.index[0]]
-            order_created = True
+            order_changes.loc[order_changes['reference'] == reference, 'plan_entrega'] = plan_entrega
+            references_created.append(reference)
         else:
+            plan_entrega = order_changes['plan_entrega'][index]
             try:
                 if action == 'CREATE' and quantity not in ['0', 0, '', ' ']:
                     add_order_script(session, plan_entrega, ship_out_date, quantity)

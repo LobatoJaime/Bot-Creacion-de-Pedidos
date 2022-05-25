@@ -11,7 +11,7 @@ import pandas as pd
 import json
 import re
 from AI_Engine.sample import modulo_general as modg
-
+from AI_Engine.format_table import FormatTable
 
 def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_root: str = None) -> pd.DataFrame:
     """
@@ -240,7 +240,7 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
             # Relleno el valor de las columnas extra
             if "archivo" in COLUMNAS:
                 df_n["archivo"] = filename
-            df_n["client"] = "manual"
+            df_n["client"] = proveedor
             # Recorro todas las filas del dataframe para comprobar si el formato del campo es correcto
             for i in range(len(df_n)):
                 for campo in campos_validos:
@@ -262,9 +262,13 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
 
     # Sacar un promedio de la columna de confianza
     confidences = df['confidence'].to_list()
-    total_confidence = (sum(confidences)/len(confidences))/100  # Dividirlo por 100 para tener valores entre [0-1]
-    total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
-    df['confidence'] = [total_confidence]*len(confidences)
+    if len(confidences) > 1:
+        total_confidence = (sum(confidences)/len(confidences))/100  # Dividirlo por 100 para tener valores entre [0-1]
+        total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
+        df['confidence'] = [total_confidence]*len(confidences)
+
+    # Formatear las columnas de la tabla
+    df = FormatTable(orders=df).format()
 
 
     # Imprimo el dataframe
