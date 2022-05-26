@@ -34,32 +34,23 @@ class CreateOrderTable:
             entry = ttk.Label(self.frame, text=headers[col], style='primary.Inverse.TLabel', width=20)
             entry.grid(row=0, column=col, sticky='ew', padx=1)
         # Hacer primera fila para escribir
-        self.entries = []
-        for index in range(1):
-            row = []
-            for col in range(len(headers)):
-                if col in [1, 6]:
-                    if col == 1:
-                        text = 'manual'
-                    elif col == 6:
-                        text = '1'
-                    entry = ttk.Label(self.frame, text=text, background='grey',
-                                      padding=5, relief='sunken')
-                    entry.grid(row=index + 1, column=col, sticky='ew')
-                    row.append(entry)
-                else:
-                    entry = ttk.Entry(self.frame)
-                    entry.grid(row=index + 1, column=col, sticky='ew')
-                    row.append(entry)
-            self.entries.append(row)
+        self.clear_table()
 
         self.latest_index = 1
+
+        # Agregar botones
         self.add_button = ttk.Button(self.frame, text='Agregar entrada',
                                      command=lambda: [self.add_row()])
         self.add_button.grid(row=self.latest_index + 1, column=len(headers) - 1, sticky='e', pady=10)
-        self.delete_button = ttk.Button(self.frame, text='Eliminar entrada', style='danger.TButton',
-                                        command=lambda: [self.delete_row()])
-        for col_n in range(len(headers)):
+        self.delete_button = ttk.Button(self.frame, text='Eliminar entradas', style='danger.TButton',
+                                        command=lambda: [self.delete_rows()])
+
+        # Agregar checkbox para eliminar filas
+        self.checkboxes = []
+        self.check_vars = []
+        self.add_check_box()
+
+        for col_n in range(len(headers) + 1):
             self.frame.columnconfigure(col_n, weight=1)
         for row_n in range(50):
             self.frame.columnconfigure(row_n, weight=1)
@@ -91,22 +82,25 @@ class CreateOrderTable:
                 row.append(entry)
         self.entries.append(row)
         self.latest_index = self.latest_index + 1
-        self.add_button.grid(row=self.latest_index + 1, column=len(self.headers) - 1, sticky='e', pady=10)
+        self.add_button.grid(row=len(self.entries) + 1, column=len(self.headers) - 1, sticky='e', pady=10)
+        self.add_check_box()
         if self.latest_index >= 2:
             self.delete_button.grid(row=self.latest_index + 1, column=len(self.headers) - 2, sticky='e', pady=10)
 
-    def delete_row(self):
-        """Funcion que elimina una fila en la tabla"""
-        row = self.latest_index - 1
-        for col in range(len(self.headers)):
-            self.entries[row][col].destroy()
-        self.entries.remove(self.entries[row])
-        self.latest_index = self.latest_index - 1
-        self.add_button.grid(row=self.latest_index + 1, column=len(self.headers) - 1, sticky='e', pady=10)
-        if self.latest_index < 2:
-            self.delete_button.grid_forget()
-        if self.latest_index >= 2:
-            self.delete_button.grid(row=self.latest_index + 1, column=len(self.headers) - 2, sticky='e', pady=10)
+    def delete_rows(self):
+        """Funcion que elimina las filas seleccionadas en la tabla"""
+        rows_to_del = []
+        for row_n, value in enumerate(self.check_vars):
+            # print(row_n, value.get())
+            if value.get() == 1:
+                rows_to_del.append(row_n)
+        deleted_rows = []
+        for row_n in rows_to_del:
+            for deleted_row in deleted_rows:
+                if row_n >= deleted_row:
+                    row_n = row_n - 1
+            self.delete_row_by_index(row_n)
+            deleted_rows.append(row_n)
 
     def delete_current_row(self, event):
         """Borra la fila que se esta escribiendo actualmente"""
@@ -117,13 +111,31 @@ class CreateOrderTable:
                     if len(self.entries) < 2:
                         return
                     active_row = row
-                    for entry in active_row:
-                        entry.destroy()
-                    self.entries.pop(row_n)
-                    self.latest_index = self.latest_index - 1
-                    if self.latest_index < 2:
-                        self.delete_button.grid_forget()
-                    return
+                    self.delete_row_by_index(row_n)
+
+    def delete_row_by_index(self, row_n):
+        """Elimina una fila de la tabla\n
+        row_n: numero de fila partiendo de 0 como el primer entry, el encabezado no
+        se toma en cuenta"""
+        # Destruir los elementos de la fila
+        row = self.entries[row_n]
+        for entry in row:
+            entry.destroy()
+        self.entries.pop(row_n)
+        self.latest_index = self.latest_index - 1
+        # Esconder el boton de eliminar filas si hay menos de dos filas
+        if len(self.entries) < 2:
+            self.delete_button.grid_forget()
+        self.remove_check_box(row_n)
+
+        # Actualizar el grid
+        deleted_row = row_n + 1
+        for row_number, row in enumerate(self.entries):
+            row_number = row_number + 1
+            if row_number >= deleted_row:
+                for col, entry in enumerate(row):
+                    entry.grid(column=col, row=row_number, sticky='we')
+                self.checkboxes[row_number - 1].grid(column=7, row=row_number)
 
     def update_cells(self):
         """Funcion que actualiza los valores de order number y
@@ -235,9 +247,14 @@ class CreateOrderTable:
 
     def clear_table(self):
         # Borrar tabla existente
-        for row in self.entries:
-            for entry in row:
-                entry.destroy()
+        try:
+            for row in self.entries:
+                for entry in row:
+                    entry.destroy()
+        except AttributeError:
+            pass
+
+        # Dibujar tabla de entradas vacías
         self.entries = []
         for index in range(1):
             row = []
@@ -257,7 +274,16 @@ class CreateOrderTable:
                     row.append(entry)
             self.entries.append(row)
         self.latest_index = 1
-        self.delete_button.grid_forget()
+        try:
+            self.delete_button.grid_forget()
+        except AttributeError:
+            pass
+        try:
+            for i in range(len(self.checkboxes)):
+                self.remove_last_check_box()
+            self.add_check_box()
+        except AttributeError:
+            pass
 
     def move_right(self, event):
         """Evento que hace que se seleccione la celda de la derecha
@@ -417,6 +443,23 @@ class CreateOrderTable:
                     text = str(orders[orders.columns[col]][index])
                     self.entries[index][col].insert(0, text)
             index = index + 1
+
+    def add_check_box(self):
+        checkvar = tk.IntVar()
+        checkbox = tk.Checkbutton(self.frame, variable=checkvar, onvalue=1, offvalue=0, width=3)
+        checkbox.grid(row=self.latest_index, column=7)
+        self.checkboxes.append(checkbox)
+        self.check_vars.append(checkvar)
+
+    def remove_last_check_box(self):
+        self.checkboxes[-1].destroy()
+        self.checkboxes.pop(-1)
+        self.check_vars.pop(-1)
+
+    def remove_check_box(self, row_n):
+        self.checkboxes[row_n].destroy()
+        self.checkboxes.pop(row_n)
+        self.check_vars.pop(row_n)
 
 
 def run_ai_in_bg(client_name: str, path: str, queue: Queue, poppler_path, tesseract_exe_path):
