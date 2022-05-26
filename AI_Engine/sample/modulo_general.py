@@ -29,7 +29,8 @@ def apply_template_matching(img, template):
     return top_left, bottom_right
 
 
-def lectura_campo(img, points, method=0, regex=[], is_multiple=False, is_img_shown=False):
+def lectura_campo(img, points, method=0, regex=[], is_multiple=False, is_img_shown=False,
+                  tesseract_exe_path=None):
     """
     Lector de caracteres a través de un imagen. La imagen debe estar en escala de grises
     Argumentos:
@@ -55,7 +56,7 @@ def lectura_campo(img, points, method=0, regex=[], is_multiple=False, is_img_sho
         return result
 
     # Leo el texto
-    result = lectura_texto(roi, method, is_multiple, is_img_shown)
+    result = lectura_texto(roi, method, is_multiple, is_img_shown, tesseract_exe_path=tesseract_exe_path)
     # Aplico regex
     for reg in regex:
         if type(result[0]) is list:
@@ -114,14 +115,14 @@ def close_windows(message):
     print(message)
 
 
-def pdf_to_img(path):
+def pdf_to_img(path, poppler_path: str):
     """
     Convierte archivo pdf a lista de imagenes
     """
     list_img = []
 
     # Conversion pdf a jpg
-    images = convert_from_path(path, poppler_path=poppler_online_path)
+    images = convert_from_path(path, poppler_path=poppler_path)
     # Recorro la lista de imagenes
     for i in range(len(images)):
         path_img = path + '-' + str(i) + '.jpg'

@@ -12,8 +12,11 @@ import json
 import re
 from AI_Engine.sample import modulo_general as modg
 from AI_Engine.format_table import FormatTable
+from Packages.constants import poppler_online_path, tesseract_exe_online_path
 
-def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_root: str = None) -> pd.DataFrame:
+
+def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
+         path_root: str = None, poppler_path: str = None, tesseract_exe_path: str = None) -> pd.DataFrame:
     """
     Metodo principal de extraccion de datos de proveedores
     Argumentos:
@@ -35,9 +38,13 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
     if path_root is None:
         path_root = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files"
     path_root = os.path.normpath(path_root)
+    if poppler_path is None:
+        poppler_path = poppler_online_path
+    if tesseract_exe_path is None:
+        tesseract_exe_path = tesseract_exe_online_path
     # %% Constantes
     PEDIDOS_WINDOW = 'PDF pedidos'
-    COLUMNAS = ("archivo",) +\
+    COLUMNAS = ("archivo",) + \
                ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
     COLUMNAS = ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
@@ -121,7 +128,7 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
         print(filename + ":")
 
         # Conversion PDF a imagen
-        img_list = modg.pdf_to_img(os.path.join(filename))
+        img_list = modg.pdf_to_img(os.path.join(filename), poppler_path=poppler_path)
 
         if is_img_shown:
             # Calculo las dimensiones de la primera hoja
@@ -194,7 +201,8 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
                     pag_campos_data[n_pag][campo] = modg.lectura_campo(img_read, config_campo["coordinates"],
                                                                        config_campo["method_ocr"],
                                                                        config_campo['regex'],
-                                                                       config_campo['in_table'], is_img_shown)
+                                                                       config_campo['in_table'], is_img_shown,
+                                                                       tesseract_exe_path=tesseract_exe_path)
 
             # Relleno el dataframe
             # Compruebo que las listas de los campos en tabla no estan vacios
@@ -265,11 +273,10 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
     if len(confidences) > 1:
         total_confidence = (sum(confidences)/len(confidences))/100  # Dividirlo por 100 para tener valores entre [0-1]
         total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
-        df['confidence'] = [total_confidence]*len(confidences)
+        df['confidence'] = [total_confidence] * len(confidences)
 
     # Formatear las columnas de la tabla
     df = FormatTable(orders=df).format()
-
 
     # Imprimo el dataframe
     print()
@@ -285,7 +292,6 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False, path_ro
     # Borro ventanas
     modg.close_windows("Aplicacion terminada")
     return df
-
 
 # proveedor = "Engine Power Compoments"
 # proveedor = "EMP"
