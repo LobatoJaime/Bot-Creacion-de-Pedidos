@@ -5,7 +5,7 @@ from ttkbootstrap.widgets import Meter
 import pandas as pd
 
 
-class LoadingPopUp(tk.Toplevel):
+class LoadingPopUp(tk.Frame):
     """Pop up de carga que se muestra mientras
     se esta escaneando el pdf con la AI"""
 
@@ -16,22 +16,17 @@ class LoadingPopUp(tk.Toplevel):
         self.run = True
         self.queue = queue
         self.focus_set()
-        self.title('Escaneando Pedido')
-        self.protocol("WM_DELETE_WINDOW", self.close_app)
-        self.geometry('300x350')
-        # x = master.winfo_x()
-        # y = master.winfo_y()
-        # self.geometry('+{}+{}'.format(x + 300, y + 200))
-        master.eval(f'tk::PlaceWindow {str(self)} center')
-        self.wm_resizable(False, False)
         value = 0
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
-        self.wheel = Meter(master=self, amountused=value, labeltext='Escaneando \nArchivo...\n\n', meterstyle='primary.TLabel',
+        self.frame = tk.Frame(self)
+        self.frame.columnconfigure(0, weight=1)
+        self.frame.rowconfigure(0, weight=1)
+        self.frame.place(relx=.4, rely=.2)
+        self.wheel = Meter(master=self.frame, amountused=value, labeltext='Escaneando \nArchivo...\n\n', meterstyle='primary.TLabel',
                       padding=20, showvalue=False, metersize=250, labelstyle='primary.TLabel')
         self.wheel.grid(row=0, column=0, sticky='nswe')
-        self.stop_button = ttk.Button(self, text='Cancelar proceso', command=self.close_app, style='primary.TButton')
+        self.stop_button = ttk.Button(self.frame, text='Cancelar proceso', command=self.close_app, style='primary.TButton')
         self.stop_button.grid(row=1, column=0, sticky='ewns')
+        self.place(rely=0.05, relx=0, relwidth=1 - 0.3, relheight=.95)
         while self.run:
             value = value + 1
             self.wheel.amountused = value

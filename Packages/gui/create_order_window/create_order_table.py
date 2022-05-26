@@ -12,6 +12,8 @@ import numpy as np
 from ..scrollable_frame import ScrollFrame
 from .scan_pdf_loading_pop_up import LoadingPopUp
 from multiprocessing import Queue, Process
+from ...install_ai_engine import check_ai_engine_installed, download_ai
+from .download_ai_loading_pop_up import DownLoadingPopUp
 
 
 class CreateOrderTable:
@@ -329,14 +331,31 @@ class CreateOrderTable:
         if client_name == 'Cliente a escanear':
             messagebox.showinfo(title='Error', message='Es necesario seleccionar un cliente para escanear un pedido')
             return
+
+        # Chequear si se tiene instalado tesseract y poppler
+        poppler_path, tesseract_exe_path = check_ai_engine_installed()
+        if (poppler_path, tesseract_exe_path) == (None, None):
+            create = messagebox.askyesno('Tesseract y poppler no instalados',
+                                         'Es necesario descargar unos archivos en la computadora para que la AI '
+                                         'funcione mejor. Deseas instalarlos?')
+            if create:
+                self.queue = Queue()
+                process = Process(target=download_ai_in_bg, args=(self.queue,), daemon=True)
+                process.start()
+                popup = DownLoadingPopUp(self.frame, self.queue, self.gui, process)
+                results = self.queue.get()
+                poppler_path = results[0]
+                tesseract_exe_path = results[1]
+                if (poppler_path, tesseract_exe_path) != (None, None):
+                    messagebox.showinfo('Instalación completada', 'Archivos descargados de manera exitosa')
+
         # Usar AI
-        # path = filedialog.askdirectory(initialdir='Descargas')
         path = filedialog.askopenfilename(initialdir=downloads_folder)
         if path == '':
             return
-        # path = r'C:\Users\IRDGFRM\Downloads\Prueba'
         self.queue = Queue()
-        process = Process(target=run_ai_in_bg, args=(client_name, path, self.queue), daemon=True)
+        process = Process(target=run_ai_in_bg,
+                          args=(client_name, path, self.queue, poppler_path, tesseract_exe_path), daemon=True)
         process.start()
         popup = LoadingPopUp(self.parent_window.master, self.queue, self.gui, process)
         result = self.queue.get()
@@ -401,6 +420,13 @@ class CreateOrderTable:
             index = index + 1
 
 
-def run_ai_in_bg(client_name: str, path: str, queue: Queue):
-    orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
+def run_ai_in_bg(client_name: str, path: str, queue: Queue, poppler_path, tesseract_exe_path):
+    orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False,
+                                poppler_path=poppler_path,
+                                tesseract_exe_path=tesseract_exe_path)
     queue.put(orders)
+
+
+def download_ai_in_bg(queue: Queue):
+    poppler_path, tesseract_exe_path = download_ai()
+    queue.put([poppler_path, tesseract_exe_path])

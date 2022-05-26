@@ -28,5 +28,12 @@ ai_supported_clients = ["Engine Power Compoments", "Thyssenkrupp Campo Limpo",
                         "WorldClass Industries", "EMP", "Thyssenkrupp Crankshaft", "WorldClass Industries EU"]
 ai_supported_clients.sort()
 poppler_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\poppler-22.01.0\Library\bin"
-tesseract_exe_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\Tesseract-OCR\tesseract.exe"
+poppler_online_folder_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\poppler-22.01.0"
+tesseract_exe_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\Tesseract-OCR\tesseract.exe"
+tesseract_folder_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\Tesseract-OCR"
 formats_table_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\formats.xlsx"
+local_app_folder = r"C:\Bot Creacion de Pedidos"
+local_poppler_path = os.path.join(local_app_folder, r'poppler-22.01.0\Library\bin')
+local_tesseract_exe_path = os.path.join(local_app_folder, r'Tesseract-OCR\tesseract.exe')
+local_tesseract_folder_path = os.path.join(local_app_folder, r'Tesseract-OCR')
+local_poppler_folder_path = os.path.join(local_app_folder, r'poppler-22.01.0')
