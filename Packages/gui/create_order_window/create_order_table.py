@@ -205,10 +205,9 @@ class CreateOrderTable:
         from ...constants import exports_folder
         self.read_table()
         order_number = self.orders['order_number'][self.orders.index[0]]
-        reference = self.orders['reference'][self.orders.index[0]]
         today_date = dt.datetime.now().strftime('%d.%m.%y_%H.%M')
-        if (str(order_number), str(reference)) != (str(np.nan), str(np.nan)):
-            default_name = '{}_{}_{}'.format(order_number, reference, today_date)
+        if str(order_number) != str(np.nan):
+            default_name = '{}_{}'.format(order_number, today_date)
         else:
             default_name = 'export'
         file = filedialog.asksaveasfile(mode='w', defaultextension=".xlsx",
