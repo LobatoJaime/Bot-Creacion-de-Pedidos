@@ -97,7 +97,7 @@ class CreateOrderTable:
 
         if len(rows_to_del) == 0:
             messagebox.showinfo('Info', 'Ninguna fila seleccionada. Selecciona una fila para poder eliminarla')
-            return 
+            return
 
 
         deleted_rows = []
