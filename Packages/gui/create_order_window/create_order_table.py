@@ -94,6 +94,12 @@ class CreateOrderTable:
             # print(row_n, value.get())
             if value.get() == 1:
                 rows_to_del.append(row_n)
+
+        if len(rows_to_del) == 0:
+            messagebox.showinfo('Info', 'Ninguna fila seleccionada. Selecciona una fila para poder eliminarla')
+            return 
+
+
         deleted_rows = []
         for row_n in rows_to_del:
             for deleted_row in deleted_rows:
