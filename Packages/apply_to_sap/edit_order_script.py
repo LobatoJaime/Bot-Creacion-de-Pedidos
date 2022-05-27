@@ -4,6 +4,7 @@ from time import sleep
 def add_order_script(session: object, plan_entrega: str, ship_out_date: str, quantity: str):
     """Funcion en donde se ejecuta el script .vbs para agregar un pedido a
     un plan de entrega existente"""
+    sleep(1)
     print('Subiendo orden--> ship_out_date:{}'.format(ship_out_date))
     session.findById('wnd[0]').maximize()
     session.findById('wnd[0]/tbar[0]/okcd').text = '/nva32'

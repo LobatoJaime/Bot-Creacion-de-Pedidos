@@ -1,8 +1,9 @@
-
+from time import sleep
 
 def delete_oder_script(session: object, plan_entrega: str, ship_out_date: str):
     """Funcion en donde se ejecuta el script .vbs para eliminar un pedido de
         un plan de entrega existente"""
+    sleep(1)
     print('Eliminando orden--> ship_out_date:{}'.format(ship_out_date))
     session.findById("wnd[0]").maximize()
     session.findById("wnd[0]/tbar[0]/okcd").text = "/nva32"
