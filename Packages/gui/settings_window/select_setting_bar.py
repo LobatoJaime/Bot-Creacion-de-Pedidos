@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from .client_settings import ClientSettings
+from .general_settings import GeneralSettings
 
 
 class SelectSettingsBar:
@@ -30,8 +31,8 @@ class SelectSettingsBar:
         for i in self.listbox.curselection():
             self.selection = self.listbox.get(i)
         if self.selection == 'Clientes':
-            client_settings = ClientSettings(self.right_widgets_window)
-            client_settings.place(relx=0, rely=0, relheight=1, relwidth=1)
+            self.client_settings = ClientSettings(self.right_widgets_window)
+            self.client_settings.place(relx=0, rely=0, relheight=1, relwidth=1)
         elif self.selection == 'General':
-            f = tk.Frame(self.right_widgets_window)
-            f.place(relx=0, rely=0, relheight=1, relwidth=1)
+            self.general_settings = GeneralSettings(self.right_widgets_window)
+            self.general_settings.place(relx=0, rely=0, relheight=1, relwidth=1)

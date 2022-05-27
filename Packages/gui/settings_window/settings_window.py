@@ -21,8 +21,8 @@ class SettingsWindow:
                             font=('Arial', 18), justify='left')
         self.msg.place(relx=0, rely=0)
         # Barra para seleccionar el ajuste
-        setting_bar = SelectSettingsBar(self.window_frame)
-        setting_bar.place(relx=0, rely=.0325, relheight=1-0.0325, relwidth=.12)
+        self.setting_bar = SelectSettingsBar(self.window_frame)
+        self.setting_bar.place(relx=0, rely=.0325, relheight=1-0.0325, relwidth=.12)
 
     def show(self):
         self.window_frame.tkraise()
