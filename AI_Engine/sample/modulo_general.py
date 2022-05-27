@@ -8,12 +8,22 @@ from pdf2image import convert_from_path
 from Packages.constants import poppler_online_path
 
 
+def apply_list_template_matching(img, template_list):
+    output = (None, None), (None, None), -1
+    for template in template_list:
+        result = apply_template_matching(img, template)
+        if result[2] > output[2]:
+            output = result
+    return output[:2]
+
+
 def apply_template_matching(img, template):
     """
     Busca una imagen template en una imagen. Devuelve las coordenadas top left y bottom right
     """
+    result = (None, None), (None, None), -1
     if template is None:
-        return (None, None), (None, None)
+        return result
     # Get template shape
     w, h = template.shape[::-1]
     # Apply template Matching
@@ -21,12 +31,13 @@ def apply_template_matching(img, template):
     min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
     # Si el valor maximo es menor que un threshold, no se ha encontrado ninguna coincidencia
     if max_val < 0.5:
-        return (None, None), (None, None)
+        return result
     # Calculo los valores de top_left y bottom_right
     top_left = max_loc
     bottom_right = (top_left[0] + w, top_left[1] + h)
     #cv.rectangle(img, top_left, bottom_right, 0, 5)
-    return top_left, bottom_right
+    result = top_left, bottom_right, max_val
+    return result
 
 
 def lectura_campo(img, points, method=0, regex=[], is_multiple=False, is_img_shown=False,
@@ -39,7 +50,7 @@ def lectura_campo(img, points, method=0, regex=[], is_multiple=False, is_img_sho
         is_multiple: indica método de lectura. Si está a true, trata el texto por filas
         is_img_shown: activa la visualización de las imágenes
     Returns:
-        Lista de strings o string con el texto reconocido. Si 'points' es None, devolvera una lista vacia
+        Lista de strings o string con el texto reconocido. Si 'points' es None, devolvera None
     """
     result = None
     if method is None:
@@ -115,7 +126,7 @@ def close_windows(message):
     print(message)
 
 
-def pdf_to_img(path, poppler_path: str):
+def pdf_to_img(path, poppler_path: str, is_gray=True):
     """
     Convierte archivo pdf a lista de imagenes
     """
@@ -129,7 +140,9 @@ def pdf_to_img(path, poppler_path: str):
         # Guardo la imagen
         images[i].save(path_img, 'JPEG')
         # Lectura de imagen
-        img_i = cv.imread(path_img, cv.IMREAD_GRAYSCALE)
+        img_i = cv.imread(path_img, cv.IMREAD_COLOR)
+        if is_gray:
+            img_i = cv.cvtColor(img_i, cv.COLOR_BGR2GRAY)
         list_img.append(img_i)
         # Borrado de archivo de imagen
         os.remove(path_img)
@@ -152,13 +165,13 @@ def create_table_img(img_list, img_table_header, img_table_end, table_coordinate
     return vconcat_resize(img_list_table)
 
 
-def create_table_info_list(img_list, img_table_header, img_table_end, table_coordinates):
+def create_table_info_list(img_list, img_table_header_list, img_table_end_list, table_coordinates):
     """
         Crea un dicionario con las imagenes de las tablas con el numero de pagina como key, a partir de una lista de imagenes
         Argumentos:
             img_list: lista de imagenes
-            img_table_header: template de imagen de header de tabla
-            img_table_end: template de imagen de final de tabla
+            img_table_header_list: lista de templates de imagen de header de tabla
+            img_table_end_list: lista de templates de imagen de final de tabla
             table_coordinates: coordenadas donde se encuentra la tabla
         Returns:
             Lista de diccionarios con las imagenes de las tablas e info
@@ -176,8 +189,8 @@ def create_table_info_list(img_list, img_table_header, img_table_end, table_coor
         ix, iy, fx, fy = table_coordinates[index]
         roi = img_list[pag_i][iy:fy, ix:fx]
         # Busco el header y el end
-        header_top_left, header_bottom_right = apply_template_matching(roi, img_table_header)
-        end_top_left, end_bottom_right = apply_template_matching(roi, img_table_end)
+        header_top_left, header_bottom_right = apply_list_template_matching(roi, img_table_header_list)
+        end_top_left, end_bottom_right = apply_list_template_matching(roi, img_table_end_list)
         # roi_to_show = roi.copy()
         # cv.rectangle(roi_to_show, header_top_left, header_bottom_right, (0, 0, 255), 2)
         # cv.rectangle(roi_to_show, end_top_left, end_bottom_right, (0, 0, 255), 2)

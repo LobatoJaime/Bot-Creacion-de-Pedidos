@@ -66,7 +66,7 @@ def procesamiento_img(roi, method):
         ret, thresh = cv2.threshold(roi, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
         rect_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
         img_procesada = cv2.dilate(thresh, rect_kernel, iterations=1)
-        # img_procesada = cv2.erode(dilation, rect_kernel, iterations=1)
+        #img_procesada = cv2.erode(dilation, rect_kernel, iterations=1)
     # Metodo 2
     elif method == 2:
         # Blur y canny
@@ -76,7 +76,7 @@ def procesamiento_img(roi, method):
     elif method == 3:
         # Blur y threshold
         imagen_ruido_off = cv2.GaussianBlur(roi, (3, 3), 0)
-        # cv2.imshow("imagen_ruido_off", imagen_ruido_off)
+        #cv2.imshow("imagen_ruido_off", imagen_ruido_off)
         ret, img_procesada = cv2.threshold(imagen_ruido_off, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
     # Metodo 4
     elif method == 4:
@@ -110,7 +110,7 @@ def lectura_texto(gray, method=0, is_multiple=False, is_img_shown=False,
 
     # Tesseract configuracion
     pytesseract.pytesseract.tesseract_cmd = tesseract_exe_path
-    # custom_config = r'--psm 7 -c tessedit_char_whitelist=0123456789.'
+    #custom_config = r'--psm 7 -c tessedit_char_whitelist=0123456789.'
     custom_config = r'--psm 7'
 
     # Deteccion de texto
@@ -136,8 +136,8 @@ def lectura_texto(gray, method=0, is_multiple=False, is_img_shown=False,
             text = pytesseract.image_to_string(img_procesada, config=custom_config).strip()
             output_data = lectura_texto_data(img_procesada, custom_config)
             result.append(output_data)
-            if is_img_shown: print(output_data)
-            if is_img_shown: print('-------------------------')
+            if is_img_shown:print(output_data)
+            if is_img_shown:print('-------------------------')
             if is_img_shown: cv2.imshow("img_procesada", img_procesada)
             if is_img_shown: cv2.waitKey(0)
             if is_img_shown: cv2.destroyWindow("img_procesada")
@@ -151,10 +151,10 @@ def lectura_texto(gray, method=0, is_multiple=False, is_img_shown=False,
         print(text)
 
         result = lectura_texto_data(img_procesada, custom_config)
-        if is_img_shown: print(result)
+        if is_img_shown:print(result)
 
-    if is_img_shown: print('############################################')
-    if is_img_shown: print("")
+    if is_img_shown:print('############################################')
+    if is_img_shown:print("")
 
     # Visualizo los contornos
     if is_img_shown: cv2.imshow("ROI", cv2.resize(roi_to_show, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA))
@@ -185,9 +185,10 @@ def lectura_texto_data(img_procesada, custom_config):
     print("confs")
     print(confs)
     # Creo la lista con el texto final y su valor de confianza
-    if lines[0].strip():
-        line_conf.append(lines[0])
-        line_conf.append(round(confs[0], 3))
+    text = lines[0].strip() if len(lines) > 0 else ""
+    conf = round(confs[0], 3) if len(lines) > 0 else 100
+    line_conf.append(text)
+    line_conf.append(conf)
     print("=================================")
     print(line_conf)
     return line_conf

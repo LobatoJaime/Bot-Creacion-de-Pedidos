@@ -12,8 +12,8 @@ import json
 import re
 from AI_Engine.sample import modulo_general as modg
 from AI_Engine.format_table import FormatTable
+from AI_Engine.lines import search_horiz_lines
 from Packages.constants import poppler_online_path, tesseract_exe_online_path
-
 
 def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
          path_root: str = None, poppler_path: str = None, tesseract_exe_path: str = None) -> pd.DataFrame:
@@ -64,8 +64,8 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
     PATH_CONFIG = os.path.join(path_root, 'Config')
     PATH_RESULTADOS = os.path.join(path_root, 'Resultados')
     # Files
-    FILE_TABLE_HEADER = r"header.jpg"
-    FILE_TABLE_END = r"end.jpg"
+    FILE_TABLE_HEADER = r"header"
+    FILE_TABLE_END = r"end"
     # Filepaths
     FILEPATH_PROVEEDORES_DATA = os.path.join(PATH_CONFIG, r"proveedoresData.json")
     print(FILEPATH_PROVEEDORES_DATA)
@@ -105,13 +105,20 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
         if not type(proveedores_data[proveedor]) is dict:
             modg.close_windows("El formato de la información del proveedor no es correcta")
             return
+    # Creo variables de acceso directo
     proveedor_data = proveedores_data[proveedor]
+    proveedor_campos = proveedor_data["fields"]
+    proveedor_tabla = proveedor_data["table"]
 
     # Leo las imagenes de los headers y final de la tabla
-    pathfile_table_header = os.path.join(PATH_CONFIG, proveedor, FILE_TABLE_HEADER)
-    pathfile_table_end = os.path.join(PATH_CONFIG, proveedor, FILE_TABLE_END)
-    img_table_header = cv.imread(pathfile_table_header, cv.IMREAD_GRAYSCALE)
-    img_table_end = cv.imread(pathfile_table_end, cv.IMREAD_GRAYSCALE)
+    pathfile_table_header_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
+                                  os.listdir(os.path.join(PATH_CONFIG, proveedor)) if
+                                  filename.startswith(FILE_TABLE_HEADER)]
+    pathfile_table_end_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
+                               os.listdir(os.path.join(PATH_CONFIG, proveedor)) if
+                               filename.startswith(FILE_TABLE_END)]
+    img_table_header_list = [cv.imread(pathfile, cv.IMREAD_GRAYSCALE) for pathfile in pathfile_table_header_list]
+    img_table_end_list = [cv.imread(pathfile, cv.IMREAD_GRAYSCALE) for pathfile in pathfile_table_end_list]
 
     # Recorro todos los archivos del directorio
     n_files = 0
@@ -119,8 +126,6 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
         # Compruebo que el archivo sea PDF
         if not os.path.splitext(filename)[1].lower() == ".pdf":
             continue
-        # if not filename == "10-02-2022_11h-06m.pdf":
-        #     continue
         # if n_files > 5:
         #     break
 
@@ -139,11 +144,40 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
                       cv.resize(img_list[0], (shape_resized[1], shape_resized[0]), interpolation=cv.INTER_AREA))
             cv.waitKey(1)
 
+        # Creo tuplas de los campos dentro y fuera de tabla
+        campos_tabla, campos_hoja = [], []
+        for campo in CAMPOS:
+            # Compruebo que la configuracion no es nula
+            if proveedor_campos[campo] is not None:
+                if proveedor_campos[campo]['in_table']:
+                    campos_tabla.append(campo)
+                else:
+                    campos_hoja.append(campo)
+        campos_tabla, campos_hoja = tuple(campos_tabla), tuple(campos_hoja)
+        campos_validos = campos_hoja + campos_tabla
+
+        # Recorro la configuracion para crear los sets de informacion
+        setsInfo = []
+        # Recorremos cada pagina
+        for n_pag in range(len(img_list)):
+            setInfo = {}
+            # Recorro campos fijos para crear el set de info
+            for campo in campos_hoja:
+                if proveedor_campos[campo]["pag"] == "all" or proveedor_campos[campo]["pag"] == n_pag + 1:
+                    setInfo[campo] = n_pag
+            # Si hay campos fijos en la pagina, creamos nuevo set
+            if setInfo != {}:
+                setInfo["table"] = [n_pag]
+                setsInfo.append(setInfo)
+            # Si no hay campos fijo, actualizamos el campo tabla del ultimo set
+            else:
+                setsInfo[-1]["table"].append(n_pag)
+
         # Creo la lista de imagenes donde se encontrara la tabla
         img_table_info_list = []
-        if proveedor_data["table_coordinates"] is not None:
-            img_table_info_list = modg.create_table_info_list(img_list, img_table_header, img_table_end,
-                                                              proveedor_data["table_coordinates"])
+        if proveedor_tabla["coordinates"] is not None:
+            img_table_info_list = modg.create_table_info_list(img_list, img_table_header_list, img_table_end_list,
+                                                              proveedor_tabla["coordinates"])
             if is_img_shown:
                 for img_table_info in img_table_info_list:
                     cv.imshow("img_table",
@@ -151,19 +185,80 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
                     cv.waitKey(0)
                 cv.destroyWindow("img_table")
 
-        # Creo tuplas de los campos dentro y fuera de tabla
-        campos_tabla, campos_hoja = [], []
-        for campo in CAMPOS:
-            config_campo = proveedor_data["fields"][campo]
-            # Compruebo que la configuracion no es nula
-            if config_campo is not None:
-                if config_campo['in_table']:
-                    campos_tabla.append(campo)
-                else:
-                    campos_hoja.append(campo)
-        campos_tabla = tuple(campos_tabla)
-        campos_hoja = tuple(campos_hoja)
-        campos_validos = campos_hoja + campos_tabla
+        setsData = []
+        # Recorremos cada set
+        for setInfo in setsInfo:
+            setData = {}
+            # Recorro campos fijos
+            for campo in campos_hoja:
+                #TODO:controlar cuando es None
+                if setInfo[campo] is not None:
+                    img_read = img_list[setInfo[campo]]
+                    if img_read is not None:
+                        setData[campo] = modg.lectura_campo(img_read, proveedor_campos[campo]["coordinates"],
+                                                            proveedor_campos[campo]["method_ocr"],
+                                                            proveedor_campos[campo]['regex'],
+                                                            False, is_img_shown,
+                                                            tesseract_exe_path=tesseract_exe_path)
+            # Creo tabla del set
+            table_list = []
+            for table_pag in setInfo["table"]:
+                table_list.append(img_table_info_list[table_pag]["roi"])
+            table_img = modg.vconcat_resize(table_list)
+            # Recorro campos tabla
+            if table_img is not None:
+                if proveedor_tabla["type"] == "lines":
+                    # Leo tabla
+                    if len(campos_tabla) > 0:
+                        if is_img_shown:
+                            cv.imshow("img_table",
+                                      cv.resize(table_img, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                            cv.waitKey(0)
+                            cv.destroyWindow("img_table")
+                        # Busco las lineas horizontales que separan las celdas
+                        lines = search_horiz_lines(table_img, 3, table_img.shape[1] - 30)
+                        # Elimino las lineas horizontales de la tabla
+                        thresh = cv.threshold(table_img, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU)[1]
+                        horizontal_kernel = cv.getStructuringElement(cv.MORPH_RECT, (40, 1))
+                        remove_horizontal = cv.morphologyEx(thresh, cv.MORPH_OPEN, horizontal_kernel, iterations=1)
+                        cnts = cv.findContours(remove_horizontal, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+                        tabla_procesada = table_img.copy()
+                        for c in cnts:
+                            cv.drawContours(tabla_procesada, [c], -1, (255, 255, 255), 5)
+                        cv.imshow("tabla_procesada",
+                                  cv.resize(tabla_procesada, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                        cv.waitKey(0)
+                        cv.destroyWindow("tabla_procesada")
+                        # Creo lista de filas de la tabla
+                        filas_img = []
+                        y1, y_end = 0, tabla_procesada.shape[0]
+                        for line in lines:
+                            y2 = line[0][1]
+                            filas_img.append(tabla_procesada[y1:y2])
+                            y1 = line[0][1]
+                        filas_img.append(tabla_procesada[y1:y_end])
+                        # Recorro las filas
+                        for fila_img in filas_img:
+                            cv.imshow("fila",
+                                      cv.resize(fila_img, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                            cv.waitKey(0)
+                            cv.destroyWindow("fila")
+                            for campo in campos_tabla:
+                                if campo not in setData or type(setData[campo]) != list:
+                                    setData[campo] = []
+                                setData[campo].append(modg.lectura_campo(fila_img,
+                                                                         proveedor_campos[campo]["coordinates"],
+                                                                         proveedor_campos[campo]["method_ocr"],
+                                                                         proveedor_campos[campo]['regex'],
+                                                                         False, is_img_shown))
+                elif proveedor_tabla["type"] == "no_lines":
+                    for campo in campos_tabla:
+                        setData[campo] = modg.lectura_campo(table_img, proveedor_campos[campo]["coordinates"],
+                                                            proveedor_campos[campo]["method_ocr"],
+                                                            proveedor_campos[campo]['regex'],
+                                                            True, is_img_shown)
+                setsData.append(setData)
 
         # Recorremos cada pagina
         pag_campos_data = []
@@ -178,7 +273,7 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
             # Log
             print("Num pag: " + str(n_pag + 1))
             # Leemos los campos en la pagina
-            for campo in campos_validos:
+            for campo in campos_hoja:
                 # Log
                 print("Campo: " + campo)
                 # Inicializo campo
@@ -203,6 +298,40 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
                                                                        config_campo['regex'],
                                                                        config_campo['in_table'], is_img_shown,
                                                                        tesseract_exe_path=tesseract_exe_path)
+
+            # Leo tabla
+            if len(campos_tabla) > 0:
+                # Tabla
+                if img_table_info_list[n_pag]["has_header"]:
+                    img_tabla = img_table_info_list[n_pag]["roi"]
+                    cv.imshow("img_tabla",
+                              cv.resize(img_tabla, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                    cv.waitKey(0)
+                    lines = search_lines(img_tabla, 3, img_tabla.shape[1] - 30, True)
+                    thresh = cv.threshold(img_tabla, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU)[1]
+                    # Remove horizontal lines
+                    horizontal_kernel = cv.getStructuringElement(cv.MORPH_RECT, (40, 1))
+                    remove_horizontal = cv.morphologyEx(thresh, cv.MORPH_OPEN, horizontal_kernel, iterations=1)
+                    cnts = cv.findContours(remove_horizontal, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+                    for c in cnts:
+                        cv.drawContours(img_tabla, [c], -1, (255, 255, 255), 5)
+                    cv.imshow("img_tabla",
+                              cv.resize(img_tabla, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                    cv.waitKey(0)
+                    y1 = 0
+                    y_end = img_tabla.shape[0]
+                    for line in lines:
+                        y2 = line[0][1]
+                        roi = img_tabla[y1:y2]
+                        cv.imshow("img_tabla",
+                                  cv.resize(roi, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                        cv.waitKey(0)
+                        y1 = line[0][1]
+                    roi = img_tabla[y1:y_end]
+                    cv.imshow("img_tabla",
+                              cv.resize(roi, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                    cv.waitKey(0)
 
             # Relleno el dataframe
             # Compruebo que las listas de los campos en tabla no estan vacios
@@ -271,7 +400,8 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
     # Sacar un promedio de la columna de confianza
     confidences = df['confidence'].to_list()
     if len(confidences) > 1:
-        total_confidence = (sum(confidences)/len(confidences))/100  # Dividirlo por 100 para tener valores entre [0-1]
+        total_confidence = (sum(confidences) / len(
+            confidences)) / 100  # Dividirlo por 100 para tener valores entre [0-1]
         total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
         df['confidence'] = [total_confidence] * len(confidences)
 
@@ -293,19 +423,22 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
     modg.close_windows("Aplicacion terminada")
     return df
 
-# proveedor = "Engine Power Compoments"
-# proveedor = "EMP"
-# proveedor = "Thyssenkrupp Crankshaft"
-# proveedor = "ESP"
-# proveedor = "Thyssenkrupp Campo Limpo"
-# proveedor = "WorldClass Industries"
-#
-# path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
-# path_archivos = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
-# path_archivos = r"extra\Thyssenkrupp Campo Limpo"
-# path_archivos = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
-# path_archivos = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
-# path_archivos = r"CLIIENTES JOHN DEERE\WorldClass Industries"
-# path_archivos = os.path.join(path_root, path_archivos)
-#
-# main(proveedor, path_archivos, is_img_shown=False, path_root=".")
+
+proveedor = "Engine Power Compoments"
+proveedor = "EMP"
+proveedor = "Thyssenkrupp Crankshaft"
+proveedor = "Thyssenkrupp Campo Limpo"
+proveedor = "WorldClass Industries"
+proveedor = "ESP"
+
+path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
+path_archivos = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
+path_archivos = r"extra\Thyssenkrupp Campo Limpo"
+path_archivos = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
+path_archivos = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
+path_archivos = r"CLIIENTES JOHN DEERE\WorldClass Industries"
+path_archivos = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
+path_archivos = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
+path_archivos = os.path.join(path_root, path_archivos)
+
+main(proveedor, path_archivos, is_img_shown=True, path_root=".")
