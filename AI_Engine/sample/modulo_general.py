@@ -1,11 +1,7 @@
-import os
 import re
-import sys
-
 import cv2 as cv
 from AI_Engine.sample.modulo_ocr import lectura_texto
-from pdf2image import convert_from_path
-from Packages.constants import poppler_online_path
+from AI_Engine.sample import modulo_general_func as modg_func
 
 
 def apply_list_template_matching(img, template_list):
@@ -40,7 +36,7 @@ def apply_template_matching(img, template):
     return result
 
 
-def lectura_campo(img, points, method=0, regex=[], is_multiple=False, is_img_shown=False,
+def lectura_campo(img, points, method=0, regex=[], is_img_shown=False,
                   tesseract_exe_path=None):
     """
     Lector de caracteres a través de un imagen. La imagen debe estar en escala de grises
@@ -50,104 +46,62 @@ def lectura_campo(img, points, method=0, regex=[], is_multiple=False, is_img_sho
         is_multiple: indica método de lectura. Si está a true, trata el texto por filas
         is_img_shown: activa la visualización de las imágenes
     Returns:
-        Lista de strings o string con el texto reconocido. Si 'points' es None, devolvera None
+        Lista de strings o string con el texto reconocido
     """
-    result = None
+
     if method is None:
         method = 0
 
     # Creo el ROI donde se leera el texto
-    if points is not None:
-        ix, iy, fx, fy = points
-        roi = img[iy:fy, ix:fx]
-        # cv.imshow("ROI1", cv.resize(roi, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
-        # cv.waitKey(0)
-        # cv.destroyWindow("ROI1")
-    else:
-        return result
+    ix, iy, fx, fy = points
+    roi = img[iy:fy, ix:fx]
 
     # Leo el texto
-    result = lectura_texto(roi, method, is_multiple, is_img_shown, tesseract_exe_path=tesseract_exe_path)
-    # Aplico regex
-    for reg in regex:
-        if type(result[0]) is list:
-            for i in range(len(result)):
-                result[i][0] = regex_group(reg, result[i][0])
-        else:
-            result[0] = regex_group(reg, result[0])
-    #print(result)
-    return result
+    list_lectura = lectura_texto(roi, method, is_img_shown, tesseract_exe_path=tesseract_exe_path)
+    # Inicializo el resultado (texto vacio y valor de confianza minimo)
+    text = ""
+    if len(list_lectura) > 0:
+        conf = min(list_lectura, key=lambda lectura: lectura[1])[1]
+    else:
+        conf = -2
+        # Aplico regex
+    if len(regex) > 0:
+        # Ordeno los resultados por valores de confianza de mayor a menor
+        list_lectura = reversed(sorted(list_lectura, key=lambda lectura: lectura[1]))
+        # Aplico regex en todas las lineas encontradas
+        for lectura in list_lectura:
+            for reg in regex:
+                if lectura[0] is not None:
+                    lectura[0] = regex_group(reg, lectura[0])
+            # Si el texto hace match con el regex, cogemos este valor y el valor de confianza de la linea
+            if lectura[0] is not None:
+                text = lectura[0]
+                conf = lectura[1]
+                break
+    else:
+        # Si no hay regex el resultado es la concanetacion de los textos, y la confianza es la minima
+        for lectura in list_lectura:
+            text = text + " " + lectura[0]
+        text = text.strip()
+    print("result final: (" + text + ", " + str(conf) + ")")
+    return text, conf
 
 
-def regex_group(reg, input):
+def regex_group(reg, input_text):
     """
     Arguments:
         reg: Regex string
-        input: String to apply the regex
+        input_text: String to apply the regex
     Result:
         First string result of applying the regex. None if not found
     """
     result = None
-    if input is not None:
-        input = re.search(reg, input)
-        if input is not None:
-            result = input.group()
+    if input_text is not None:
+        input_text = re.search(reg, input_text)
+        if input_text is not None:
+            result = input_text.group()
 
     return result
-
-
-def vconcat_resize(img_list, interpolation=cv.INTER_CUBIC):
-    """
-    Define a function for vertically concatenating images of different widths
-    """
-    # take minimum width
-    w_min = min(img.shape[1] for img in img_list)
-
-    # resizing images
-    im_list_resize = [cv.resize(img, (w_min, int(img.shape[0] * w_min / img.shape[1])), interpolation=interpolation)
-                      for img in img_list]
-    # return final image
-    return cv.vconcat(im_list_resize)
-
-
-def exit_program(message):
-    """
-    Funcion auxiliar para cerrar la aplicacion
-    """
-    cv.destroyAllWindows()
-    sys.exit(message)
-
-
-def close_windows(message):
-    """
-    Funcion auxiliar para cerrar las ventanas e imprimir un mensaje
-    """
-    cv.destroyAllWindows()
-    print(message)
-
-
-def pdf_to_img(path, poppler_path: str, is_gray=True):
-    """
-    Convierte archivo pdf a lista de imagenes
-    """
-    list_img = []
-
-    # Conversion pdf a jpg
-    images = convert_from_path(path, poppler_path=poppler_path)
-    # Recorro la lista de imagenes
-    for i in range(len(images)):
-        path_img = path + '-' + str(i) + '.jpg'
-        # Guardo la imagen
-        images[i].save(path_img, 'JPEG')
-        # Lectura de imagen
-        img_i = cv.imread(path_img, cv.IMREAD_COLOR)
-        if is_gray:
-            img_i = cv.cvtColor(img_i, cv.COLOR_BGR2GRAY)
-        list_img.append(img_i)
-        # Borrado de archivo de imagen
-        os.remove(path_img)
-
-    return list_img
 
 
 def create_table_img(img_list, img_table_header, img_table_end, table_coordinates):
@@ -162,7 +116,7 @@ def create_table_img(img_list, img_table_header, img_table_end, table_coordinate
         Imagen de la tabla
     """
     img_list_table = create_table_list(img_list, img_table_header, img_table_end, table_coordinates)
-    return vconcat_resize(img_list_table)
+    return modg_func.vconcat_resize(img_list_table)
 
 
 def create_table_info_list(img_list, img_table_header_list, img_table_end_list, table_coordinates):

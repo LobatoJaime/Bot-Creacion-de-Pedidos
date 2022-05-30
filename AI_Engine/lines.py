@@ -123,6 +123,7 @@ def search_horiz_lines(image, method, minDist):
     for i in range(len(output)):
         if i >= len(output)-1 or output[i+1][0][1] - output[i][0][1] > 5:
             output_aux.append(output[i])
+    output = output_aux
     for line in output_aux:
         cv.line(image_to_show, line[0], line[1], (0, 0, 255), 3,
                 cv.LINE_AA)
