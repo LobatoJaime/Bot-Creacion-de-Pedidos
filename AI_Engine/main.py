@@ -48,9 +48,8 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
         tesseract_exe_path = tesseract_exe_online_path
     # %% Constantes
     PEDIDOS_WINDOW = 'PDF pedidos'
-    COLUMNAS = ("archivo",) + \
-               ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
     COLUMNAS = ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
+    # COLUMNAS = ("archivo",) + COLUMNAS
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
     HEIGHT_TO_SHOW = 800
     FORMATO_CAMPOS = {
@@ -130,8 +129,8 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
         # Compruebo que el archivo sea PDF
         if not os.path.splitext(filename)[1].lower() == ".pdf":
             continue
-        if n_files > 0:
-            break
+        # if n_files > 2:
+        #     break
 
         # Imprimo nombre del archivo
         print(filename + ":")
@@ -213,8 +212,12 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
             # Creo tabla del set
             table_list = []
             for table_pag in setInfo["table"]:
-                table_list.append(img_table_info_list[table_pag]["roi"])
+                if img_table_info_list[table_pag]["has_header"]:
+                    table_list.append(img_table_info_list[table_pag]["roi"])
             table_img = modg_func.vconcat_resize(table_list)
+            # Inicializo campos tabla
+            for campo in campos_tabla:
+                set_data[campo] = []
             # Leo campos tabla
             if table_img is not None:
                 if proveedor_tabla["type"] == "lines":
@@ -257,15 +260,25 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
                                 cv.waitKey(0)
                                 cv.destroyWindow("fila")
                             # Buco cada campo en la fila
+                            is_empty_row = True
+                            row_data = {}
                             for campo in campos_tabla:
-                                if campo not in set_data or type(set_data[campo]) != list:
-                                    set_data[campo] = []
-                                set_data[campo].append(modg.lectura_campo(fila_img,
-                                                                          proveedor_campos[campo]["coordinates"],
-                                                                          proveedor_campos[campo]["method_ocr"],
-                                                                          proveedor_campos[campo]['regex'],
-                                                                          is_img_shown,
-                                                                          tesseract_exe_path=tesseract_exe_path))
+                                lectura = modg.lectura_campo(fila_img,
+                                                                proveedor_campos[campo]["coordinates"],
+                                                                proveedor_campos[campo]["method_ocr"],
+                                                                proveedor_campos[campo]['regex'],
+                                                                is_img_shown,
+                                                                tesseract_exe_path=tesseract_exe_path)
+                                if lectura[0].strip():
+                                    is_empty_row = False
+                                row_data[campo] = lectura
+                            # Si la fila esta vacia la elimino
+                            if not is_empty_row:
+                                for campo in campos_tabla:
+                                    if campo not in set_data or type(set_data[campo]) != list:
+                                        set_data[campo] = []
+                                    set_data[campo].append(row_data[campo])
+
                 elif proveedor_tabla["type"] == "no_lines":
                     for campo in campos_tabla:
                         # Creo el ROI que contiene la columna
@@ -279,7 +292,7 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
                                       cv.resize(column_img_to_show, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
                         set_data[campo] = []
                         # Por cada contorno leo el campo
-                        for box in boxes:
+                        for box in reversed(boxes):
                             set_data[campo].append(modg.lectura_campo(column_img,
                                                                       box,
                                                                       proveedor_campos[campo]["method_ocr"],
@@ -337,141 +350,6 @@ def main(proveedor: str, path_archivos: str, is_img_shown: bool = False,
             print(df_n)
             df = pd.concat([df, df_n], ignore_index=True)
 
-
-
-
-        # # Recorremos cada pagina
-        # pag_campos_data = []
-        # for n_pag in range(len(img_list)):
-        #     # Inicializo el diccionario de campos de la pagina
-        #     pag_campos_data.append({})
-        #     # Muestro hoja
-        #     if is_img_shown:
-        #         cv.imshow(PEDIDOS_WINDOW,
-        #                   cv.resize(img_list[n_pag], (shape_resized[1], shape_resized[0]), interpolation=cv.INTER_AREA))
-        #         cv.waitKey(1)
-        #     # Log
-        #     print("Num pag: " + str(n_pag + 1))
-        #     # Leemos los campos en la pagina
-        #     for campo in campos_hoja:
-        #         # Log
-        #         print("Campo: " + campo)
-        #         # Inicializo campo
-        #         pag_campos_data[n_pag][campo] = None
-        #         # Inicializo imagen de lectura
-        #         img_read = None
-        #         # Guardo configuracion de campo
-        #         config_campo = proveedor_data["fields"][campo]
-        #         # Compruebo que el campo se encuentra en la tabla o en la hoja
-        #         if config_campo['in_table']:
-        #             # Tabla
-        #             if img_table_info_list[n_pag]["has_header"]:
-        #                 img_read = img_table_info_list[n_pag]["roi"]
-        #         else:
-        #             # Hoja
-        #             if config_campo["pag"] == "all" or config_campo["pag"] == n_pag + 1:
-        #                 img_read = img_list[n_pag]
-        #         # Leo los datos de la hoja
-        #         if img_read is not None:
-        #             pag_campos_data[n_pag][campo] = modg.lectura_campo(img_read, config_campo["coordinates"],
-        #                                                                config_campo["method_ocr"],
-        #                                                                config_campo['regex'],
-        #                                                                config_campo['in_table'], is_img_shown,
-        #                                                                tesseract_exe_path=tesseract_exe_path)
-        #
-        #     # Leo tabla
-        #     if len(campos_tabla) > 0:
-        #         # Tabla
-        #         if img_table_info_list[n_pag]["has_header"]:
-        #             img_tabla = img_table_info_list[n_pag]["roi"]
-        #             cv.imshow("img_tabla",
-        #                       cv.resize(img_tabla, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
-        #             cv.waitKey(0)
-        #             lines = search_horiz_lines(img_tabla, 3, img_tabla.shape[1] - 30, True)
-        #             thresh = cv.threshold(img_tabla, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU)[1]
-        #             # Remove horizontal lines
-        #             horizontal_kernel = cv.getStructuringElement(cv.MORPH_RECT, (40, 1))
-        #             remove_horizontal = cv.morphologyEx(thresh, cv.MORPH_OPEN, horizontal_kernel, iterations=1)
-        #             cnts = cv.findContours(remove_horizontal, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-        #             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-        #             for c in cnts:
-        #                 cv.drawContours(img_tabla, [c], -1, (255, 255, 255), 5)
-        #             cv.imshow("img_tabla",
-        #                       cv.resize(img_tabla, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
-        #             cv.waitKey(0)
-        #             y1 = 0
-        #             y_end = img_tabla.shape[0]
-        #             for line in lines:
-        #                 y2 = line[0][1]
-        #                 roi = img_tabla[y1:y2]
-        #                 cv.imshow("img_tabla",
-        #                           cv.resize(roi, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
-        #                 cv.waitKey(0)
-        #                 y1 = line[0][1]
-        #             roi = img_tabla[y1:y_end]
-        #             cv.imshow("img_tabla",
-        #                       cv.resize(roi, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
-        #             cv.waitKey(0)
-        #
-        #     # Relleno el dataframe
-        #     # Compruebo que las listas de los campos en tabla no estan vacios
-        #     is_table_empty = False
-        #     for campo_tabla in campos_tabla:
-        #         # Si estan vacios no creo el dataframe
-        #         if pag_campos_data[n_pag][campo_tabla] is None or len(pag_campos_data[n_pag][campo_tabla][0]) < 1:
-        #             is_table_empty = True
-        #             break
-        #     # Si alguna lista de tabla no tiene valores, saltamos a la siguiente pagina
-        #     if is_table_empty:
-        #         continue
-        #     # Compruebo que los valores en hoja no sean nulos
-        #     for campo_hoja in campos_hoja:
-        #         # Si el valor del campo es nulo, copio el valor de las paginas anteriores
-        #         if pag_campos_data[n_pag][campo_hoja] is None:
-        #             for n_pag_prev in reversed(range(0, n_pag + 1)):
-        #                 if pag_campos_data[n_pag_prev][campo_hoja] is not None:
-        #                     pag_campos_data[n_pag][campo_hoja] = pag_campos_data[n_pag_prev][campo_hoja]
-        #                     break
-        #
-        #     # Extraigo el diccionario con el texto
-        #     pag_campos_dict = {}
-        #     for campo in pag_campos_data[n_pag]:
-        #         if type(pag_campos_data[n_pag][campo][0]) is list:
-        #             pag_campos_dict[campo] = []
-        #             pag_campos_dict["conf_" + campo] = []
-        #             for i in range(len(pag_campos_data[n_pag][campo])):
-        #                 pag_campos_dict[campo].append(pag_campos_data[n_pag][campo][i][0])
-        #                 pag_campos_dict["conf_" + campo].append(pag_campos_data[n_pag][campo][i][1])
-        #         else:
-        #             pag_campos_dict[campo] = pag_campos_data[n_pag][campo][0]
-        #             pag_campos_dict["conf_" + campo] = pag_campos_data[n_pag][campo][1]
-        #     # Creo el dataframe con los datos extraidos de la pagina
-        #     df_n = pd.DataFrame(pag_campos_dict)
-        #     print(df_n)
-        #     # Creo la lista de los nombres de las columnas auxiliares de confianza
-        #     conf_columnas = [x for x in list(pag_campos_dict.keys()) if x.startswith("conf_")]
-        #     print(df_n[conf_columnas])
-        #     # Creo la columna de confianza
-        #     df_n["confidence"] = df_n[conf_columnas].min(axis=1)
-        #     df_n = pd.DataFrame(df_n, columns=COLUMNAS)
-        #     # Relleno el valor de las columnas extra
-        #     if "archivo" in COLUMNAS:
-        #         df_n["archivo"] = filename
-        #     df_n["client"] = proveedor
-        #     # Recorro todas las filas del dataframe para comprobar si el formato del campo es correcto
-        #     for i in range(len(df_n)):
-        #         for campo in campos_validos:
-        #             # Aplico regex para comprobar el formato
-        #             reg_res = modg_func.regex_group(FORMATO_CAMPOS[campo], df_n.loc[i, campo])
-        #             # Si el formato no es correcto, el valor de confianza es -1
-        #             if reg_res is None or df_n.loc[i, campo] is None or len(reg_res) != len(df_n.loc[i, campo]):
-        #                 print(campo + " format not matching: " + df_n.loc[i, campo])
-        #                 df_n.loc[i, "confidence"] = -1
-        #     # Uno el data frame con el dataframe global
-        #     df = pd.concat([df, df_n], ignore_index=True)
-        #     print("Dataframe pag " + str(n_pag + 1) + ":")
-        #     print(df_n)
-
         # Elimino las ventanas de visualizacion
         if is_img_shown: cv.destroyWindow(PEDIDOS_WINDOW)
 
@@ -508,17 +386,18 @@ proveedor = "Engine Power Compoments"
 proveedor = "EMP"
 proveedor = "Thyssenkrupp Crankshaft"
 proveedor = "Thyssenkrupp Campo Limpo"
-proveedor = "WorldClass Industries"
 proveedor = "ESP"
+proveedor = "WorldClass Industries"
 
 path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 path_archivos = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
 path_archivos = r"extra\Thyssenkrupp Campo Limpo"
 path_archivos = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
 path_archivos = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
-path_archivos = r"CLIIENTES JOHN DEERE\WorldClass Industries"
 path_archivos = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
 path_archivos = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
+path_archivos = r"test"
+path_archivos = r"CLIIENTES JOHN DEERE\WorldClass Industries"
 path_archivos = os.path.join(path_root, path_archivos)
 
 main(proveedor, path_archivos, is_img_shown=False, path_root=".")
