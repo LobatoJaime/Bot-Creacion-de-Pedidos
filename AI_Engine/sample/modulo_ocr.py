@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from Packages.constants import tesseract_exe_online_path
 from AI_Engine.sample import doc_layout_analysis
-from AI_Engine.sample import modulo_general_func as modg_func
+from AI_Engine.sample import modulo_basic_functions as mod_basic
 
 
 def get_contornos_lineas(gray):
@@ -32,7 +32,7 @@ def get_contornos_lineas(gray):
         # Extraigo la box del contorno
         box = cv2.boundingRect(c)
         # Ajusto los puntos
-        x1, y1, x2, y2 = modg_func.aumentar_box(box, gray.shape, (0, 6, 0, 6))
+        x1, y1, x2, y2 = mod_basic.aumentar_box(box, gray.shape, (0, 6, 0, 6))
         boxes.append(x1, y1, x2, y2)
 
     return boxes
@@ -87,8 +87,7 @@ def procesamiento_img(roi, method):
     return img_procesada, custom_config
 
 
-def lectura_texto(gray, method=0, is_img_shown=False,
-                  tesseract_exe_path=None):
+def lectura_texto(gray, tesseract_exe_path, method=0, is_img_shown=False):
     """
     Reconoce el texto de una imagen. Se pueden indicar diferentes metodos
     Devuelve una lista de textos junto a un valor de confianza.

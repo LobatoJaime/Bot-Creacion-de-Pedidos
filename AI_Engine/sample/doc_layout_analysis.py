@@ -1,7 +1,7 @@
 # import necessary packages
 import numpy as np
 import cv2
-from AI_Engine.sample import modulo_general_func as modg_func
+from AI_Engine.sample import modulo_basic_functions as modg_func
 import os
 
 
@@ -72,7 +72,7 @@ def process_line(gray, output):
 
     for cnt in contours:
         box = cv2.boundingRect(cnt)
-        x1, y1, x2, y2 = modg_func.aumentar_box(box, gray.shape, (1, 5, 0, 0))
+        x1, y1, x2, y2 = modg_func.aumentar_box(box, gray.shape, (3, 7, 2, 2))
         boxes.append((x1, y1, x2, y2))
         if output is not None:
             cv2.rectangle(output, (x1, y1), (x2, y2), (0, 255, 0), 1)

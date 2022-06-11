@@ -2,7 +2,7 @@ import os
 import sys
 import cv2 as cv
 from pdf2image import convert_from_path
-from Packages.constants import poppler_online_path
+
 
 def vconcat_resize(img_list, interpolation=cv.INTER_CUBIC):
     """
@@ -34,7 +34,7 @@ def close_windows(message):
     print(message)
 
 
-def pdf_to_img(path, poppler_path: str, is_gray=True):
+def pdf_to_img(path, poppler_path: str = None, erase_img: bool = True):
     """
     Convierte archivo pdf a lista de imagenes
     """
@@ -49,13 +49,13 @@ def pdf_to_img(path, poppler_path: str, is_gray=True):
         images[i].save(path_img, 'JPEG')
         # Lectura de imagen
         img_i = cv.imread(path_img, cv.IMREAD_COLOR)
-        if is_gray:
-            img_i = cv.cvtColor(img_i, cv.COLOR_BGR2GRAY)
         list_img.append(img_i)
         # Borrado de archivo de imagen
-        os.remove(path_img)
+        if erase_img:
+            os.remove(path_img)
 
     return list_img
+
 
 def aumentar_box(box, img_shape, resize_config):
     """

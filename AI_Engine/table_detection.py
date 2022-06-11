@@ -5,6 +5,9 @@ import cv2 as cv
 def main():
     # Load source image
     path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\JD SARAN\t54-1.jpg"
+    path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\ESP\t14-1.jpg"
+    path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\Skyway\t0-1.jpg"
+    path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf-1.jpg"
     src = cv.imread(path)
 
     # Check if image is loaded fine
@@ -41,7 +44,7 @@ def main():
     horizontalsize = int(horizontal.shape[1] / scale)
 
     # Create structure element for extracting horizontal lines through morphology operations
-    horizontalStructure = cv.getStructuringElement(cv.MORPH_RECT, (horizontalsize, 1));
+    horizontalStructure = cv.getStructuringElement(cv.MORPH_RECT, (horizontalsize, 1))
 
     # Apply morphology operations
     horizontal = cv.erode(horizontal, horizontalStructure, (-1, -1))
@@ -106,7 +109,9 @@ def main():
             rois.append(rsz[y1:y1+h, x1:x1+w].copy())
 
         cv.drawContours(rsz, [cnt], -1, (0, 0, 255), 5)
+        cv.rectangle(rsz, (x1, y1), (x1+w, y1+h), (0, 255, 0), 1,)
 
+    cv.imshow("rsz", rsz)
     for roi in rois:
         cv.imshow("roi", roi)
         cv.waitKey(0)

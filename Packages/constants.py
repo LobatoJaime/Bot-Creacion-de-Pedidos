@@ -27,6 +27,7 @@ actual_version = 'v5.6.0'
 ai_supported_clients = ["Engine Power Compoments", "Thyssenkrupp Campo Limpo",
                         "WorldClass Industries", "EMP", "Thyssenkrupp Crankshaft", "WorldClass Industries EU"]
 ai_supported_clients.sort()
+ai_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files"
 poppler_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\poppler-22.01.0\Library\bin"
 poppler_online_folder_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\poppler-22.01.0"
 tesseract_exe_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\Tesseract-OCR\tesseract.exe"

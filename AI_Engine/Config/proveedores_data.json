@@ -269,7 +269,7 @@
     },
   "EMP": {
     "table": {
-      "table_coordinates": {
+      "coordinates": {
         "all": [
           null,
           null,
@@ -465,6 +465,76 @@
           null,
           312,
           null
+        ],
+        "method_ocr": 4
+      },
+      "arrival_date": null
+    }
+  },
+  "JD REMAN": {
+    "table": {
+      "coordinates": {
+        "1": [
+          null,
+          676,
+          null,
+          null
+        ],
+        "all": [
+          null,
+          298,
+          null,
+          2171
+        ]
+      },
+      "type": "lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": 1,
+        "regex": [],
+        "coordinates": [
+          960,
+          330,
+          1187,
+          379
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["[a-zA-Z]+\\d{4,}"],
+        "coordinates": [
+          85,
+          null,
+          840,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["\\d+(,\\d+)*"],
+        "coordinates": [
+          846,
+          null,
+          1009,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date":  {
+        "in_table": false,
+        "pag": 1,
+        "regex": [],
+        "coordinates": [
+          1005,
+          740,
+          1170,
+          782
         ],
         "method_ocr": 4
       },

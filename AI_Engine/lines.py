@@ -13,7 +13,7 @@ def search_horiz_lines(image, method, minDist):
     fy_resize = 1
 
     image_to_show = image.copy()
-    if len(image) == 3:
+    if len(image.shape) == 3:
         gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     else:
         gray = image.copy()
@@ -127,10 +127,10 @@ def search_horiz_lines(image, method, minDist):
     for line in output_aux:
         cv.line(image_to_show, line[0], line[1], (0, 0, 255), 3,
                 cv.LINE_AA)
-        cv.imshow("lines in image",
-                  cv.resize(image_to_show, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
-        cv.waitKey(0)
-    cv.destroyWindow("lines in image")
+    #     cv.imshow("lines in image",
+    #               cv.resize(image_to_show, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
+    #     cv.waitKey(0)
+    # cv.destroyWindow("lines in image")
 
     return output
 

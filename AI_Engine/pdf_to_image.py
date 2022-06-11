@@ -1,9 +1,7 @@
-from pdf2image import convert_from_path
+from AI_Engine.sample import modulo_basic_functions as mod_basic
 
 path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\JD REMAN\t76.pdf"
-pag_num = 1
-# Conversion pdf a jpg
-images = convert_from_path(path)
-path = path + "-" + str(pag_num) + '.jpg'
-images[pag_num - 1].save(path, 'JPEG')
+path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
+mod_basic.pdf_to_img(path, erase_img=False)
+print("PDF convertido a imagen")
 

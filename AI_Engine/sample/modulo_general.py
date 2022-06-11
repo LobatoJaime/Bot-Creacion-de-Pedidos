@@ -1,10 +1,12 @@
 import re
 import cv2 as cv
 from AI_Engine.sample.modulo_ocr import lectura_texto
-from AI_Engine.sample import modulo_general_func as modg_func
+from AI_Engine.sample import modulo_basic_functions as mod_basic
 
 
 def apply_list_template_matching(img, template_list):
+    """Busca una lista de templates en una imagen. Escoge el template con mayor coincidencia y devuelve las
+    coordenadas top left y bottom right"""
     output = (None, None), (None, None), -1
     for template in template_list:
         result = apply_template_matching(img, template)
@@ -15,13 +17,20 @@ def apply_list_template_matching(img, template_list):
 
 def apply_template_matching(img, template):
     """
-    Busca una imagen template en una imagen. Devuelve las coordenadas top left y bottom right
+    Busca una imagen template en una imagen. Devuelve las coordenadas top left y bottom right, junto a valor maximo
+    de coincidencia
     """
     result = (None, None), (None, None), -1
     if template is None:
         return result
     # Get template shape
-    w, h = template.shape[::-1]
+    h, w = template.shape[:2]
+    # Transformamos la imagen o el template a escala de grises si uno de los dos ya lo estan
+    if len(template.shape) == 2 or len(img.shape) == 2:
+        if len(template.shape) == 3:
+            template = cv.cvtColor(template, cv.COLOR_BGR2GRAY)
+        if len(img.shape) == 3:
+            img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # Apply template Matching
     res = cv.matchTemplate(img, template, cv.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
@@ -36,35 +45,43 @@ def apply_template_matching(img, template):
     return result
 
 
-def lectura_campo(img, points, method=0, regex=[], is_img_shown=False,
-                  tesseract_exe_path=None):
+def lectura_campo(img, points, tesseract_exe_path, method=None, regex=[], is_img_shown=False):
     """
-    Lector de caracteres a través de un imagen. La imagen debe estar en escala de grises
-    Argumentos:
-        img: imagen donde se leerá el texto
-        points: tupla de coordenadas de la imagen donde se leerá el texto
-        is_multiple: indica método de lectura. Si está a true, trata el texto por filas
-        is_img_shown: activa la visualización de las imágenes
+    Lector de caracteres a través de un imagen
+    Parameters:
+        img: Imagen donde se leerá el texto
+        points: Tupla de coordenadas de la imagen donde se leerá el texto
+        method: Metodo de lectura
+        regex: Lista de filtros regex para busqueda de texto
+        is_img_shown: Activa la visualización de las imágenes
+        tesseract_exe_path: Ruta del ejecutable de Tesseract
     Returns:
-        Lista de strings o string con el texto reconocido
+        (Texto leido, confianza de la lectura)
     """
 
-    if method is None:
-        method = 0
+    # region Preparacion parametros
+    # Metodo por defecto
+    method = 0 if method is None else method
+
+    # Transformamos la imagen a escala de grises si no lo esta
+    if len(img.shape) == 3:
+        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    else:
+        gray = img.copy()
 
     # Creo el ROI donde se leera el texto
     ix, iy, fx, fy = points
-    roi = img[iy:fy, ix:fx]
+    roi = gray[iy:fy, ix:fx]
 
     # Leo el texto
-    list_lectura = lectura_texto(roi, method, is_img_shown, tesseract_exe_path=tesseract_exe_path)
+    list_lectura = lectura_texto(roi, tesseract_exe_path, method, is_img_shown)
     # Inicializo el resultado (texto vacio y valor de confianza minimo)
     text = ""
     if len(list_lectura) > 0:
         conf = min(list_lectura, key=lambda lectura: lectura[1])[1]
     else:
         conf = -2
-        # Aplico regex
+    # Aplico regex
     if len(regex) > 0:
         # Ordeno los resultados por valores de confianza de mayor a menor
         list_lectura = reversed(sorted(list_lectura, key=lambda lectura: lectura[1]))
@@ -89,6 +106,7 @@ def lectura_campo(img, points, method=0, regex=[], is_img_shown=False,
 
 def regex_group(reg, input_text):
     """
+    Aplica un filtro regex a un texto y devuelve el texto coincidente. Si no coincide o hay algun error, devuelve None
     Arguments:
         reg: Regex string
         input_text: String to apply the regex
@@ -116,7 +134,7 @@ def create_table_img(img_list, img_table_header, img_table_end, table_coordinate
         Imagen de la tabla
     """
     img_list_table = create_table_list(img_list, img_table_header, img_table_end, table_coordinates)
-    return modg_func.vconcat_resize(img_list_table)
+    return mod_basic.vconcat_resize(img_list_table)
 
 
 def create_table_info_list(img_list, img_table_header_list, img_table_end_list, table_coordinates):
