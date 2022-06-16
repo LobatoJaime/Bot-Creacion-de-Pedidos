@@ -154,7 +154,7 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
 
     # region Table mask
     # create a mask which includes the tables
-    mask = horizontal + vertical
+    mask = cv.bitwise_or(horizontal, vertical)
     cv.imshow("mask", cv.resize(mask, None, fx=visualization_size_factor, fy=visualization_size_factor,
                                 interpolation=cv.INTER_AREA))
     # endregion
@@ -213,16 +213,20 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
         for cnt_v in contours_v:
             # calculate moments for each contour
             M = cv.moments(cnt_v)
-            # calculate x coordinate of center
+            # calculate x, y coordinate of center
             cX = int(M["m10"] / M["m00"]) if M["m00"] != 0 else 0
-            vertical_lines_x_pos.append((cX, cnt_v))
+            cY = int(M["m01"] / M["m00"]) if M["m00"] != 0 else 0
+            extTop = tuple(cnt_v[cnt_v[:, :, 1].argmin()][0])[1]
+            extBot = tuple(cnt_v[cnt_v[:, :, 1].argmax()][0])[1]
+            vertical_lines_x_pos.append(((cX, cY, extTop, extBot), cnt_v))
         # Ordenamos las lineas verticales
-        vertical_lines_x_pos.sort(key=lambda x: x[0])
+        vertical_lines_x_pos.sort(key=lambda x: x[0][1])  # Arriba -> abajo
+        vertical_lines_x_pos.sort(key=lambda x: x[0][0])  # Izq -> der
         for vertical_line in vertical_lines_x_pos:
             if len(table_data["vertical_lines_x_pos"]) == 0:
                 table_data["vertical_lines_x_pos"].append(vertical_line)
             else:
-                if vertical_line[0] - table_data["vertical_lines_x_pos"][-1][0] > 2:
+                if vertical_line[0][0] - table_data["vertical_lines_x_pos"][-1][0][0] > 2:
                     table_data["vertical_lines_x_pos"].append(vertical_line)
         # endregion
 
@@ -234,16 +238,20 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
         for cnt_h in contours_h:
             # calculate moments for each contour
             M = cv.moments(cnt_h)
-            # calculate x coordinate of center
+            # calculate x, y coordinate of center
+            cX = int(M["m10"] / M["m00"]) if M["m00"] != 0 else 0
             cY = int(M["m01"] / M["m00"]) if M["m00"] != 0 else 0
-            horizontal_lines_y_pos.append((cY, cnt_h))
+            extLeft = tuple(cnt_h[cnt_h[:, :, 0].argmin()][0])[0]
+            extRight = tuple(cnt_h[cnt_h[:, :, 0].argmax()][0])[0]
+            horizontal_lines_y_pos.append(((cX, cY, extLeft, extRight), cnt_h))
         # Ordenamos las lineas verticales
-        horizontal_lines_y_pos.sort(key=lambda x: x[0])
+        horizontal_lines_y_pos.sort(key=lambda x: x[0][0])  # Izq -> der
+        horizontal_lines_y_pos.sort(key=lambda x: x[0][1])  # Arriba -> abajo
         for horizontal_line in horizontal_lines_y_pos:
             if len(table_data["horizontal_lines_y_pos"]) == 0:
                 table_data["horizontal_lines_y_pos"].append(horizontal_line)
             else:
-                if horizontal_line[0] - table_data["horizontal_lines_y_pos"][-1][0] > 2:
+                if horizontal_line[0][1] - table_data["horizontal_lines_y_pos"][-1][0][1] > 2:
                     table_data["horizontal_lines_y_pos"].append(horizontal_line)
         # endregion
 
@@ -253,95 +261,161 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
         #                                 fy=visualization_size_factor,
         #                                 interpolation=cv.INTER_AREA))
 
-        # Recorro las lineas verticales y horizontales para encontrar las celdas
-        cells = []
-        cells_img = np.zeros((h, w), np.uint8)
-        # Busco si hay joint entre las lineas
-        for h_i_1 in range(len(horizontal_lines_y_pos)):
-            pos_y_1, cnt_h_1 = horizontal_lines_y_pos[h_i_1]
-            horizontal_1 = np.zeros((h, w), np.uint8)
-            cv.drawContours(horizontal_1, [cnt_h_1], -1, (255, 255, 255), thickness=cv.FILLED)
-            cv.imshow("horizontal_1", cv.resize(horizontal_1, None, fx=visualization_size_factor,
-                                                fy=visualization_size_factor,
-                                                interpolation=cv.INTER_AREA))
-            for v_i_1 in range(len(vertical_lines_x_pos)):
-                pos_x_1, cnt_v_1 = vertical_lines_x_pos[v_i_1]
-                vertical_1 = np.zeros((h, w), np.uint8)
-                cv.drawContours(vertical_1, [cnt_v_1], -1, (255, 255, 255), thickness=cv.FILLED)
-                cv.imshow("vertical_1", cv.resize(vertical_1, None, fx=visualization_size_factor,
-                                                  fy=visualization_size_factor,
-                                                  interpolation=cv.INTER_AREA))
+        # region Busqueda celdas 1
+        # # Recorro las lineas verticales y horizontales para encontrar las celdas
+        # cells = []
+        # cells_img = np.zeros((h, w), np.uint8)
+        # # Busco si hay joint entre las lineas
+        # for h_i_1 in range(len(horizontal_lines_y_pos)):
+        #     (_, pos_h_y_1, extLeft_h_1, _), cnt_h_1 = horizontal_lines_y_pos[h_i_1]
+        #     horizontal_1 = np.zeros((h, w), np.uint8)
+        #     cv.drawContours(horizontal_1, [cnt_h_1], -1, (255, 255, 255), thickness=cv.FILLED)
+        #     # cv.imshow("horizontal_1", cv.resize(horizontal_1, None, fx=visualization_size_factor,
+        #     #                                     fy=visualization_size_factor,
+        #     #                                     interpolation=cv.INTER_AREA))
+        #     for v_i_1 in range(len(vertical_lines_x_pos)):
+        #         (pos_v_x_1, _,  extTop_v_1, _),  cnt_v_1 = vertical_lines_x_pos[v_i_1]
+        #         vertical_1 = np.zeros((h, w), np.uint8)
+        #         cv.drawContours(vertical_1, [cnt_v_1], -1, (255, 255, 255), thickness=cv.FILLED)
+        #         # cv.imshow("vertical_1", cv.resize(vertical_1, None, fx=visualization_size_factor,
+        #         #                                   fy=visualization_size_factor,
+        #         #                                   interpolation=cv.INTER_AREA))
+        #
+        #         joint_1_1 = cv.bitwise_and(horizontal_1, vertical_1)
+        #         joint_1_1 = cv.dilate(joint_1_1, circularStructure, (-1, -1))
+        #         cv.imshow("joint_1_1", cv.resize(joint_1_1, None, fx=visualization_size_factor,
+        #                                          fy=visualization_size_factor,
+        #                                          interpolation=cv.INTER_AREA))
+        #         cv.imshow("mask1_1", cv.resize(horizontal_1 + vertical_1, None, fx=visualization_size_factor,
+        #                                     fy=visualization_size_factor,
+        #                                     interpolation=cv.INTER_AREA))
+        #         joint_1_1_contour, _ = cv.findContours(joint_1_1, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        #         # Si no hay joint, salto al siguiente
+        #         if len(joint_1_1_contour) < 1:
+        #             continue
+        #         print("joint1_1 found")
+        #         v_i_2, h_i_2 = v_i_1 + 1, h_i_1 + 1
+        #         cv.waitKey(10)
+        #         # Busco el joint_2_2
+        #         cell_found = False
+        #         while h_i_2 < len(horizontal_lines_y_pos) and v_i_2 < len(vertical_lines_x_pos) and not cell_found:
+        #             # Busco el joint_1_2
+        #             (pos_v_x_2, pos_v_y_2, extTop_v_2, extBot_v_2), cnt_v_2 = vertical_lines_x_pos[v_i_2]
+        #             # Si la linea 2 esta mas arriba que la linea 1 paso a la siguiente
+        #             # if extBot_v_2 > extTop_v_1:
+        #             if extTop_v_2 <= pos_h_y_1 <= extBot_v_2:
+        #                 vertical_2 = np.zeros((h, w), np.uint8)
+        #                 cv.drawContours(vertical_2, [cnt_v_2], -1, (255, 255, 255), thickness=cv.FILLED)
+        #                 joint_1_2 = cv.bitwise_and(horizontal_1, vertical_2)
+        #                 joint_1_2 = cv.dilate(joint_1_2, circularStructure, (-1, -1))
+        #                 joint_1_2_contour, _ = cv.findContours(joint_1_2, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        #                 # cv.imshow("vertical_2", cv.resize(vertical_2, None, fx=visualization_size_factor,
+        #                 #                                   fy=visualization_size_factor,
+        #                 #                                   interpolation=cv.INTER_AREA))
+        #                 cv.imshow("joint_1_2", cv.resize(joint_1_2, None, fx=visualization_size_factor,
+        #                                                  fy=visualization_size_factor,
+        #                                                  interpolation=cv.INTER_AREA))
+        #                 cv.imshow("mask1_2", cv.resize(horizontal_1 + vertical_2, None, fx=visualization_size_factor,
+        #                                             fy=visualization_size_factor,
+        #                                             interpolation=cv.INTER_AREA))
+        #                 cv.waitKey(10)
+        #                 # Busco el joint_2_1
+        #                 if len(joint_1_2_contour) > 0:
+        #                     print("joint_1_2 found")
+        #                     (_, pos_h_y_2, extLeft_h_2, extRight_h_2), cnt_h_2 = horizontal_lines_y_pos[h_i_2]
+        #                     # Si la linea 2 esta mas a la izquierda de la linea 1 paso a la siguiente
+        #                     # if extRight_h_2 > extLeft_h_1:
+        #                     if extLeft_h_2 <= pos_v_x_1 <= extRight_h_2:
+        #                         horizontal_2 = np.zeros((h, w), np.uint8)
+        #                         cv.drawContours(horizontal_2, [cnt_h_2], -1, (255, 255, 255), thickness=cv.FILLED)
+        #                         joint_2_1 = cv.bitwise_and(horizontal_2, vertical_1)
+        #                         joint_2_1 = cv.dilate(joint_2_1, circularStructure, (-1, -1))
+        #                         joint_2_1_contour, _ = cv.findContours(joint_2_1, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        #                         # cv.imshow("horizontal_2", cv.resize(horizontal_2, None, fx=visualization_size_factor,
+        #                         #                                     fy=visualization_size_factor,
+        #                         #                                     interpolation=cv.INTER_AREA))
+        #                         cv.imshow("joint_2_1", cv.resize(joint_2_1, None, fx=visualization_size_factor,
+        #                                                          fy=visualization_size_factor,
+        #                                                          interpolation=cv.INTER_AREA))
+        #                         cv.imshow("mask2_1", cv.resize(horizontal_2 + vertical_1, None, fx=visualization_size_factor,
+        #                                                     fy=visualization_size_factor,
+        #                                                     interpolation=cv.INTER_AREA))
+        #                         cv.waitKey(10)
+        #                         # Busco el joint_2_2
+        #                         if len(joint_2_1_contour) > 0:
+        #                             print("joint_2_1 found")
+        #                             joint_2_2 = cv.bitwise_and(horizontal_2, vertical_2)
+        #                             joint_2_2 = cv.dilate(joint_2_2, circularStructure, (-1, -1))
+        #                             joint_2_2_contour, _ = cv.findContours(joint_2_2, cv.RETR_CCOMP,
+        #                                                                    cv.CHAIN_APPROX_SIMPLE)
+        #                             cv.imshow("joint_2_2", cv.resize(joint_2_2, None, fx=visualization_size_factor,
+        #                                                              fy=visualization_size_factor,
+        #                                                              interpolation=cv.INTER_AREA))
+        #                             cv.imshow("mask2_2", cv.resize(horizontal_2 + vertical_2, None,
+        #                                                            fx=visualization_size_factor,
+        #                                                            fy=visualization_size_factor,
+        #                                                            interpolation=cv.INTER_AREA))
+        #                             cv.waitKey(10)
+        #                             # Busco el joint_2_2
+        #                             if len(joint_2_2_contour) > 0:
+        #                                 print("joint_2_2 found")
+        #                                 cell_found = True
+        #                                 cells.append(((pos_v_x_1, pos_h_y_1), (pos_v_x_2, pos_h_y_2)))
+        #                                 cv.rectangle(cells_img, (pos_v_x_1, pos_h_y_1), (pos_v_x_2, pos_h_y_2), (255, 255, 255), 1)
+        #                                 cv.circle(cells_img, (int(pos_v_x_1 + (pos_v_x_2 - pos_v_x_1)/2), int(pos_h_y_1 + (pos_h_y_2 - pos_h_y_1)/2)), 2, (255, 255, 255))
+        #                                 cv.imshow("cells_img", cv.resize(cells_img, None, fx=visualization_size_factor,
+        #                                                                     fy=visualization_size_factor,
+        #                                                                     interpolation=cv.INTER_AREA))
+        #                                 cv.waitKey(10)
+        #             # Me desplazo a la siguiente linea vertical
+        #             v_i_2 += 1
+        #             if v_i_2 >= len(vertical_lines_x_pos):
+        #                 v_i_2 = v_i_1 + 1
+        #                 # Bajo a la siguiente linea horizontal
+        #                 h_i_2 += 1
+        # endregion
 
-                joint_1_1 = cv.bitwise_and(horizontal_1, vertical_1)
-                joint_1_1 = cv.dilate(joint_1_1, circularStructure, (-1, -1))
-                cv.imshow("joint_1_1", cv.resize(joint_1_1, None, fx=visualization_size_factor,
-                                                 fy=visualization_size_factor,
-                                                 interpolation=cv.INTER_AREA))
-                joint_1_1_contour, _ = cv.findContours(joint_1_1, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-                # Si no hay joint, salto al siguiente
-                if len(joint_1_1_contour) < 1:
-                    continue
-                print("joint1_1 found")
-                v_i_2, h_i_2 = v_i_1 + 1, h_i_1 + 1
-                cv.waitKey(0)
-                # Busco el joint_2_2
-                cell_found = False
-                while h_i_2 < len(horizontal_lines_y_pos) and v_i_2 < len(vertical_lines_x_pos) and not cell_found:
-                    # Busco el joint_1_2
-                    pos_x_2, cnt_v_2 = vertical_lines_x_pos[v_i_2]
-                    vertical_2 = np.zeros((h, w), np.uint8)
-                    cv.drawContours(vertical_2, [cnt_v_2], -1, (255, 255, 255), thickness=cv.FILLED)
-                    joint_1_2 = cv.bitwise_and(horizontal_1, vertical_2)
-                    joint_1_2 = cv.dilate(joint_1_2, circularStructure, (-1, -1))
-                    joint_1_2_contour, _ = cv.findContours(joint_1_2, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-                    cv.imshow("vertical_2", cv.resize(vertical_2, None, fx=visualization_size_factor,
-                                                      fy=visualization_size_factor,
-                                                      interpolation=cv.INTER_AREA))
-                    cv.imshow("joint_1_2", cv.resize(joint_1_2, None, fx=visualization_size_factor,
-                                                     fy=visualization_size_factor,
-                                                     interpolation=cv.INTER_AREA))
-                    cv.waitKey(10)
-                    # Busco el joint_2_1
-                    if len(joint_1_2_contour) > 0:
-                        print("joint_1_2 found")
-                        pos_y_2, cnt_h_2 = horizontal_lines_y_pos[h_i_2]
-                        horizontal_2 = np.zeros((h, w), np.uint8)
-                        cv.drawContours(horizontal_2, [cnt_h_2], -1, (255, 255, 255), thickness=cv.FILLED)
-                        joint_2_1 = cv.bitwise_and(horizontal_2, vertical_1)
-                        joint_2_1 = cv.dilate(joint_2_1, circularStructure, (-1, -1))
-                        joint_2_1_contour, _ = cv.findContours(joint_2_1, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-                        cv.imshow("horizontal_2", cv.resize(horizontal_2, None, fx=visualization_size_factor,
-                                                            fy=visualization_size_factor,
-                                                            interpolation=cv.INTER_AREA))
-                        cv.imshow("joint_2_1", cv.resize(joint_2_1, None, fx=visualization_size_factor,
-                                                         fy=visualization_size_factor,
-                                                         interpolation=cv.INTER_AREA))
-                        cv.waitKey(10)
-                        # Busco el joint_2_2
-                        if len(joint_2_1_contour) > 0:
-                            print("joint_2_2 found")
-                            joint_2_2 = cv.bitwise_and(horizontal_2, vertical_2)
-                            joint_2_2 = cv.dilate(joint_2_2, circularStructure, (-1, -1))
-                            joint_2_2_contour, _ = cv.findContours(joint_2_2, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-                            cv.imshow("joint_2_2", cv.resize(joint_2_2, None, fx=visualization_size_factor,
-                                                             fy=visualization_size_factor,
-                                                             interpolation=cv.INTER_AREA))
-                            # Busco el joint_2_2
-                            if len(joint_2_1_contour) > 0:
-                                print("joint_2_2 found")
-                                cell_found = True
-                                cells.append(((pos_x_1, pos_y_1), (pos_x_2, pos_y_2)))
-                                cv.rectangle(cells_img, (pos_x_1, pos_y_1), (pos_x_2, pos_y_2), (255, 255, 255), 1)
-                                cv.imshow("cells_img", cv.resize(cells_img, None, fx=visualization_size_factor,
-                                                                    fy=visualization_size_factor,
-                                                                    interpolation=cv.INTER_AREA))
-                                cv.waitKey(10)
-                    # Me desplazo a la siguiente linea vertical
-                    v_i_2 += 1
-                    if v_i_2 >= len(vertical_lines_x_pos):
-                        v_i_2 = v_i_1 + 1
-                        # Bajo a la siguiente linea horizontal
-                        h_i_2 += 1
+        mask_table = mask[y1:y1 + h, x1:x1 + w].copy()
+        rsz_aux = rsz.copy()
+        cells_contours, _ = cv.findContours(mask_table, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        for cell_cnt in reversed(cells_contours):
+            rsz = rsz_aux.copy()
+            # calculate x, y coordinate of center
+            extLeft = tuple(cell_cnt[cell_cnt[:, :, 0].argmin()][0])[0]
+            extRight = tuple(cell_cnt[cell_cnt[:, :, 0].argmax()][0])[0]
+            extTop = tuple(cell_cnt[cell_cnt[:, :, 1].argmin()][0])[1]
+            extBot = tuple(cell_cnt[cell_cnt[:, :, 1].argmax()][0])[1]
+
+            # find the area of each contour
+            xCell, yCell, wCell, hCell = cv.boundingRect(cell_cnt)
+            area = cv.contourArea(cell_cnt)
+            cv.rectangle(rsz[y1:y1+h, x1:x1+w], (xCell, yCell), (xCell + wCell, yCell + hCell), (0, 0, 255), -1)
+            cv.drawContours(rsz[y1:y1+h, x1:x1+w], [cell_cnt], -1, (255, 0, 0), 3)
+            cv.circle(mask_table,
+                      (int(xCell + wCell / 2), int(yCell + hCell / 2)), 2,
+                      (255, 255, 255))
+            cv.circle(rsz[y1:y1+h, x1:x1+w],
+                      (int(xCell + wCell / 2), int(yCell + hCell / 2)), 5,
+                      (0, 255, 0), cv.FILLED)
+            cv.imshow("mask_table_inv",
+                      cv.resize(mask_table, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                interpolation=cv.INTER_AREA))
+            cv.imshow("rsz",
+                      cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                interpolation=cv.INTER_AREA))
+            cv.imshow("cell", rsz_aux[y1+yCell:y1+yCell+hCell, x1+xCell:x1+xCell+wCell])
+            cv.waitKey(0)
+            if extLeft == 0 or extRight == mask_table.shape[1]-1 or extTop == 0 or extBot == mask_table.shape[0]-1:
+                print("BAD cell")
+                continue
+            else:
+                print("Good cell")
+        cv.imshow("mask_table_inv", cv.resize(mask_table, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                    interpolation=cv.INTER_AREA))
+        cv.imshow("rsz",
+                  cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                            interpolation=cv.INTER_AREA))
+        cv.waitKey(0)
 
         cv.drawContours(rsz, [cnt], -1, (0, 0, 255), 5)
         cv.rectangle(rsz, (x1, y1), (x1 + w, y1 + h), (0, 255, 0), 1)
@@ -370,11 +444,10 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
 
     # white_bg = np.zeros(src.shape, dtype=np.uint8)
     #white_bg.fill(255)# get first masked value (foreground)
-    mask = cv.bitwise_not(mask)
-    fg = cv.bitwise_or(src, src, mask=cv.resize(mask, (src.shape[1], src.shape[0]), interpolation=cv.INTER_LINEAR))
+    mask_inv = cv.bitwise_not(mask)
+    fg = cv.bitwise_or(src, src, mask=cv.resize(mask_inv, (src.shape[1], src.shape[0]), interpolation=cv.INTER_LINEAR))
 
     # get second masked value (background) mask must be inverted
-    mask = cv.bitwise_not(mask)
     background = np.full(src.shape, 255, dtype=np.uint8)
     bk = cv.bitwise_or(background, background, mask=cv.resize(mask, (src.shape[1], src.shape[0]), interpolation=cv.INTER_LINEAR))
 
