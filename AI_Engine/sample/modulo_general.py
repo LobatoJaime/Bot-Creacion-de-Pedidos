@@ -45,7 +45,7 @@ def apply_template_matching(img, template):
     return result
 
 
-def lectura_campo(img, points, tesseract_exe_path, method=None, regex=[], is_img_shown=False):
+def lectura_campo(img, points, tesseract_exe_path, method=None, regex=None, is_img_shown=False):
     """
     Lector de caracteres a través de un imagen
     Parameters:
@@ -60,8 +60,8 @@ def lectura_campo(img, points, tesseract_exe_path, method=None, regex=[], is_img
     """
 
     # region Preparacion parametros
-    # Metodo por defecto
-    method = 0 if method is None else method
+    regex = [] if regex is None else regex
+    # endregion
 
     # Transformamos la imagen a escala de grises si no lo esta
     if len(img.shape) == 3:
@@ -70,7 +70,10 @@ def lectura_campo(img, points, tesseract_exe_path, method=None, regex=[], is_img
         gray = img.copy()
 
     # Creo el ROI donde se leera el texto
-    ix, iy, fx, fy = points
+    if len(points) == 4:
+        ix, iy, fx, fy = points
+    elif len(points) == 2:
+        (ix, iy), (fx, fy) = points
     roi = gray[iy:fy, ix:fx]
 
     # Leo el texto
@@ -151,11 +154,6 @@ def create_table_info_list(img_list, img_table_header_list, img_table_end_list, 
     img_table_info_list = []
     # Recorro la lista de imagenes
     for pag_i in range(0, len(img_list)):
-        info_dict = {
-            "has_header": False,
-            "has_end": False,
-            "roi": None
-        }
         # Limito la region donde se puede encontrar la tabla
         index = str(pag_i + 1) if str(pag_i + 1) in table_coordinates else "all"
         ix, iy, fx, fy = table_coordinates[index]
@@ -172,11 +170,11 @@ def create_table_info_list(img_list, img_table_header_list, img_table_end_list, 
         # Creo una nueva region que va desde el header hasta el end (si se ha encontrado)
         roi = roi[header_bottom_right[1]:end_top_left[1], header_top_left[0]:header_bottom_right[0]]
         # Inserto la informacion en el info dict
-        if header_top_left != (None, None):
-            info_dict["has_header"] = True
-        if end_top_left != (None, None):
-            info_dict["has_end"] = True
-        info_dict["roi"] = roi
+        info_dict = {
+            "header_coordinates": (header_top_left, header_bottom_right),
+            "end_coordinates": (end_top_left, end_bottom_right),
+            "roi": roi,
+        }
         # Inserto el diccionario en el img_table_info_list
         img_table_info_list.append(info_dict)
     return img_table_info_list
@@ -216,3 +214,23 @@ def create_table_list(img_list, img_table_header, img_table_end, table_coordinat
         if end_top_left != (None, None):
             break
     return img_list_table
+
+
+def create_combined_table_img(set_info_table, img_table_info_list):
+    # Creacion imagen combinada de la tabla del set
+    table_list = []
+    for table_pag in set_info_table:
+        if img_table_info_list[table_pag]["header_coordinates"] != (None, None):
+            table_list.append(img_table_info_list[table_pag]["roi"])
+    table_img = mod_basic.vconcat_resize(table_list)
+    return table_img
+
+
+def convert_rgb_to_grayscale(img):
+    if len(img.shape) == 3:
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    else:
+        img_gray = img.copy()
+    return img_gray
+
+

@@ -87,12 +87,13 @@ def procesamiento_img(roi, method):
     return img_procesada, custom_config
 
 
-def lectura_texto(gray, tesseract_exe_path, method=0, is_img_shown=False):
+def lectura_texto(gray, tesseract_exe_path, method=None, is_img_shown=False):
     """
     Reconoce el texto de una imagen. Se pueden indicar diferentes metodos
     Devuelve una lista de textos junto a un valor de confianza.
     """
     result = []
+    method = 0 if method is None else method
     img_to_show = gray.copy() if is_img_shown else None
 
     # Tesseract configuracion
@@ -145,6 +146,8 @@ def lectura_texto_data(img_procesada, custom_config):
     data = pd.DataFrame(data_dict)
     # Elimino las filas con valor de confianza -1
     data = data[data.conf != -1]
+    # Elimino las filas con valor de confianza menor que 50 (posibles fallos)
+    data = data[data.conf > 50]
     # data.to_excel(r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\dataFrameTESERACT.xlsx")
     # Creo las listas de texto extraido con su valor de confianza
     lines = data.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['text'] \

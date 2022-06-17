@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from AI_Engine.lines import search_horiz_lines
+from AI_Engine.sample import modulo_basic_functions as mod_basic
 
 
 def nothing(x):
@@ -81,8 +81,8 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
             {
                 "table_coordinates": (pt1, pt2),
                 "joints_coordinates": [(pt1, pt2), (pt1, pt2), ...],
-                "vertical_lines_y_pos": [y1, y2, ...],
-                "horizontal_lines_x_pos": [x1, x2, ...],
+                "vertical_lines_x_pos": [y1, y2, ...],
+                "horizontal_lines_y_pos": [x1, x2, ...],content_coordinates
                 "cells": [
                     {
                         "content_coordinates": (pt1, pt2),
@@ -186,8 +186,8 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
         table_data = {
             "table_coordinates": (),
             "joints_coordinates": [],
-            "vertical_lines_y_pos": [],
-            "horizontal_lines_x_pos": [],
+            "vertical_lines_x_pos": [],
+            "horizontal_lines_y_pos": [],
             "cells": [],
         }
 
@@ -233,13 +233,13 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
         vertical_lines_info.sort(key=lambda x: x[0][1])  # Arriba -> abajo
         vertical_lines_info.sort(key=lambda x: x[0][0])  # Izq -> der
         # Guardamos las posiciones y de las lineas verticales
-        vertical_lines_y_pos = []
+        vertical_lines_x_pos = []
         for vertical_line in vertical_lines_info:
-            if len(vertical_lines_y_pos) == 0:
-                vertical_lines_y_pos.append(vertical_line[0][0])
+            if len(vertical_lines_x_pos) == 0:
+                vertical_lines_x_pos.append(vertical_line[0][0])
             else:
-                if vertical_line[0][0] - vertical_lines_y_pos[-1] > 2:
-                    vertical_lines_y_pos.append(vertical_line[0][0])
+                if vertical_line[0][0] - vertical_lines_x_pos[-1] > 2:
+                    vertical_lines_x_pos.append(vertical_line[0][0])
         # endregion
 
         # region Horizontal lines Y position extraction
@@ -259,13 +259,13 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
         horizontal_lines_info.sort(key=lambda x: x[0][0])  # Izq -> der
         horizontal_lines_info.sort(key=lambda x: x[0][1])  # Arriba -> abajo
         # Guardamos las posiciones x de las lineas horizontales
-        horizontal_lines_x_pos = []
+        horizontal_lines_y_pos = []
         for horizontal_line in horizontal_lines_info:
-            if len(horizontal_lines_x_pos) == 0:
-                horizontal_lines_x_pos.append(horizontal_line[0][1])
+            if len(horizontal_lines_y_pos) == 0:
+                horizontal_lines_y_pos.append(horizontal_line[0][1])
             else:
-                if horizontal_line[0][1] - horizontal_lines_x_pos[-1] > 2:
-                    horizontal_lines_x_pos.append(horizontal_line[0][1])
+                if horizontal_line[0][1] - horizontal_lines_y_pos[-1] > 2:
+                    horizontal_lines_y_pos.append(horizontal_line[0][1])
         # endregion
 
         # region Busqueda celdas
@@ -273,8 +273,7 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
         mask_table = mask[y1:y2, x1:x2]
         cells_contours, _ = cv.findContours(mask_table, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         cells = []
-        # for cell_cnt in reversed(cells_contours):
-        for cell_cnt in cells_contours:
+        for cell_cnt in reversed(cells_contours):
             # Calculo de las coordenadas de la celda
             xCell, yCell, wCell, hCell = cv.boundingRect(cell_cnt)
             # Calculo de las coordenadas externas de la celda
@@ -298,19 +297,19 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
             #                     interpolation=cv.INTER_AREA))
             # cv.waitKey(0)
             # Buscamos las posiciones de las lineas verticales y horizontales que contienen a la celda
-            closestLeft = min(vertical_lines_y_pos, key=lambda x: abs(x - extLeft))
-            closestRight = min(vertical_lines_y_pos, key=lambda x: abs(x - extRight))
-            closestTop = min(horizontal_lines_x_pos, key=lambda x: abs(x - extTop))
-            closestBot = min(horizontal_lines_x_pos, key=lambda x: abs(x - extBot))
+            pt1, pt2 = mod_basic.get_closest_lines(vertical_lines_x_pos, horizontal_lines_y_pos,
+                                                   (extLeft, extTop), (extRight, extBot))
             cells.append({
-                "content_coordinates": ((int(xCell / size_factor), int(yCell / size_factor)), (int((xCell+hCell) / size_factor), int((yCell+wCell) / size_factor))),
-                "lines_coordinates": ((int(closestLeft / size_factor), int(closestTop / size_factor)), (int(closestRight / size_factor), int(closestBot / size_factor)))
+                "content_coordinates": ((int(xCell / size_factor), int(yCell / size_factor)),
+                                        (int((xCell+wCell) / size_factor), int((yCell+hCell) / size_factor))),
+                "lines_coordinates": ((int(pt1[0] / size_factor), int(pt1[1] / size_factor)),
+                                      (int(pt2[0] / size_factor), int(pt2[1] / size_factor)))
             })
         # endregion
 
         # region Table data output
-        table_data["vertical_lines_y_pos"] = [int(vertical_line_y_pos / size_factor) for vertical_line_y_pos in vertical_lines_y_pos]
-        table_data["horizontal_lines_x_pos"] = [int(horizontal_line_x_pos / size_factor) for horizontal_line_x_pos in horizontal_lines_x_pos]
+        table_data["vertical_lines_x_pos"] = [int(vertical_line_y_pos / size_factor) for vertical_line_y_pos in vertical_lines_x_pos]
+        table_data["horizontal_lines_y_pos"] = [int(horizontal_line_x_pos / size_factor) for horizontal_line_x_pos in horizontal_lines_y_pos]
         table_data["table_coordinates"] = ((int(x1 / size_factor), int(y1 / size_factor)),
                                       (int(x2 / size_factor), int(y2 / size_factor)))
         for joint_cnt in joints_contours:
@@ -339,21 +338,20 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
     # endregion
 
     # region Visualization
-    cv.imshow("rsz", cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
-                               interpolation=cv.INTER_AREA))
+    # cv.imshow("rsz", cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
+    #                            interpolation=cv.INTER_AREA))
     # endregion
 
-    # white_bg = np.zeros(src.shape, dtype=np.uint8)
-    #white_bg.fill(255)# get first masked value (foreground)
+    # region Image without table lines
+    # Get foreground
     mask_inv = cv.bitwise_not(mask)
     fg = cv.bitwise_or(src, src, mask=cv.resize(mask_inv, (src.shape[1], src.shape[0]), interpolation=cv.INTER_LINEAR))
-
     # get second masked value (background) mask must be inverted
     background = np.full(src.shape, 255, dtype=np.uint8)
     bk = cv.bitwise_or(background, background, mask=cv.resize(mask, (src.shape[1], src.shape[0]), interpolation=cv.INTER_LINEAR))
-
     # combine foreground+background
     src_no_lines = cv.bitwise_or(fg, bk)
+    # endregion
 
     return tables_data, src_no_lines
 
@@ -378,4 +376,4 @@ def main():
     get_table(src, tables_data)
 
 
-main()
+#main()

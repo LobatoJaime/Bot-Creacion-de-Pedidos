@@ -75,8 +75,34 @@ def aumentar_box(box, img_shape, resize_config):
         y1 = 0
     x2 = x2 + right
     if x2 > img_shape[1]:
-        x2 = img_shape[1]-1
+        x2 = img_shape[1] - 1
     y2 = y2 + down
     if y2 > img_shape[0]:
-        y2 = img_shape[0]-1
+        y2 = img_shape[0] - 1
     return x1, y1, x2, y2
+
+
+def is_point_en_rect(point, rect_coor):
+    x1, y1 = rect_coor[0]
+    x2, y2 = rect_coor[1]
+    x, y = point
+    if x1 < x < x2:
+        if y1 < y < y2:
+            return True
+    return False
+
+
+def get_closest_lines(vertical_lines_y_pos, horizontal_lines_x_pos, pt1, pt2):
+    closest_left = min(vertical_lines_y_pos, key=lambda y: abs(y - pt1[0]))
+    closest_top = min(horizontal_lines_x_pos, key=lambda x: abs(x - pt1[1]))
+    closest_right = min(vertical_lines_y_pos, key=lambda y: abs(y - pt2[0]))
+    closest_bot = min(horizontal_lines_x_pos, key=lambda x: abs(x - pt2[1]))
+    return (closest_left, closest_top), (closest_right, closest_bot)
+
+
+def sum_points(pt1, pt2):
+    return (pt1[0] + pt2[0], pt1[1] + pt2[1])
+
+
+def subs_points(pt1, pt2):
+    return (pt1[0] - pt2[0], pt1[1] - pt2[1])
