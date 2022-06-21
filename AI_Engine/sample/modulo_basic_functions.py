@@ -106,3 +106,8 @@ def sum_points(pt1, pt2):
 
 def subs_points(pt1, pt2):
     return (pt1[0] - pt2[0], pt1[1] - pt2[1])
+
+
+def area_rect(pt1, pt2):
+    pt3 = subs_points(pt1, pt2)
+    return abs(pt3[0] * pt3[1])

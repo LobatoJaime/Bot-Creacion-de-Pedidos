@@ -581,14 +581,14 @@
         "in_table": true,
         "pag": null,
         "regex": ["[a-zA-Z]+\\d{4,}"],
-        "lines_column": [2, 3],
+        "column_pos": 2,
         "method_ocr": 4
       },
       "quantity": {
         "in_table": true,
         "pag": null,
         "regex": ["\\d+(,\\d+)*"],
-        "lines_column": [6, 7],
+        "column_pos": 6,
         "method_ocr": 4
       },
       "ship_out_date": null,
@@ -596,7 +596,7 @@
         "in_table": true,
         "pag": null,
         "regex": [],
-        "lines_column": [5,6],
+        "column_pos": 5,
         "method_ocr": 4
       }
     }

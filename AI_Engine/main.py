@@ -8,10 +8,13 @@ Created on Mon Apr 04 13:51:56 2022
 import cv2 as cv
 import os
 import pandas as pd
+import numpy as np
 import json
 from AI_Engine.sample import modulo_general as modg
-from AI_Engine.sample import modulo_basic_functions as modg_func
+from AI_Engine.sample import modulo_basic_functions as mod_basic
 from AI_Engine.sample import doc_layout_analysis
+from AI_Engine.sample import table_detection
+from AI_Engine.sample import dataframe_handling as df_handling
 from AI_Engine.format_table import FormatTable
 from AI_Engine.lines import search_horiz_lines
 from Packages.constants import poppler_online_path, tesseract_exe_online_path, ai_online_path
@@ -99,16 +102,16 @@ def main(proveedor: str, pedidos_path: str,
         with open(FILEPATH_PROVEEDORES_DATA, 'r') as openfile:
             proveedores_data = json.load(openfile)
     else:
-        modg_func.close_windows("Configuracion de proveedores no encontrada")
+        mod_basic.close_windows("Configuracion de proveedores no encontrada")
         return
     # Compruebo que existe el proveedor
     if proveedor not in proveedores_data:
-        modg_func.close_windows("Configuracion de proveedores no contiene información del proveedor")
+        mod_basic.close_windows("Configuracion de proveedores no contiene información del proveedor")
         return
     else:
         # Compruebo que sea un diccionario
         if not type(proveedores_data[proveedor]) is dict:
-            modg_func.close_windows("El formato de la Configuracion de proveedores no es correcta")
+            mod_basic.close_windows("El formato de la Configuracion de proveedores no es correcta")
             return
     # endregion
 
@@ -119,7 +122,7 @@ def main(proveedor: str, pedidos_path: str,
         with open(FILEPATH_FORMATO_CAMPOS, 'r') as openfile:
             formato_campos = json.load(openfile)
     else:
-        modg_func.close_windows("Configuracion de formato no encontrado")
+        mod_basic.close_windows("Configuracion de formato no encontrado")
         return
     # Formateo el diccionario
     for campo in formato_campos:
@@ -159,7 +162,7 @@ def main(proveedor: str, pedidos_path: str,
         print(filename + ":")
 
         # region Conversion PDF a imagen
-        img_list = modg_func.pdf_to_img(os.path.join(filename), poppler_path=poppler_path)
+        img_list = mod_basic.pdf_to_img(os.path.join(filename), poppler_path=poppler_path)
         # endregion
 
         # region Visualizacion pedido
@@ -193,15 +196,15 @@ def main(proveedor: str, pedidos_path: str,
         sets_info = []
         # Recorremos cada pagina
         for n_pag in range(len(img_list)):
-            setInfo = {}
+            set_info = {}
             # Recorro campos fijos para crear el set de info
             for campo in campos_hoja:
                 if proveedor_campos[campo]["pag"] == "all" or proveedor_campos[campo]["pag"] == n_pag + 1:
-                    setInfo[campo] = n_pag
+                    set_info[campo] = n_pag
             # Si hay campos hoja en la pagina, creamos nuevo set
-            if setInfo != {}:
-                setInfo["table"] = [n_pag]
-                sets_info.append(setInfo)
+            if set_info != {}:
+                set_info["table"] = [n_pag]
+                sets_info.append(set_info)
             # Si no hay campos hoja, actualizamos el campo tabla del ultimo set
             else:
                 sets_info[-1]["table"].append(n_pag)
@@ -233,25 +236,13 @@ def main(proveedor: str, pedidos_path: str,
         # region Creacion de sets de datos
         set_data_list = []
         # Recorremos cada set de informacion
-        for setInfo in sets_info:
+        for set_info in sets_info:
             set_data = {}
-
-            # region Creacion imagen combinada de la tabla del set
-            table_list = []
-            for table_pag in setInfo["table"]:
-                if img_table_info_list[table_pag]["has_header"]:
-                    table_list.append(img_table_info_list[table_pag]["roi"])
-            table_img = modg_func.vconcat_resize(table_list)
-            if len(table_img.shape) == 3:
-                table_img_gray = cv.cvtColor(table_img, cv.COLOR_BGR2GRAY)
-            else:
-                table_img_gray = table_img.copy()
-            # endregion
 
             # region Lectura campos hoja
             for campo in campos_hoja:
-                if setInfo[campo] is not None:
-                    img_read = img_list[setInfo[campo]]
+                if set_info[campo] is not None:
+                    img_read = img_list[set_info[campo]]
                     set_data[campo] = modg.lectura_campo(img_read,
                                                          proveedor_campos[campo]["coordinates"],
                                                          tesseract_exe_path,
@@ -268,115 +259,280 @@ def main(proveedor: str, pedidos_path: str,
             for campo in campos_tabla:
                 set_data[campo] = []
             # Leo campos tabla
-            if table_img is not None and len(campos_tabla) > 0:
+            if len(campos_tabla) > 0:
 
                 # region Tabla "lines"
                 if proveedor_tabla["type"] == "lines":
 
-                    # region Visualizacion tabla del set
-                    if is_img_shown:
-                        cv.imshow("img_table",
-                                  cv.resize(table_img, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
-                        cv.waitKey(0)
-                        cv.destroyWindow("img_table")
+                    # region Creacion tabla combinada
+                    table_img = modg.create_combined_table_img(set_info["table"], img_table_info_list)
                     # endregion
 
-                    # region Busqueda de lineas horizontales
-                    lines = search_horiz_lines(table_img_gray, 3, table_img_gray.shape[1] - 30)
-                    # endregion
+                    if table_img is not None:
 
-                    # region Eliminacion de lineas horizontales
-                    thresh = cv.threshold(table_img_gray, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU)[1]
-                    horizontal_kernel = cv.getStructuringElement(cv.MORPH_RECT, (40, 1))
-                    remove_horizontal = cv.morphologyEx(thresh, cv.MORPH_OPEN, horizontal_kernel, iterations=1)
-                    cnts = cv.findContours(remove_horizontal, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-                    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-                    tabla_procesada = table_img_gray.copy()
-                    for c in cnts:
-                        cv.drawContours(tabla_procesada, [c], -1, (255, 255, 255), 5)
+                        # region Conversion tabla a escala de grises
+                        table_img_gray = modg.convert_rgb_to_grayscale(table_img)
+                        # endregion
 
-                    # region Visualizacion tabla sin lineas
-                    if is_img_shown:
-                        cv.imshow("tabla_procesada",
-                                  cv.resize(tabla_procesada, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
-                        cv.waitKey(0)
-                        cv.destroyWindow("tabla_procesada")
-                    # endregion
-
-                    # endregion
-
-                    # region Creacion de lista de imagenes por fila de tabla
-                    filas_img = []
-                    y1, y_end = 0, tabla_procesada.shape[0]
-                    for line in lines:
-                        y2 = line[0][1]
-                        filas_img.append(tabla_procesada[y1:y2])
-                        y1 = y2
-                    filas_img.append(tabla_procesada[y1:y_end])
-                    # endregion
-
-                    # region Lectura de campos
-                    # Recorro las imagenes de las filas
-                    for fila_img in filas_img:
-
-                        # region Visualizacion fila
+                        # region Visualizacion tabla del set
                         if is_img_shown:
-                            cv.imshow("fila",
-                                      cv.resize(fila_img, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                            cv.imshow("img_table",
+                                      cv.resize(table_img, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
                             cv.waitKey(0)
-                            cv.destroyWindow("fila")
+                            cv.destroyWindow("img_table")
                         # endregion
 
-                        # region Lectura de campo por fila
-                        row_data = {}
-                        is_empty_row = True  # Variable para determinar si la fila esta vacia
-                        for campo in campos_tabla:
-                            # Leo el campo
-                            lectura = modg.lectura_campo(fila_img,
-                                                         proveedor_campos[campo]["coordinates"],
-                                                         tesseract_exe_path,
-                                                         proveedor_campos[campo]["method_ocr"],
-                                                         proveedor_campos[campo]['regex'],
-                                                         is_img_shown)
-                            # El campo no esta vacio
-                            if lectura[0].strip():
-                                is_empty_row = False
-
-                            row_data[campo] = lectura
+                        # region Busqueda de lineas horizontales
+                        lines = search_horiz_lines(table_img_gray, 3, table_img_gray.shape[1] - 30)
                         # endregion
 
-                        # region Validacion de fila
-                        # Si la fila tiene valores la inserto en el set de datos
-                        if not is_empty_row:
+                        # region Eliminacion de lineas horizontales
+                        thresh = cv.threshold(table_img_gray, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU)[1]
+                        horizontal_kernel = cv.getStructuringElement(cv.MORPH_RECT, (40, 1))
+                        remove_horizontal = cv.morphologyEx(thresh, cv.MORPH_OPEN, horizontal_kernel, iterations=1)
+                        cnts = cv.findContours(remove_horizontal, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+                        tabla_procesada = table_img_gray.copy()
+                        for c in cnts:
+                            cv.drawContours(tabla_procesada, [c], -1, (255, 255, 255), 5)
+
+                        # region Visualizacion tabla sin lineas
+                        if is_img_shown:
+                            cv.imshow("tabla_procesada",
+                                      cv.resize(tabla_procesada, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                            cv.waitKey(0)
+                            cv.destroyWindow("tabla_procesada")
+                        # endregion
+
+                        # endregion
+
+                        # region Creacion de lista de imagenes por fila de tabla
+                        filas_img = []
+                        y1, y_end = 0, tabla_procesada.shape[0]
+                        for line in lines:
+                            y2 = line[0][1]
+                            filas_img.append(tabla_procesada[y1:y2])
+                            y1 = y2
+                        filas_img.append(tabla_procesada[y1:y_end])
+                        # endregion
+
+                        # region Lectura de campos
+                        # Recorro las imagenes de las filas
+                        for fila_img in filas_img:
+
+                            # region Visualizacion fila
+                            if is_img_shown:
+                                cv.imshow("fila",
+                                          cv.resize(fila_img, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                                cv.waitKey(0)
+                                cv.destroyWindow("fila")
+                            # endregion
+
+                            # region Lectura de campo por fila
+                            row_data = {}
+                            is_empty_row = True  # Variable para determinar si la fila esta vacia
                             for campo in campos_tabla:
-                                set_data[campo].append(row_data[campo])
+                                # Leo el campo
+                                lectura = modg.lectura_campo(fila_img,
+                                                             proveedor_campos[campo]["coordinates"],
+                                                             tesseract_exe_path,
+                                                             proveedor_campos[campo]["method_ocr"],
+                                                             proveedor_campos[campo]['regex'],
+                                                             is_img_shown)
+                                # El campo no esta vacio
+                                if lectura[0].strip():
+                                    is_empty_row = False
+
+                                row_data[campo] = lectura
+                            # endregion
+
+                            # region Validacion de fila
+                            # Si la fila tiene valores la inserto en el set de datos
+                            if not is_empty_row:
+                                for campo in campos_tabla:
+                                    set_data[campo].append(row_data[campo])
+                            # endregion
+
                         # endregion
-
-                    # endregion
-
                 # endregion
 
                 # region Tabla "no_lines"
                 elif proveedor_tabla["type"] == "no_lines":
-                    for campo in campos_tabla:
-                        # Creo el ROI que contiene la columna
-                        ix, iy, fx, fy = proveedor_campos[campo]["coordinates"]
-                        column_img = table_img_gray[iy:fy, ix:fx]
-                        # Detecto los contornos de las lineas del texto
-                        column_img_to_show = column_img.copy() if is_img_shown else None
-                        boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show)
-                        if is_img_shown:
-                            cv.imshow("column_img",
-                                      cv.resize(column_img_to_show, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
-                        set_data[campo] = []
-                        # Por cada contorno leo el campo
-                        for box in reversed(boxes):
-                            set_data[campo].append(modg.lectura_campo(column_img,
-                                                                      box,
-                                                                      tesseract_exe_path,
-                                                                      proveedor_campos[campo]["method_ocr"],
-                                                                      proveedor_campos[campo]['regex'],
-                                                                      is_img_shown))
+
+                    # region Creacion tabla combinada
+                    table_img = modg.create_combined_table_img(set_info["table"], img_table_info_list)
+                    # endregion
+
+                    if table_img is not None:
+
+                        # region Conversion tabla a escala de grises
+                        table_img_gray = modg.convert_rgb_to_grayscale(table_img)
+                        # endregion
+
+                        for campo in campos_tabla:
+                            # Creo el ROI que contiene la columna
+                            ix, iy, fx, fy = proveedor_campos[campo]["coordinates"]
+                            column_img = table_img_gray[iy:fy, ix:fx]
+                            # Detecto los contornos de las lineas del texto
+                            column_img_to_show = column_img.copy() if is_img_shown else None
+                            boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show)
+                            if is_img_shown:
+                                cv.imshow("column_img",
+                                          cv.resize(column_img_to_show, None, fx=0.5, fy=0.5,
+                                                    interpolation=cv.INTER_AREA))
+                            set_data[campo] = []
+                            # Por cada contorno leo el campo
+                            for box in reversed(boxes):
+                                set_data[campo].append(modg.lectura_campo(column_img,
+                                                                          box,
+                                                                          tesseract_exe_path,
+                                                                          proveedor_campos[campo]["method_ocr"],
+                                                                          proveedor_campos[campo]['regex'],
+                                                                          is_img_shown))
+                # endregion
+
+                # region Tabla "table"
+                elif proveedor_tabla["type"] == "table":
+                    # Creacion lista dataframes
+                    df_list = []
+                    for table_pag in set_info["table"]:
+
+                        # region Deteccion header
+                        header_coordinates = img_table_info_list[table_pag]["header_coordinates"]
+                        if header_coordinates != (None, None):
+                            header_center = (int((header_coordinates[0][0] + header_coordinates[0][1]) / 2),
+                                             int((header_coordinates[1][0] + header_coordinates[1][1]) / 2))
+                        # endregion
+
+                        # region Deteccion tabla
+                        # Detectamos las tablas
+                        # size_factor = proveedor_tabla["detection_parameters"]["size_factor"]
+                        # scale_x = proveedor_tabla["detection_parameters"]["scale_x"]
+                        # scale_y = proveedor_tabla["detection_parameters"]["scale_y"]
+                        size_factor = 0.4
+                        scale_x = 7
+                        scale_y = 22
+                        tables_data, src_no_lines = table_detection.table_detector(img_list[table_pag], size_factor,
+                                                                                   scale_x, scale_y)
+                        # Si no se ha enocntrado ninguna tabla saltamos a la siguiente pagina
+                        if len(tables_data) < 1:
+                            continue
+                        # Escogemos la tabla
+                        table_data = None
+                        # Elegimos la tabla que contiene al header
+                        if header_center != ((None, None), (None, None)):
+                            for item in tables_data:
+                                if mod_basic.is_point_en_rect(header_center, item["table_coordinates"]):
+                                    table_data = item
+                                    break
+                        # Elegimos la tabla mas grande (donde estaran los datos)
+                        else:
+                            table_data = max(tables_data,
+                                             key=lambda item: mod_basic.area_rect(item["table_coordinates"][0],
+                                                                                  item["table_coordinates"][1]))
+                        # Si no se ha encontrado la tabla, saltamos a la siguiente pagina
+                        if table_data is None:
+                            continue
+                        # endregion
+
+                        # region Visualizacion detecciones
+                        # Dibujamos las detecciones y las mostramos
+                        table_img_to_show = img_list[table_pag].copy()
+                        table_img_to_show = table_img_to_show[
+                                          table_data["table_coordinates"][0][1]:table_data["table_coordinates"][1][
+                                              1],
+                                          table_data["table_coordinates"][0][0]:table_data["table_coordinates"][1][
+                                              0]]
+                        # Dibujo tabla
+                        cv.rectangle(table_img_to_show, table_data["table_coordinates"][0],
+                                     table_data["table_coordinates"][1], (0, 255, 0), 5)
+                        # Dibujo celdas
+                        for cell_data in table_data["cells"]:
+                            cv.rectangle(table_img_to_show,
+                                         (cell_data["lines_coordinates"][0][0],
+                                          cell_data["lines_coordinates"][0][1]),
+                                         (cell_data["lines_coordinates"][1][0],
+                                          cell_data["lines_coordinates"][1][1]),
+                                         (0, 0, 255), 2)
+                            cv.circle(table_img_to_show,
+                                      (int((cell_data["lines_coordinates"][0][0] +
+                                            cell_data["lines_coordinates"][1][0]) / 2),
+                                       int((cell_data["lines_coordinates"][0][1] +
+                                            cell_data["lines_coordinates"][1][1]) / 2)),
+                                      5, (255, 255, 0), cv.FILLED)
+                        # Dibujo joints
+                        for joint_points in table_data["joints_coordinates"]:
+                            cv.circle(table_img_to_show, (joint_points[0], joint_points[1]), 7, (255, 0, 0), -1)
+                        # endregion
+
+                        # region Creacion matriz raw de tabla
+                        # Extraigo las posiciones de lineas horizontales y verticales de la tabla
+                        horizontal_lines_y_pos = table_data["horizontal_lines_y_pos"]
+                        vertical_lines_x_pos = table_data["vertical_lines_x_pos"]
+                        # Filtro las lineas horizontales que estan por encima de la tabla
+                        # horizontal_lines_y_pos = filter(lambda y: y >= header_pt2[1], horizontal_lines_y_pos)
+                        # Creo la matriz que contendra la tabla
+                        matrix_table = np.empty((len(horizontal_lines_y_pos), len(vertical_lines_x_pos)),
+                                                dtype=object)
+                        matrix_table[:] = None
+                        # endregion
+
+                        # region Relleno matriz tabla
+                        # Busco las coordenadas del header dentro de la tabla
+                        header_pt1, header_pt2 = mod_basic.get_closest_lines(table_data["vertical_lines_x_pos"],
+                                                                             table_data["horizontal_lines_y_pos"],
+                                                                             mod_basic.subs_points(
+                                                                                 header_coordinates[0],
+                                                                                 table_data["table_coordinates"][
+                                                                                     0]),
+                                                                             mod_basic.subs_points(
+                                                                                 header_coordinates[1],
+                                                                                 table_data["table_coordinates"][
+                                                                                     0]))
+                        # Creo ROI de la tabla
+                        table_img = img_list[table_pag][
+                                    table_data["table_coordinates"][0][1]:table_data["table_coordinates"][1][
+                                        1],
+                                    table_data["table_coordinates"][0][0]:table_data["table_coordinates"][1][
+                                        0]]
+                        # Recorro y leo las celdas
+                        for cell in table_data["cells"]:
+                            # Si esta por encima del header no indizo la celda
+                            if cell["lines_coordinates"][0][1] < header_pt1[1]:
+                                continue
+                            # # Visualizacion celda
+                            # cv.imshow("cell", table_img_to_show[cell["lines_coordinates"][0][1]:cell["lines_coordinates"][1][1],
+                            #           cell["lines_coordinates"][0][0]:cell["lines_coordinates"][1][0]])
+                            # cv.waitKey(0)
+                            # Busco coordenadas top izq de la celda
+                            vertical_index = vertical_lines_x_pos.index(cell["lines_coordinates"][0][0])
+                            horizontal_index = horizontal_lines_y_pos.index(cell["lines_coordinates"][0][1])
+                            # Hago lectura de la celda
+                            matrix_table[horizontal_index][vertical_index] = modg.lectura_campo(table_img,
+                                                                                                cell[
+                                                                                                    "content_coordinates"],
+                                                                                                tesseract_exe_path,
+                                                                                                None,
+                                                                                                [],
+                                                                                                False)
+                        # endregion
+
+                        # region Transformacion matriz a dataframe
+                        df_table = pd.DataFrame(matrix_table)
+                        print(df_table.to_string())
+                        # Borro filas None
+                        df_table = df_table.dropna(how="all")
+                        print(df_table.to_string())
+                        # Borro columnas None
+                        df_table = df_table.dropna(axis=1, how="all")
+                        print(df_table.to_string())
+                        # endregion
+
+                        # Añado dataframe a la lista
+                        df_list.append(df_table)
+
+                    df_handling.handler(df_list, campos_tabla, proveedor, provider_data=proveedor_data)
+
                 # endregion
 
             # Compruebo que las listas de los campos en tabla no estan vacios
@@ -407,18 +563,25 @@ def main(proveedor: str, pedidos_path: str,
                     set_data_dict["conf_" + campo] = set_data[campo][1]
             # Creo el dataframe con los datos extraidos de la pagina
             df_n = pd.DataFrame(set_data_dict)
-
             print(df_n)
+
+            # region Calculo de confianza por fila
             # Creo la lista de los nombres de las columnas auxiliares de confianza
             conf_columnas = [x for x in list(set_data_dict.keys()) if x.startswith("conf_")]
             print(df_n[conf_columnas])
             # Creo la columna de confianza
             df_n["confidence"] = df_n[conf_columnas].min(axis=1)
             df_n = pd.DataFrame(df_n, columns=COLUMNAS)
+            # endregion
+
+            # region Columnas extra
             # Relleno el valor de las columnas extra
             if "archivo" in COLUMNAS:
                 df_n["archivo"] = filename
             df_n["client"] = proveedor
+            # endregion
+
+            # region Validacion dataframe
             # Recorro todas las filas del dataframe para comprobar si el formato del campo es correcto
             for i in range(len(df_n)):
                 for campo in campos_validos:
@@ -427,6 +590,8 @@ def main(proveedor: str, pedidos_path: str,
                     # Si el formato no es correcto, el valor de confianza es -100
                     if reg_res is None or df_n.loc[i, campo] is None or len(reg_res) != len(df_n.loc[i, campo]):
                         df_n.loc[i, "confidence"] = -100
+            # endregion
+
             # Uno el data frame con el dataframe global
             print("Dataframe set:")
             print(df_n)
@@ -468,33 +633,35 @@ def main(proveedor: str, pedidos_path: str,
     # endregion
 
     # Borro ventanas
-    modg_func.close_windows("Aplicacion terminada")
+    mod_basic.close_windows("Aplicacion terminada")
     # endregion
 
     return df
 
-
 # proveedor = "Engine Power Compoments"
-# proveedor = "Thyssenkrupp Crankshaft"
 # proveedor = "WorldClass Industries"
-# proveedor = "JD REMAN"
 # proveedor = "Thyssenkrupp Campo Limpo"
-# proveedor = "EMP"
 # proveedor = "ESP"
+# proveedor = "EMP"
+# proveedor = "JD REMAN"
+# proveedor = "Thyssenkrupp Crankshaft"
+# proveedor = "Skyway"
 #
 # pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
-# pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
 # pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
 # pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
 # pedidos_path = r"test"
-# pedidos_path = r"CLIIENTES JOHN DEERE\EMP"
 # pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\EMP\t1.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway"
+# pedidos_path = r"CLIIENTES JOHN DEERE\JD REMAN"
+# pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
 # pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 #
-# main(proveedor, pedidos_path, is_img_shown=True, ai_path=".",
+# main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
 #      poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
 #      tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
