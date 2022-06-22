@@ -220,7 +220,7 @@ def create_combined_table_img(set_info_table, img_table_info_list):
     # Creacion imagen combinada de la tabla del set
     table_list = []
     for table_pag in set_info_table:
-        if img_table_info_list[table_pag]["header_coordinates"] != (None, None):
+        if img_table_info_list[table_pag]["header_coordinates"] != ((None, None), (None, None)):
             table_list.append(img_table_info_list[table_pag]["roi"])
     table_img = mod_basic.vconcat_resize(table_list)
     return table_img
