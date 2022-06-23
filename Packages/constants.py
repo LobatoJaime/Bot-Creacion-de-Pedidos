@@ -1,6 +1,7 @@
 import os
 import datetime
 import pandas as pd
+import json
 
 packages_folder = os.path.dirname(__file__)
 directory_folder = os.path.dirname(packages_folder)
@@ -23,9 +24,22 @@ downloads_folder = os.path.join(os.getenv('USERPROFILE'), 'Downloads')
 images_folder = os.path.join(resources_folder, 'images')
 github_repo_adress = 'https://github.com/luisguareschi/Bot-Creacion-de-Pedidos'
 actual_version = 'v5.8.0'
-ai_supported_clients = ["Engine Power Compoments", "Thyssenkrupp Campo Limpo",
-                        "WorldClass Industries", "EMP", "Thyssenkrupp Crankshaft", "WorldClass Industries EU"]
+# Obtener clientes que estan soportados por la AI
+ai_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files"
+# json_path = os.path.join(ai_online_path, 'Config/proveedores_data.json')
+# file = open(json_path, 'r')
+# json_data = json.load(file)
+# ai_supported_clients = []
+# for i in json_data:
+#     ai_supported_clients.append(i)
+ai_config_path = os.path.join(ai_online_path, 'Config')
+files = os.listdir(ai_config_path)
+ai_supported_clients = []
+for f in files:
+    if '.json' not in f:
+        ai_supported_clients.append(f)
 ai_supported_clients.sort()
+#----------------------------------------------------
 ai_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files"
 poppler_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\poppler-22.01.0\Library\bin"
 poppler_online_folder_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\poppler-22.01.0"
