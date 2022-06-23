@@ -26,7 +26,6 @@ share/python-wheels/
 *.egg
 Resources/
 venv/
-*.jpg
 MANIFEST
 
 # PyInstaller

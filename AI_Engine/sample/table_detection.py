@@ -33,7 +33,7 @@ def table_parameter_selector(src):
         if scale_y == 0:
             scale_y = 1
         # Detectamos las tablas
-        tables_data, src_no_lines = table_detector(src, size_factor, scale_x, scale_y)
+        tables_data, src_no_lines = table_detector(src, size_factor, scale_x, scale_y, True)
         # Dibujamos las detecciones y las mostramos
         src_to_show = src.copy()
         for table_data in tables_data:
@@ -73,7 +73,7 @@ def get_table(src, tables_data):
     return
 
 
-def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y: int = None):
+def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y: int = None, is_img_shown: bool = False):
     """
     A partir de una imagen saco los puntos de las tablas detectadas
     Returns:
@@ -113,12 +113,6 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
     else:
         gray = rsz
 
-    # Show gray image
-    cv.imshow("gray", cv.resize(gray, None, fx=visualization_size_factor, fy=visualization_size_factor,
-                                interpolation=cv.INTER_AREA))
-    cv.imshow("not gray", cv.resize(~gray, None, fx=visualization_size_factor, fy=visualization_size_factor,
-                                    interpolation=cv.INTER_AREA))
-
     # Apply adaptiveThreshold at the bitwise_not of gray, notice the ~ symbol
     bw = cv.adaptiveThreshold(~gray, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 15, -2)
     # bw = cv.adaptiveThreshold(~gray, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 15, -2)
@@ -141,12 +135,6 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
     horizontal = cv.dilate(horizontal, horizontalStructure, (-1, -1))
     # horizontal = cv.dilate(horizontal, horizontalStructure, (-1, -1)) # expand horizontal lines
 
-    # Show extracted horizontal lines
-    cv.imshow("horizontal", cv.resize(horizontal, None, fx=visualization_size_factor, fy=visualization_size_factor,
-                                      interpolation=cv.INTER_AREA))
-
-    # search_horiz_lines(src, 3, src.shape[1] - 50)
-
     # Specify size on vertical axis
     verticalsize = int(vertical.shape[0] / scale_y)
 
@@ -158,10 +146,6 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
     vertical = cv.erode(vertical, verticalStructure, (-1, -1))
     vertical = cv.dilate(vertical, verticalStructure, (-1, -1))
     # vertical = cv.dilate(vertical, verticalStructure, (-1, -1)) # expand vertical lines
-
-    # Show extracted vertical lines
-    cv.imshow("vertical", cv.resize(vertical, None, fx=visualization_size_factor, fy=visualization_size_factor,
-                                    interpolation=cv.INTER_AREA))
 
     # endregion
 
@@ -175,14 +159,24 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
     # from pictures (tables will contain more than 4 joints while a picture only 4 (i.e. at the corners))
     joints = cv.bitwise_and(horizontal, vertical)
     joints = cv.dilate(joints, circularStructure, (-1, -1))
+    # endregion
 
+    # region Image features visualization
+    if is_img_shown:
+        cv.imshow("rsz", cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                   interpolation=cv.INTER_AREA))
+        cv.imshow("horizontal", cv.resize(horizontal, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                          interpolation=cv.INTER_AREA))
+        cv.imshow("vertical", cv.resize(vertical, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                        interpolation=cv.INTER_AREA))
+        cv.waitKey(10)
     # endregion
 
     # region Detect tables
-    # Find external contours from the mask, which most probably will belong to tables or to images
-    contours, hierarchy = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE, offset=(0, 0))
+    # Encuentro los contornos de las tablas
+    table_contours, hierarchy = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE, offset=(0, 0))
     tables_data = []
-    for cnt in contours:
+    for table_cnt in table_contours:
         table_data = {
             "table_coordinates": (),
             "joints_coordinates": [],
@@ -193,11 +187,11 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
 
         # region Contour data extraction and filtering
         # Filtro los contornos por area
-        area = cv.contourArea(cnt)
+        area = cv.contourArea(table_cnt)
         if area < 50/size_factor:  # Valor elegido aleatoriamente
             continue
         # Extraigo coordenadas del contorno
-        contours_poly = cv.approxPolyDP(cnt, 3, True)
+        contours_poly = cv.approxPolyDP(table_cnt, 3, True)
         x1, y1, w, h = cv.boundingRect(contours_poly)
         x2, y2 = x1 + w, y1 + h
         # Filtro los contornos por anchura y altura
@@ -205,13 +199,12 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
             continue
         # Agrando el ROI para coger lineas en el borde
         #x1, y1, x2, y2 = x1-2, y1-2, x2+2, y2+2
-        if x1 < 0: x1 = 0
-        if y1 < 0: y1 = 0
-        if x2 > mask.shape[1]: x2 = mask.shape[1]
-        if y2 > mask.shape[0]: y2 = mask.shape[0]
+        # if x1 < 0: x1 = 0
+        # if y1 < 0: y1 = 0
+        # if x2 > mask.shape[1]: x2 = mask.shape[1]
+        # if y2 > mask.shape[0]: y2 = mask.shape[0]
         # Encuentro el numero de joints de las lineas verticales y horizontales
-        table = joints[y1:y2, x1:x2]
-        joints_contours, _ = cv.findContours(table, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        joints_contours, _ = cv.findContours(joints[y1:y2, x1:x2], cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         # Filtro los contornos por numero de joints
         if len(joints_contours) < 4:
             continue
@@ -269,33 +262,39 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
         # endregion
 
         # region Busqueda celdas
-        # Buscamos los contornos de las celdas
+        # Creamos mascara de la tabla
         mask_table = mask[y1:y2, x1:x2]
-        cells_contours, _ = cv.findContours(mask_table, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        # Creamos un frame negro alrededor de la mascara de la tabla para aunar en un solo contorno
+        # los huecos exteriores
+        mask_table_white_frame = np.zeros([mask_table.shape[0]+2, mask_table.shape[1]+2], dtype=np.uint8)
+        mask_table_white_frame[1:-1, 1:-1] = cv.bitwise_or(mask_table, mask_table_white_frame[1:-1, 1:-1])
+        if is_img_shown:
+            cv.imshow("mask_table",
+                      cv.resize(mask_table, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                interpolation=cv.INTER_AREA))
+            cv.imshow("mask_table_white_frame",
+                      cv.resize(mask_table_white_frame, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                interpolation=cv.INTER_AREA))
+            cv.imshow("~mask_table_white_frame",
+                      cv.resize(~mask_table_white_frame, None, fx=visualization_size_factor,
+                                fy=visualization_size_factor,
+                                interpolation=cv.INTER_AREA))
+            cv.waitKey(0)
+        # Buscamos los contornos de las celdas
+        cells_contours, _ = cv.findContours(~mask_table_white_frame, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         cells = []
         for cell_cnt in reversed(cells_contours):
             # Calculo de las coordenadas de la celda
             xCell, yCell, wCell, hCell = cv.boundingRect(cell_cnt)
+            xCell, yCell = xCell-1, yCell-1
             # Calculo de las coordenadas externas de la celda
-            extLeft = tuple(cell_cnt[cell_cnt[:, :, 0].argmin()][0])[0]
-            extRight = tuple(cell_cnt[cell_cnt[:, :, 0].argmax()][0])[0]
-            extTop = tuple(cell_cnt[cell_cnt[:, :, 1].argmin()][0])[1]
-            extBot = tuple(cell_cnt[cell_cnt[:, :, 1].argmax()][0])[1]
+            extLeft = tuple(cell_cnt[cell_cnt[:, :, 0].argmin()][0])[0] - 1
+            extRight = tuple(cell_cnt[cell_cnt[:, :, 0].argmax()][0])[0] - 1
+            extTop = tuple(cell_cnt[cell_cnt[:, :, 1].argmin()][0])[1] - 1
+            extBot = tuple(cell_cnt[cell_cnt[:, :, 1].argmax()][0])[1] - 1
             # Si alguna de las coordenadas externas es limite con la imagen, no es una celda
-            if extLeft == 0 or extRight == mask_table.shape[1]-1 or extTop == 0 or extBot == mask_table.shape[0]-1:
+            if extLeft <= 0 or extRight >= mask_table.shape[1]-1 or extTop <= 0 or extBot >= mask_table.shape[0]-1:
                 continue
-            # cv.rectangle(rsz[y1:y2, x1:x2],
-            #              (xCell, yCell),
-            #              (xCell + wCell, yCell + hCell),
-            #              (0, 0, 255), 2)
-            # cv.circle(rsz[y1:y2, x1:x2],
-            #           (int(xCell + wCell/2), int(yCell + hCell/2)),
-            #           5, (255, 255, 0), cv.FILLED)
-            # cv.drawContours(rsz[y1:y2, x1:x2], [cell_cnt], -1, (0, 255, 0), 1)
-            # cv.imshow("rsz",
-            #           cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
-            #                     interpolation=cv.INTER_AREA))
-            # cv.waitKey(0)
             # Buscamos las posiciones de las lineas verticales y horizontales que contienen a la celda
             pt1, pt2 = mod_basic.get_closest_lines(vertical_lines_x_pos, horizontal_lines_y_pos,
                                                    (extLeft, extTop), (extRight, extBot))
@@ -305,6 +304,15 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
                 "lines_coordinates": ((int(pt1[0] / size_factor), int(pt1[1] / size_factor)),
                                       (int(pt2[0] / size_factor), int(pt2[1] / size_factor)))
             })
+            # region Cell visualization
+            cv.rectangle(rsz[y1:y2, x1:x2], (xCell, yCell), (xCell + wCell, yCell + hCell), (0, 0, 255), 2)
+            cv.circle(rsz[y1:y2, x1:x2], (int(xCell + wCell/2), int(yCell + hCell/2)), 5, (255, 255, 0), cv.FILLED)
+            cv.drawContours(rsz[y1-1:y2+1, x1-1:x2+1], [cell_cnt], -1, (0, 255, 0), 1)
+            cv.imshow("rsz",
+                      cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                interpolation=cv.INTER_AREA))
+            cv.waitKey(0)
+            # endregion
         # endregion
 
         # region Table data output
@@ -324,22 +332,8 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
         table_data["cells"] = cells
         # endregion
 
-        # region Visualization
-        # cv.imshow("mask_table", cv.resize(mask_table, None, fx=visualization_size_factor, fy=visualization_size_factor,
-        #                                   interpolation=cv.INTER_AREA))
-        # cv.imshow("rsz",
-        #           cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
-        #                     interpolation=cv.INTER_AREA))
-        # cv.waitKey(0)
-        # endregion
-
         tables_data.append(table_data)
 
-    # endregion
-
-    # region Visualization
-    # cv.imshow("rsz", cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
-    #                            interpolation=cv.INTER_AREA))
     # endregion
 
     # region Image without table lines
