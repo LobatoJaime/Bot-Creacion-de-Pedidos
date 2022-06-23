@@ -3,36 +3,15 @@ import pytesseract
 import numpy as np
 import pandas as pd
 from Packages.constants import tesseract_exe_online_path
-
-
-def aumentar_box(box, img_shape):
-    """
-    Añade mas borde al box teniendo en cuenta los limites de la imagen
-    """
-    # Extraigo las caracteristicas del box
-    x1, y1, w, h = box
-    # Creo los puntos
-    x2, y2 = x1 + w, y1 + h
-    # Modifico los puntos si estos salen de la imagen
-    x1 = x1
-    if x1 < 0:
-        x1 = 0
-    y1 = y1 - 6
-    if y1 < 0:
-        y1 = 0
-    x2 = x2
-    if x2 >= img_shape[1]:
-        x2 = img_shape[1]
-    y2 = y2 + 6
-    if y2 >= img_shape[0]:
-        y2 = img_shape[0]
-    return x1, y1, x2, y2
+from AI_Engine.sample import doc_layout_analysis
+from AI_Engine.sample import modulo_basic_functions as mod_basic
 
 
 def get_contornos_lineas(gray):
     """
-    A raiz de una imagen, identifica las líneas y devuelve los contornos de estas
+    A raiz de una imagen gray, identifica las líneas y devuelve las coordenadas de los contornos de estas
     """
+    boxes = []
     # threshold the grayscale image
     thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
@@ -47,7 +26,16 @@ def get_contornos_lineas(gray):
     # Busca contornos
     cntrs = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cntrs = cntrs[0] if len(cntrs) == 2 else cntrs[1]
-    return cntrs
+
+    # Extraigo las coordenadas de los boxes de los contornos
+    for c in reversed(cntrs):
+        # Extraigo la box del contorno
+        box = cv2.boundingRect(c)
+        # Ajusto los puntos
+        x1, y1, x2, y2 = mod_basic.aumentar_box(box, gray.shape, (0, 6, 0, 6))
+        boxes.append(x1, y1, x2, y2)
+
+    return boxes
 
 
 def procesamiento_img(roi, method):
@@ -66,7 +54,7 @@ def procesamiento_img(roi, method):
         ret, thresh = cv2.threshold(roi, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
         rect_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
         img_procesada = cv2.dilate(thresh, rect_kernel, iterations=1)
-        # img_procesada = cv2.erode(dilation, rect_kernel, iterations=1)
+        #img_procesada = cv2.erode(dilation, rect_kernel, iterations=1)
     # Metodo 2
     elif method == 2:
         # Blur y canny
@@ -76,7 +64,7 @@ def procesamiento_img(roi, method):
     elif method == 3:
         # Blur y threshold
         imagen_ruido_off = cv2.GaussianBlur(roi, (3, 3), 0)
-        # cv2.imshow("imagen_ruido_off", imagen_ruido_off)
+        #cv2.imshow("imagen_ruido_off", imagen_ruido_off)
         ret, img_procesada = cv2.threshold(imagen_ruido_off, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
     # Metodo 4
     elif method == 4:
@@ -99,67 +87,51 @@ def procesamiento_img(roi, method):
     return img_procesada, custom_config
 
 
-def lectura_texto(gray, method=0, is_multiple=False, is_img_shown=False,
-                  tesseract_exe_path=None):
+def lectura_texto(gray, tesseract_exe_path, method=None, is_img_shown=False):
     """
     Reconoce el texto de una imagen. Se pueden indicar diferentes metodos
-    Devuelve el texto o una lista de textos.
+    Devuelve una lista de textos junto a un valor de confianza.
     """
-    result = None
-    if is_img_shown: roi_to_show = gray.copy()
+    result = []
+    method = 0 if method is None else method
+    img_to_show = gray.copy() if is_img_shown else None
 
     # Tesseract configuracion
     pytesseract.pytesseract.tesseract_cmd = tesseract_exe_path
-    # custom_config = r'--psm 7 -c tessedit_char_whitelist=0123456789.'
-    custom_config = r'--psm 7'
+    #custom_config = r'--psm 7 -c tessedit_char_whitelist=0123456789.'
+    custom_config = r"--psm 7"
 
     # Deteccion de texto
     print('################ Output ##################')
-    if is_multiple:
-        result = []
-        # Detecto los contornos de las lineas del texto
-        cntrs = get_contornos_lineas(gray)
-        # Recorro los contornos y leo el texto
-        for c in reversed(cntrs):
-            # Extraigo la box del contorno
-            box = cv2.boundingRect(c)
-            # Ajusto los puntos
-            x1, y1, x2, y2 = aumentar_box(box, gray.shape)
-            # Dibujo el rectangulo en la imagen para mostrar
-            if is_img_shown: cv2.rectangle(roi_to_show, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            roi = gray[y1:y2 + 1, x1:x2 + 1]
-            # Preprocesamiento de la imagen
-            img_procesada, custom_config_aux = procesamiento_img(roi, method)
-            if custom_config_aux is not None:
-                custom_config = custom_config_aux
-            # Leo el texto dentro de la region y elimino los espacios a los lados del texto
-            text = pytesseract.image_to_string(img_procesada, config=custom_config).strip()
-            output_data = lectura_texto_data(img_procesada, custom_config)
-            result.append(output_data)
-            if is_img_shown: print(output_data)
-            if is_img_shown: print('-------------------------')
-            if is_img_shown: cv2.imshow("img_procesada", img_procesada)
-            if is_img_shown: cv2.waitKey(0)
-            if is_img_shown: cv2.destroyWindow("img_procesada")
-    else:
+    # Detecto los contornos de las lineas del texto
+    boxes, img_to_show = doc_layout_analysis.process_line(gray, img_to_show)
+    if is_img_shown:
+        cv2.imshow("Lineas detectadas", cv2.resize(img_to_show, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA))
+        cv2.waitKey(0)
+        cv2.destroyWindow("Lineas detectadas")
+    # Recorro los contornos y leo el texto
+    for box in boxes:
         # Preprocesamiento de la imagen
-        img_procesada, custom_config_aux = procesamiento_img(gray, method)
+        x1, y1, x2, y2 = box
+        roi = gray[y1:y2, x1:x2]
+        if is_img_shown:
+            cv2.imshow("Texto", cv2.resize(roi, None, fx=0.8, fy=0.8, interpolation=cv2.INTER_AREA))
+            cv2.waitKey(0)
+            cv2.destroyWindow("Texto")
+        # Preprocesamiento de la imagen
+        img_procesada, custom_config_aux = procesamiento_img(roi, method)
+        if is_img_shown:
+            cv2.imshow("Texto procesado", cv2.resize(img_procesada, None, fx=0.8, fy=0.8, interpolation=cv2.INTER_AREA))
+            cv2.waitKey(0)
+            cv2.destroyWindow("Texto procesado")
         if custom_config_aux is not None:
             custom_config = custom_config_aux
         # Leo el texto dentro de la region y elimino los espacios a los lados del texto
-        text = pytesseract.image_to_string(img_procesada, config=custom_config).strip()
-        print(text)
-
-        result = lectura_texto_data(img_procesada, custom_config)
-        if is_img_shown: print(result)
-
-    if is_img_shown: print('############################################')
-    if is_img_shown: print("")
-
-    # Visualizo los contornos
-    if is_img_shown: cv2.imshow("ROI", cv2.resize(roi_to_show, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA))
-    if is_img_shown: cv2.waitKey(0)
-    if is_img_shown: cv2.destroyWindow("ROI")
+        output_data = lectura_texto_data(img_procesada, custom_config)
+        result.append(output_data)
+    print(result)
+    print('############################################')
+    print("")
 
     return result
 
@@ -174,6 +146,8 @@ def lectura_texto_data(img_procesada, custom_config):
     data = pd.DataFrame(data_dict)
     # Elimino las filas con valor de confianza -1
     data = data[data.conf != -1]
+    # Elimino las filas con valor de confianza menor que 50 (posibles fallos)
+    data = data[data.conf > 50]
     # data.to_excel(r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\dataFrameTESERACT.xlsx")
     # Creo las listas de texto extraido con su valor de confianza
     lines = data.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['text'] \
@@ -185,9 +159,10 @@ def lectura_texto_data(img_procesada, custom_config):
     print("confs")
     print(confs)
     # Creo la lista con el texto final y su valor de confianza
-    if lines[0].strip():
-        line_conf.append(lines[0])
-        line_conf.append(round(confs[0], 3))
+    text = lines[0].strip() if len(lines) > 0 else ""
+    conf = round(confs[0], 3) if len(lines) > 0 else 100
+    line_conf.append(text)
+    line_conf.append(conf)
     print("=================================")
     print(line_conf)
     return line_conf

@@ -469,7 +469,7 @@ class CreateOrderTable:
 
 
 def run_ai_in_bg(client_name: str, path: str, queue: Queue, poppler_path, tesseract_exe_path):
-    orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False,
+    orders: pd.DataFrame = main(proveedor=client_name, pedidos_path=path, is_img_shown=False,
                                 poppler_path=poppler_path,
                                 tesseract_exe_path=tesseract_exe_path)
     queue.put(orders)

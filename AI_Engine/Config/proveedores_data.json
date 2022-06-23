@@ -1,0 +1,604 @@
+{
+  "Engine Power Components": {
+    "table": {
+      "coordinates": {
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+        "order_number": {
+          "in_table": false,
+          "pag": 1,
+          "regex": [],
+          "coordinates": [
+            101,
+            683,
+            238,
+            723
+          ],
+          "method_ocr": 0
+        },
+        "reference": {
+          "in_table": true,
+          "pag": null,
+          "regex": ["[a-zA-Z]+[0-9]+"],
+          "coordinates": [
+            134,
+            null,
+            578,
+            1128
+          ],
+          "method_ocr": 0
+        },
+        "quantity": {
+          "in_table": true,
+          "pag": null,
+          "regex": ["[\\d.,]+"],
+          "coordinates": [
+            582,
+            null,
+            758,
+            1128
+          ],
+          "method_ocr": 0
+        },
+        "ship_out_date": {
+          "in_table": true,
+          "pag": null,
+          "regex": [],
+          "coordinates": [
+            1293,
+            null,
+            1450,
+            1128
+          ],
+          "method_ocr": 0
+        },
+        "arrival_date": null
+      }
+  },
+  "Thyssenkrupp Campo Limpo": {
+    "table": {
+      "coordinates": {
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+        "order_number": {
+          "in_table": false,
+          "pag": 1,
+          "regex": [],
+          "coordinates": [
+            793,
+            437,
+            982,
+            479
+          ],
+          "method_ocr": 5
+        },
+        "reference": {
+          "in_table": false,
+          "pag": 1,
+          "regex": ["\\([a-zA-Z]+[0-9]+\\)", "[a-zA-Z]+[0-9]+"],
+          "coordinates": [
+            26,
+            1003,
+            664,
+            1043
+          ],
+          "method_ocr": 5
+        },
+        "quantity": {
+          "in_table": true,
+          "pag": null,
+          "regex": [],
+          "coordinates": [
+            521,
+            null,
+            704,
+            null
+          ],
+          "method_ocr": 5
+        },
+        "ship_out_date": {
+          "in_table": true,
+          "pag": null,
+          "regex": [],
+          "coordinates": [
+            32,
+            null,
+            267,
+            null
+          ],
+          "method_ocr": 5
+        },
+        "arrival_date": null
+      }
+  },
+  "Thyssenkrupp Crankshaft": {
+    "table": {
+      "coordinates": {
+        "1": [
+          100,
+          1267,
+          1600,
+          2010
+        ],
+        "all": [
+          100,
+          600,
+          1600,
+          2010
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": 1,
+        "regex": [],
+        "coordinates": [
+          1343,
+          446,
+          1534,
+          495
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": false,
+        "pag": 1,
+        "regex": ["#[a-zA-Z]+[0-9]+", "[a-zA-Z]+[0-9]+"],
+        "coordinates": [
+          158,
+          1054,
+          1458,
+          1096
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          499,
+          null,
+          704,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          27,
+          null,
+          223,
+          null
+        ],
+        "method_ocr": 4
+      }
+    }
+  },
+  "WorldClass Industries": {
+    "table": {
+      "coordinates": {
+        "1": [
+          11,
+          653,
+          1689,
+          2086
+        ],
+        "all": [
+          11,
+          11,
+          1689,
+          2086
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          157,
+          null,
+          363,
+          null
+        ],
+        "method_ocr": 5
+      },
+      "reference": {
+        "in_table": false,
+        "pag": 1,
+        "regex": [],
+        "coordinates": [
+          48,
+          744,
+          220,
+          792
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          971,
+          null,
+          1124,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          736,
+          null,
+          957,
+          null
+        ],
+        "method_ocr": 4
+      }
+    }
+    },
+  "EMP": {
+    "table": {
+      "coordinates": {
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": "all",
+        "regex": [],
+        "coordinates": [
+          308,
+          438,
+          438,
+          463
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": false,
+        "pag": "all",
+        "regex": [],
+        "coordinates": [
+          308,
+          463,
+          438,
+          493
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          918,
+          null,
+          1095,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          136,
+          null,
+          257,
+          null
+        ],
+        "method_ocr": 4
+      }
+    }
+  },
+  "WorldClass Industries EU": {
+    "table": {
+      "coordinates": {
+        "1": [
+          11,
+          653,
+          1689,
+          2086
+        ],
+        "all": [
+          11,
+          11,
+          1689,
+          2086
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          157,
+          null,
+          363,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": false,
+        "pag": 1,
+        "regex": [],
+        "coordinates": [
+          48,
+          744,
+          220,
+          792
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          971,
+          null,
+          1124,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date":  {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          736,
+          null,
+          957,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "arrival_date": null
+    }
+  },
+  "ESP": {
+    "table": {
+      "coordinates": {
+        "1": [
+          11,
+          653,
+          1689,
+          2086
+        ],
+        "all": [
+          11,
+          11,
+          1689,
+          2086
+        ]
+      },
+      "type": "lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": 1,
+        "regex": [],
+        "coordinates": [
+          1148,
+          185,
+          1599,
+          224
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["[a-zA-Z]+\\d{4,}"],
+        "coordinates": [
+          444,
+          null,
+          908,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "coordinates": [
+          10,
+          null,
+          170,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date":  {
+        "in_table": true,
+        "pag": null,
+        "regex": ["\\d{2}/\\d{2}/\\d{4}"],
+        "coordinates": [
+          174,
+          null,
+          312,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "arrival_date": null
+    }
+  },
+  "JD REMAN": {
+    "table": {
+      "coordinates": {
+        "1": [
+          null,
+          676,
+          null,
+          null
+        ],
+        "all": [
+          null,
+          298,
+          null,
+          2171
+        ]
+      },
+      "type": "lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": 1,
+        "regex": [],
+        "coordinates": [
+          960,
+          330,
+          1187,
+          379
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["[a-zA-Z]+\\d{4,}"],
+        "coordinates": [
+          85,
+          null,
+          840,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["\\d+(,\\d+)*"],
+        "coordinates": [
+          846,
+          null,
+          1009,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date":  {
+        "in_table": false,
+        "pag": 1,
+        "regex": [],
+        "coordinates": [
+          1005,
+          740,
+          1170,
+          782
+        ],
+        "method_ocr": 4
+      },
+      "arrival_date": null
+    }
+  },
+  "Skyway": {
+    "table": {
+      "coordinates": {
+        "1": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "table",
+      "detection_parameters": {
+        "size_factor": 0.5,
+        "scale_x": 20,
+        "scale_y": 20
+      }
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": 1,
+        "regex": ["\\d{6}"],
+        "coordinates": [
+          1170,
+          77,
+          1665,
+          224
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["[a-zA-Z]+\\d{4,}"],
+        "column_pos": 2,
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["\\d+(,\\d+)*"],
+        "column_pos": 6,
+        "method_ocr": 4
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "regex": [],
+        "column_pos": 5,
+        "method_ocr": 4
+      }
+    }
+  }
+}

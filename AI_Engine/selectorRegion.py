@@ -6,7 +6,7 @@ Created on Tue Mar 29 11:25:17 2022
 """
 
 import cv2 as cv
-from pdf2image import convert_from_path
+from AI_Engine.sample import modulo_basic_functions as mod_basic
 import sys
 import os
 import json
@@ -78,24 +78,13 @@ def exit_program(message):
     sys.exit(message)
 
 
-def pdf_to_img(path, pag_num):
-    delete_img = False
-    # Conversion pdf a jpg
+def file_reading(path, pag_num):
     if os.path.splitext(path)[1].lower() == ".pdf":
-        images = convert_from_path(path)
-        # for i in range(len(images)):
-        #     images[i].save(path + '.jpg', 'JPEG')
-        path = path + '.jpg'
-        images[pag_num - 1].save(path, 'JPEG')
-        delete_img = True
-    # Lectura de imagen
-    img_original = cv.imread(path)
-    if img_original is None:
-        exit_program("No se pudo leer la imagen: " + path)
-    # Borrado de archivo de imagen
-    if delete_img:
-        os.remove(path)
-    return img_original
+        img_list = mod_basic.pdf_to_img(path)
+        img = img_list[pag_num - 1]
+    else:
+        img = cv.imread(path)
+    return img
 
 
 # %% Constantes globales
@@ -109,13 +98,20 @@ fx, fy = -1, -1
 img_to_show, img_original_resized = None, None
 
 # %% Definicion variables
-path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\Pedidos-Tier-2\Pedidos-Tier-2\CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo\header.jpg"
-path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\Pedidos-Tier-2\Pedidos-Tier-2\CLIIENTES JOHN DEERE\EMP\t1.pdf"
-path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\Pedidos-Tier-2\Pedidos-Tier-2\CLIIENTES JOHN DEERE\Engine Power Compoments\header.jpg"
-pagNum = 1
+path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
+path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo\header.jpg"
+path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
+path = r"extra\Thyssenkrupp Campo Limpo"
+path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
+path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
+path = r"orders_history\ESP INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m.pdf"
+path = os.path.join(path_root, path)
+path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\JD REMAN\t76.pdf"
+path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\Bot-Creacion-de-Pedidos\AI_Engine\Config\JD REMAN\header.jpg"
+pagNum = 2
 
-# %% Conversion pdf a jpg
-img_original = pdf_to_img(path, pagNum)
+# Lectura archivo
+img_original = file_reading(path, pagNum)
 
 # Calculos las dimensiones
 shape_original = img_original.shape[:2]  # height, width
