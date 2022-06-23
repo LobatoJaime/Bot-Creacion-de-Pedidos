@@ -90,7 +90,7 @@ def handle_lecture_ocr(list_lecture, regex):
     """
 
     # Si la lista de resultados esta vacia, el texto es vacio y la confianza es de 100
-    if len(list_lecture) < 1:
+    if list_lecture is None or len(list_lecture) < 1:
         return "", 100
 
     # region Preparacion parametros
@@ -179,6 +179,7 @@ def create_table_info_list(img_list, img_table_header_list, img_table_end_list, 
         # Busco el header y el end
         header_top_left, header_bottom_right = apply_list_template_matching(roi, img_table_header_list)
         end_top_left, end_bottom_right = apply_list_template_matching(roi, img_table_end_list)
+        # Visualizacion de la deteccion
         # roi_to_show = roi.copy()
         # cv.rectangle(roi_to_show, header_top_left, header_bottom_right, (0, 0, 255), 2)
         # cv.rectangle(roi_to_show, end_top_left, end_bottom_right, (0, 0, 255), 2)
@@ -187,6 +188,13 @@ def create_table_info_list(img_list, img_table_header_list, img_table_end_list, 
         # cv.destroyWindow("roi_to_show")
         # Creo una nueva region que va desde el header hasta el end (si se ha encontrado)
         roi = roi[header_bottom_right[1]:end_top_left[1], header_top_left[0]:header_bottom_right[0]]
+        # Reajusto las coordenadas
+        if (header_top_left, header_bottom_right) != ((None, None), (None, None)):
+            header_top_left = mod_basic.sum_points(header_top_left, (ix, iy))
+            header_bottom_right = mod_basic.sum_points(header_bottom_right, (ix, iy))
+        if (end_top_left, end_bottom_right) != ((None, None), (None, None)):
+            end_top_left = mod_basic.sum_points(end_top_left, (ix, iy))
+            end_bottom_right = mod_basic.sum_points(end_bottom_right, (ix, iy))
         # Inserto la informacion en el info dict
         info_dict = {
             "header_coordinates": (header_top_left, header_bottom_right),

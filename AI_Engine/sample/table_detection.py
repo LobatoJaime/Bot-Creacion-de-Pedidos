@@ -297,22 +297,26 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
                 continue
             # Buscamos las posiciones de las lineas verticales y horizontales que contienen a la celda
             pt1, pt2 = mod_basic.get_closest_lines(vertical_lines_x_pos, horizontal_lines_y_pos,
-                                                   (extLeft, extTop), (extRight, extBot))
-            cells.append({
-                "content_coordinates": ((int(xCell / size_factor), int(yCell / size_factor)),
-                                        (int((xCell+wCell) / size_factor), int((yCell+hCell) / size_factor))),
-                "lines_coordinates": ((int(pt1[0] / size_factor), int(pt1[1] / size_factor)),
-                                      (int(pt2[0] / size_factor), int(pt2[1] / size_factor)))
-            })
-            # region Cell visualization
-            cv.rectangle(rsz[y1:y2, x1:x2], (xCell, yCell), (xCell + wCell, yCell + hCell), (0, 0, 255), 2)
-            cv.circle(rsz[y1:y2, x1:x2], (int(xCell + wCell/2), int(yCell + hCell/2)), 5, (255, 255, 0), cv.FILLED)
-            cv.drawContours(rsz[y1-1:y2+1, x1-1:x2+1], [cell_cnt], -1, (0, 255, 0), 1)
-            cv.imshow("rsz",
-                      cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
-                                interpolation=cv.INTER_AREA))
-            cv.waitKey(0)
-            # endregion
+                                                   (extLeft, extTop), (extRight, extBot), 5)
+            # Si los limites de contorno no estan cerca de las lineas de la tabla, esa celda no se mete en la lista
+            if pt1[0] is not None and pt2[0] is not None and pt1[1] is not None and pt2[1] is not None:
+                cells.append({
+                    "content_coordinates": ((int(xCell / size_factor), int(yCell / size_factor)),
+                                            (int((xCell+wCell) / size_factor), int((yCell+hCell) / size_factor))),
+                    "lines_coordinates": ((int(pt1[0] / size_factor), int(pt1[1] / size_factor)),
+                                          (int(pt2[0] / size_factor), int(pt2[1] / size_factor)))
+                })
+                # region Cell visualization
+                cv.drawContours(rsz[y1-1:y2+1, x1-1:x2+1], [cell_cnt], -1, (0, 0, 255), 2)
+                cv.rectangle(rsz[y1:y2, x1:x2], (xCell, yCell), (xCell + wCell, yCell + hCell), (0, 255, 0), 1)
+                cv.circle(rsz[y1:y2, x1:x2], (int(xCell + wCell/2), int(yCell + hCell/2)), 5, (255, 255, 0), cv.FILLED)
+                cv.imshow("rsz",
+                          cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                    interpolation=cv.INTER_AREA))
+                cv.waitKey(0)
+                # endregion
+            else:
+                print(pt1, pt2)
         # endregion
 
         # region Table data output

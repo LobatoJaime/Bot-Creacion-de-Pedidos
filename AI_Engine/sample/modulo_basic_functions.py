@@ -92,16 +92,27 @@ def is_point_en_rect(point, rect_coor):
     return False
 
 
-def get_closest_lines(vertical_lines_y_pos, horizontal_lines_x_pos, pt1, pt2):
-    closest_left = min(vertical_lines_y_pos, key=lambda y: abs(y - pt1[0]))
-    closest_top = min(horizontal_lines_x_pos, key=lambda x: abs(x - pt1[1]))
-    closest_right = min(vertical_lines_y_pos, key=lambda y: abs(y - pt2[0]))
-    closest_bot = min(horizontal_lines_x_pos, key=lambda x: abs(x - pt2[1]))
+def get_closest_lines(vertical_lines_x_pos, horizontal_lines_y_pos, pt1, pt2, min_dist=None):
+    closest_left = min(vertical_lines_x_pos, key=lambda y: abs(y - pt1[0]))
+    closest_top = min(horizontal_lines_y_pos, key=lambda x: abs(x - pt1[1]))
+    closest_right = min(vertical_lines_x_pos, key=lambda y: abs(y - pt2[0]))
+    closest_bot = min(horizontal_lines_y_pos, key=lambda x: abs(x - pt2[1]))
+    if min_dist is not None:
+        if abs(closest_left - pt1[0]) > min_dist:
+            closest_left = None
+        if abs(closest_top - pt1[1]) > min_dist:
+            closest_top = None
+        if abs(closest_right - pt2[0]) > min_dist:
+            closest_right = None
+        if abs(closest_bot - pt2[1]) > min_dist:
+            closest_bot = None
     return (closest_left, closest_top), (closest_right, closest_bot)
 
 
 def sum_points(pt1, pt2):
-    return (pt1[0] + pt2[0], pt1[1] + pt2[1])
+    x = (pt1[0] if pt1[0] is not None else 0) + (pt2[0] if pt2[0] is not None else 0)
+    y = (pt1[1] if pt1[1] is not None else 0) + (pt2[1] if pt2[1] is not None else 0)
+    return x, y
 
 
 def subs_points(pt1, pt2):

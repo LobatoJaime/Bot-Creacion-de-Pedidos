@@ -62,7 +62,7 @@ def main(proveedor: str, pedidos_path: str,
     # General constants
     PEDIDOS_WINDOW = 'PDF pedidos'
     COLUMNAS = ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
-    COLUMNAS = ("archivo",) + COLUMNAS
+    # COLUMNAS = ("archivo",) + COLUMNAS
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
     HEIGHT_TO_SHOW = 800
     # Paths
@@ -78,7 +78,7 @@ def main(proveedor: str, pedidos_path: str,
 
     # region Variables
     # Dataframe
-    df = pd.DataFrame(columns=COLUMNAS)
+    df_total = pd.DataFrame(columns=COLUMNAS)
     # endregion
 
     # region Main
@@ -234,6 +234,7 @@ def main(proveedor: str, pedidos_path: str,
         # endregion
 
         # region Creacion dataframe
+        df = pd.DataFrame(columns=COLUMNAS)
         # Recorremos cada set de informacion
         for set_info in sets_info:
             set_data = {}
@@ -376,29 +377,27 @@ def main(proveedor: str, pedidos_path: str,
                     for table_pag in set_info["table"]:
 
                         # region Deteccion header
+                        header_center = (None, None)
                         header_coordinates = img_table_info_list[table_pag]["header_coordinates"]
-                        if header_coordinates != (None, None):
+                        if header_coordinates != ((None, None), (None, None)):
                             header_center = (int((header_coordinates[0][0] + header_coordinates[0][1]) / 2),
                                              int((header_coordinates[1][0] + header_coordinates[1][1]) / 2))
                         # endregion
 
                         # region Deteccion tabla
                         # Detectamos las tablas
-                        # size_factor = proveedor_tabla["detection_parameters"]["size_factor"]
-                        # scale_x = proveedor_tabla["detection_parameters"]["scale_x"]
-                        # scale_y = proveedor_tabla["detection_parameters"]["scale_y"]
-                        size_factor = 0.4
-                        scale_x = 7
-                        scale_y = 22
+                        size_factor = proveedor_tabla["detection_parameters"]["size_factor"]
+                        scale_x = proveedor_tabla["detection_parameters"]["scale_x"]
+                        scale_y = proveedor_tabla["detection_parameters"]["scale_y"]
                         tables_data, src_no_lines = table_detection.table_detector(img_list[table_pag], size_factor,
-                                                                                   scale_x, scale_y)
+                                                                                   scale_x, scale_y, is_img_shown)
                         # Si no se ha enocntrado ninguna tabla saltamos a la siguiente pagina
-                        if len(tables_data) < 1:
+                        if tables_data is None or len(tables_data) < 1:
                             continue
                         # Escogemos la tabla
                         table_data = None
                         # Elegimos la tabla que contiene al header
-                        if header_center != ((None, None), (None, None)):
+                        if header_center != (None, None):
                             for item in tables_data:
                                 if mod_basic.is_point_en_rect(header_center, item["table_coordinates"]):
                                     table_data = item
@@ -474,7 +473,7 @@ def main(proveedor: str, pedidos_path: str,
                             # Si esta por encima del header no indizo la celda
                             if cell["lines_coordinates"][0][1] < header_pt1[1]:
                                 continue
-                            # # Visualizacion celda
+                            # Visualizacion celda
                             # cv.imshow("cell", table_img_to_show[cell["lines_coordinates"][0][1]:cell["lines_coordinates"][1][1],
                             #           cell["lines_coordinates"][0][0]:cell["lines_coordinates"][1][0]])
                             # cv.waitKey(0)
@@ -503,6 +502,7 @@ def main(proveedor: str, pedidos_path: str,
                     df_set = df_handling.handler(df_list, campos_tabla, proveedor, proveedor_data)
                     print("------------------")
                     print(df_set.to_string())
+                    # Aplico regex a los resultados
                     for campo in campos_tabla:
                         df_set[campo] = df_set[campo].map(
                             lambda x: modg.handle_lecture_ocr(x, proveedor_campos[campo]['regex']))
@@ -534,7 +534,6 @@ def main(proveedor: str, pedidos_path: str,
                     df_set[campo] = None
                     df_set[campo] = df_set[campo].apply(lambda x: lecture)
             # endregion
-
             # Concateno el nuevo dataframe
             df = pd.concat([df, df_set], ignore_index=True)
         # endregion
@@ -546,7 +545,6 @@ def main(proveedor: str, pedidos_path: str,
             df[campo] = df[campo].ffill(axis=0)
         # endregion
 
-        print(df.to_string())
         # region Calculo de confianza por fila
         list_conf = []
         # Recorro las filas del dataframe
@@ -562,7 +560,7 @@ def main(proveedor: str, pedidos_path: str,
 
         # region Transformacion de tuplas a texto
         for campo in campos_validos:
-            df[campo] = df[campo].map(lambda x: x[0] if type(x) is tuple and len(x) > 0 and x[0].strip() else None)
+            df[campo] = df[campo].map(lambda x: x[0] if type(x) is tuple and len(x) > 0 and x[0].strip() else "")
         # endregion
 
         # region Columnas extra
@@ -592,6 +590,13 @@ def main(proveedor: str, pedidos_path: str,
             cv.destroyWindow(PEDIDOS_WINDOW)
         # endregion
 
+        # region Visualizacion dataframe
+        print("· Dataframe archivo: ")
+        print(df.to_string())
+        # endregion
+
+        # Concateno el dataframe del archivo al dataframe total
+        df_total = pd.concat([df_total, df], ignore_index=True)
         n_files = n_files + 1
     # endregion
 
@@ -612,7 +617,7 @@ def main(proveedor: str, pedidos_path: str,
     # Imprimo el dataframe
     print()
     print()
-    print("Dataframe total:")
+    print("· Dataframe total:")
     print(df.to_string())
     # Guardo el dataframe en un EXCEL para su visualizacion
     path_dataframe = os.path.join(PATH_RESULTADOS, proveedor)
@@ -630,28 +635,29 @@ def main(proveedor: str, pedidos_path: str,
 
 # proveedor = "Engine Power Compoments"
 # proveedor = "Thyssenkrupp Campo Limpo"
-# proveedor = "JD REMAN"
 # proveedor = "Thyssenkrupp Crankshaft"
 # proveedor = "EMP"
 # proveedor = "WorldClass Industries"
-# proveedor = "ESP"
 # proveedor = "Skyway"
+# proveedor = "ESP"
+# proveedor = "JD REMAN"
+# proveedor = "JD SARAN"
 #
 # pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
 # pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo"
 # pedidos_path = r"test"
-# pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\Skyway"
-# pedidos_path = r"CLIIENTES JOHN DEERE\JD REMAN"
 # pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\EMP\t1.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
 # pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\JD SARAN"
 # pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 #
-# main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
+# main(proveedor, pedidos_path, is_img_shown=True, ai_path=".",
 #      poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
 #      tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
