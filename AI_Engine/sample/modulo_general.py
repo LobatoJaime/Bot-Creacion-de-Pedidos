@@ -45,23 +45,18 @@ def apply_template_matching(img, template):
     return result
 
 
-def lectura_campo(img, points, tesseract_exe_path, method=None, regex=None, is_img_shown=False):
+def lectura_campo(img, points, tesseract_exe_path, method=None, is_img_shown=False):
     """
-    Lector de caracteres a través de un imagen
+    Lector de caracteres a traves de un imagen
     Parameters:
-        img: Imagen donde se leerá el texto
-        points: Tupla de coordenadas de la imagen donde se leerá el texto
+        img: Imagen donde se leera el texto
+        points: Tupla de coordenadas de la imagen donde se leera el texto
         method: Metodo de lectura
-        regex: Lista de filtros regex para busqueda de texto
-        is_img_shown: Activa la visualización de las imágenes
+        is_img_shown: Activa la visualizacion de las imagenes
         tesseract_exe_path: Ruta del ejecutable de Tesseract
     Returns:
-        (Texto leido, confianza de la lectura)
+        Lista de tuplas: [(Texto leido, confianza de la lectura), ...]
     """
-
-    # region Preparacion parametros
-    regex = [] if regex is None else regex
-    # endregion
 
     # Transformamos la imagen a escala de grises si no lo esta
     if len(img.shape) == 3:
@@ -78,30 +73,53 @@ def lectura_campo(img, points, tesseract_exe_path, method=None, regex=None, is_i
 
     # Leo el texto
     list_lectura = lectura_texto(roi, tesseract_exe_path, method, is_img_shown)
-    # Inicializo el resultado (texto vacio y valor de confianza minimo)
+
+    return list_lectura
+
+
+def handle_lecture_ocr(list_lecture, regex):
+    """
+    Recibe una lista de tuplas de resultados ocr (text, conf) y los maneja para convertirlos a una sola tupla.
+
+    Si se especifica filtro regex, se aplica a cada una de las tuplas y se extrae el texto encontrado de
+    mayor confianza. Si no se encuentra, se devuelve el texto concatenado con el menor valor de confianza.
+
+    Parameters:
+        list_lecture: Lista de tuplas: [(Texto leido, confianza de la lectura), ...]
+        regex: Lista de filtros regex para busqueda de texto
+    """
+
+    # Si la lista de resultados esta vacia, el texto es vacio y la confianza es de 100
+    if len(list_lecture) < 1:
+        return "", 100
+
+    # region Preparacion parametros
+    regex = [] if regex is None else regex
+    # endregion
+
+    # Inicializo el resultado (texto vacio y valor de confianza minimo por defecto)
     text = ""
-    if len(list_lectura) > 0:
-        conf = min(list_lectura, key=lambda lectura: lectura[1])[1]
-    else:
-        conf = -2
+    conf = min(list_lecture, key=lambda lecture: lecture[1])[1]
+
     # Aplico regex
     if len(regex) > 0:
         # Ordeno los resultados por valores de confianza de mayor a menor
-        list_lectura = reversed(sorted(list_lectura, key=lambda lectura: lectura[1]))
+        list_lecture = reversed(sorted(list_lecture, key=lambda lecture: lecture[1]))
         # Aplico regex en todas las lineas encontradas
-        for lectura in list_lectura:
+        for lecture in list_lecture:
+            text_aux = lecture[0]
             for reg in regex:
-                if lectura[0] is not None:
-                    lectura[0] = regex_group(reg, lectura[0])
+                if text_aux is not None:
+                    text_aux = regex_group(reg, text_aux)
             # Si el texto hace match con el regex, cogemos este valor y el valor de confianza de la linea
-            if lectura[0] is not None:
-                text = lectura[0]
-                conf = lectura[1]
+            if text_aux is not None:
+                text = text_aux
+                conf = lecture[1]
                 break
     else:
         # Si no hay regex el resultado es la concanetacion de los textos, y la confianza es la minima
-        for lectura in list_lectura:
-            text = text + " " + lectura[0]
+        for lecture in list_lecture:
+            text = text + " " + lecture[0]
         text = text.strip()
     print("result final: (" + text + ", " + str(conf) + ")")
     return text, conf

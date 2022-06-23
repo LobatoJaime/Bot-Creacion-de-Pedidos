@@ -11,20 +11,24 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
 
     Parameters:
         df_list: Input lists of dataframes
+            The input dataframes are in this form:
+                 field1                 | field2                | field3
+                [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
+                [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
+                ...                     ...                     ...
         table_fields_list: List of table fields names
         provider_name: Name of the provider
         provider_data: Provider data extracted from the configuration file
 
     Returns:
         Output dataframe in this form:
-        field1          | field2        | field3
-        (text, conf)    (text, conf)    (text, conf)
-        (text, conf)    (text, conf)    (text, conf)
-        ...             ...             ...
+            field1                 | field2                | field3
+            [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
+            [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
+            ...                     ...                     ...
     """
     # CUSTOM_PROVIDERS = ("Skyway")
     # provider_name = "" if provider_name not in CUSTOM_PROVIDERS else provider_name
-
     df_output = pd.DataFrame()
 
     data_table = provider_data["table"]
@@ -86,15 +90,26 @@ def propagate_handler(df, only_field):
     # df['New'] = df['reference'].where(df['reference'] is not None or df['reference'][0] != "").ffill()
     # df['A'].map(lambda x: x[0] if type(x) is tuple and len(x) > 0 and x[0] == 34 else None)
 
-    # Creo columna indicando si hay texto
-    df["existsText"] = df[only_field].map(lambda x: True if type(x) is tuple and len(x) > 0 and x[0].strip() else False)
+    # Creo columna auxiliar indicando si hay texto en el campo "only_field"
+    df["existsText"] = df[only_field].map(lambda x: True if type(x) == list and len(x) > 0 else False)
     print(df.to_string())
-    # Relleno los valores de la columna
+    # Relleno los valores de la columna auxiliar
     df[only_field] = df[only_field].where(df["existsText"]).ffill()
     print(df.to_string())
-    # Borro las filas que no tienen
+    # Borro las filas que tienen texto en el campo "only_field"
     df = df[df["existsText"] == False]
-
+    # Elimino la columna auxiliar
+    df.pop("existsText")
     print(df.to_string())
 
     return df
+
+
+def remove_null_rows_cols(df):
+    # Borro filas None
+    df = df.dropna(how="all")
+    # Borro columnas None
+    df = df.dropna(axis=1, how="all")
+
+    return df
+
