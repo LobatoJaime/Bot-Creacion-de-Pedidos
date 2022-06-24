@@ -38,6 +38,26 @@ def get_planes_entrega() -> pd.DataFrame:
     data = pd.read_excel(file_root, dtype=str)
     planes_entrega = pd.DataFrame(data)
 
+    # cambiar idioma del plan de entrega en caso de que este en ingles/otros idiomas
+    headers = planes_entrega.columns.values.tolist()
+    headers_in_spanish = ['Documento de Ventas', 'Categoria de Documento de Ventas', 'Clase pedido ventas',
+                          'Organización de Ventas', 'Canal de Distribución', 'División', 'Grupo de Ventas',
+                          'Número pedido cliente', 'Fecha pedido cliente', 'Cliente', 'Nombre del Cliente',
+                          'Ship-To Party', 'Fecha ctd. Acumulada', 'Grupo de Materiales 3', 'Grupo de Materiales 4',
+                          'Grupo de Materiales 5', 'Elemento de Documento de Ventas', 'Referencia', 'Nombre Material',
+                          'Numero de Referencia por Cliente', 'Valor Neto del elemento del Pedido de la',
+                          'Moneda del Documento SD', 'Cantidad acumulada de pedido en Unidades',
+                          'Peso Bruto del elemento', 'Peso Neto del elemento', 'Planta', 'Almacén',
+                          'Punto de Envio/Recibo', 'Prc. Neto', 'Area de MRP',
+                          'Status del Material en Planta específica',
+                          'Grupo de compras', 'Planific. MRP', 'Tipo de aprovisionamiento', 'Supervisor de Producción',
+                          'Fecha reparto', 'Fecha de llegada', 'Cantidad de Pedido', 'Ctd. confirmada',
+                          'Unidad de ventas',
+                          'Ctd. Requerida para Maestro de Materiale', 'Clase doumento', 'Tipo de Plan',
+                          'Fecha Disponibilidad', 'Cantidad Pendiente', 'Ctd asignada', 'Ctd pendiente envio calculada']
+    if headers != headers_in_spanish:
+        planes_entrega.columns.values[0: len(headers_in_spanish)] = headers_in_spanish
+
     # Por si hay algun error de formato en la tabla de pedidos de SAP
     for index in planes_entrega.index:
         qty = str(planes_entrega['Cantidad de Pedido'][index])
