@@ -89,8 +89,9 @@ def procesamiento_img(roi, method):
 
 def lectura_texto(gray, tesseract_exe_path, method=None, is_img_shown=False):
     """
-    Reconoce el texto de una imagen. Se pueden indicar diferentes metodos
+    Reconoce el texto de una imagen. Se pueden indicar diferentes metodos.
     Devuelve una lista de textos junto a un valor de confianza.
+    Los textos encontrados vacios, no se devuelven.
     """
     result = []
     method = 0 if method is None else method
@@ -128,16 +129,15 @@ def lectura_texto(gray, tesseract_exe_path, method=None, is_img_shown=False):
             custom_config = custom_config_aux
         # Leo el texto dentro de la region y elimino los espacios a los lados del texto
         output_data = lectura_texto_data(img_procesada, custom_config)
-        result.append(output_data)
+        if output_data[0] != "":
+            result.append(output_data)
     print(result)
     print('############################################')
-    print("")
 
     return result
 
 
 def lectura_texto_data(img_procesada, custom_config):
-    line_conf = []
     # Leo el texto y extraigo la informacion en un diccionario
     data_dict = pytesseract.image_to_data(img_procesada, config=custom_config, output_type='dict')
     # Convierto el campo de conf de string a float
@@ -148,21 +148,12 @@ def lectura_texto_data(img_procesada, custom_config):
     data = data[data.conf != -1]
     # Elimino las filas con valor de confianza menor que 50 (posibles fallos)
     data = data[data.conf > 50]
-    # data.to_excel(r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\dataFrameTESERACT.xlsx")
     # Creo las listas de texto extraido con su valor de confianza
     lines = data.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['text'] \
         .apply(lambda x: ' '.join(list(x))).tolist()
     # El valor de confianza lo saco a partir del valor minimo
     confs = data.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['conf'].min().tolist()
-    print("lines")
-    print(lines)
-    print("confs")
-    print(confs)
     # Creo la lista con el texto final y su valor de confianza
     text = lines[0].strip() if len(lines) > 0 else ""
     conf = round(confs[0], 3) if len(lines) > 0 else 100
-    line_conf.append(text)
-    line_conf.append(conf)
-    print("=================================")
-    print(line_conf)
-    return line_conf
+    return text, conf

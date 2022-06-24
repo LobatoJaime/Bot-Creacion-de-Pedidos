@@ -62,7 +62,7 @@ def main(proveedor: str, pedidos_path: str,
     # General constants
     PEDIDOS_WINDOW = 'PDF pedidos'
     COLUMNAS = ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
-    COLUMNAS = ("archivo",) + COLUMNAS
+    # COLUMNAS = ("archivo",) + COLUMNAS
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
     HEIGHT_TO_SHOW = 800
     # Paths
@@ -78,7 +78,7 @@ def main(proveedor: str, pedidos_path: str,
 
     # region Variables
     # Dataframe
-    df = pd.DataFrame(columns=COLUMNAS)
+    df_total = pd.DataFrame(columns=COLUMNAS)
     # endregion
 
     # region Main
@@ -233,26 +233,12 @@ def main(proveedor: str, pedidos_path: str,
 
         # endregion
 
-        # region Creacion de sets de datos
-        set_data_list = []
+        # region Creacion dataframe
+        df = pd.DataFrame(columns=COLUMNAS)
         # Recorremos cada set de informacion
         for set_info in sets_info:
             set_data = {}
-
-            # region Lectura campos hoja
-            for campo in campos_hoja:
-                if set_info[campo] is not None:
-                    img_read = img_list[set_info[campo]]
-                    set_data[campo] = modg.lectura_campo(img_read,
-                                                         proveedor_campos[campo]["coordinates"],
-                                                         tesseract_exe_path,
-                                                         proveedor_campos[campo]["method_ocr"],
-                                                         proveedor_campos[campo]['regex'],
-                                                         is_img_shown)
-                else:
-                    # Si la info del campo en el set es nulo, recupero el valor del set anterior
-                    set_data[campo] = set_data_list[-1][campo] if len(set_data_list) > 0 else None
-            # endregion
+            df_set = pd.DataFrame(dtype=object)
 
             # region Lectura campos tabla
             # Inicializo campos tabla
@@ -283,7 +269,7 @@ def main(proveedor: str, pedidos_path: str,
                         # endregion
 
                         # region Busqueda de lineas horizontales
-                        lines = search_horiz_lines(table_img_gray, 3, table_img_gray.shape[1] - 30)
+                        lines = search_horiz_lines(table_img_gray, 3)
                         # endregion
 
                         # region Eliminacion de lineas horizontales
@@ -329,31 +315,22 @@ def main(proveedor: str, pedidos_path: str,
                             # endregion
 
                             # region Lectura de campo por fila
-                            row_data = {}
-                            is_empty_row = True  # Variable para determinar si la fila esta vacia
                             for campo in campos_tabla:
-                                # Leo el campo
-                                lectura = modg.lectura_campo(fila_img,
-                                                             proveedor_campos[campo]["coordinates"],
-                                                             tesseract_exe_path,
-                                                             proveedor_campos[campo]["method_ocr"],
-                                                             proveedor_campos[campo]['regex'],
-                                                             is_img_shown)
-                                # El campo no esta vacio
-                                if lectura[0].strip():
-                                    is_empty_row = False
-
-                                row_data[campo] = lectura
+                                # Leo la region
+                                list_lecture = modg.lectura_campo(fila_img,
+                                                                  proveedor_campos[campo]["coordinates"],
+                                                                  tesseract_exe_path,
+                                                                  proveedor_campos[campo]["method_ocr"],
+                                                                  is_img_shown)
+                                # Manejo la lista de resultados
+                                set_data[campo].append(modg.handle_lecture_ocr(list_lecture,
+                                                                               proveedor_campos[campo]['regex']))
                             # endregion
 
-                            # region Validacion de fila
-                            # Si la fila tiene valores la inserto en el set de datos
-                            if not is_empty_row:
-                                for campo in campos_tabla:
-                                    set_data[campo].append(row_data[campo])
-                            # endregion
-
+                        # Relleno el dataset
+                        df_set = pd.DataFrame(set_data)
                         # endregion
+
                 # endregion
 
                 # region Tabla "no_lines"
@@ -380,15 +357,17 @@ def main(proveedor: str, pedidos_path: str,
                                 cv.imshow("column_img",
                                           cv.resize(column_img_to_show, None, fx=0.5, fy=0.5,
                                                     interpolation=cv.INTER_AREA))
-                            set_data[campo] = []
                             # Por cada contorno leo el campo
                             for box in reversed(boxes):
-                                set_data[campo].append(modg.lectura_campo(column_img,
-                                                                          box,
-                                                                          tesseract_exe_path,
-                                                                          proveedor_campos[campo]["method_ocr"],
-                                                                          proveedor_campos[campo]['regex'],
-                                                                          is_img_shown))
+                                # Leo la region
+                                list_lecture = modg.lectura_campo(column_img, box, tesseract_exe_path,
+                                                                  proveedor_campos[campo]["method_ocr"],
+                                                                  is_img_shown)
+                                # Manejo la lista de resultados
+                                set_data[campo].append(modg.handle_lecture_ocr(list_lecture,
+                                                                               proveedor_campos[campo]['regex']))
+                    # Relleno el dataset
+                    df_set = pd.DataFrame(set_data)
                 # endregion
 
                 # region Tabla "table"
@@ -398,29 +377,27 @@ def main(proveedor: str, pedidos_path: str,
                     for table_pag in set_info["table"]:
 
                         # region Deteccion header
+                        header_center = (None, None)
                         header_coordinates = img_table_info_list[table_pag]["header_coordinates"]
-                        if header_coordinates != (None, None):
+                        if header_coordinates != ((None, None), (None, None)):
                             header_center = (int((header_coordinates[0][0] + header_coordinates[0][1]) / 2),
                                              int((header_coordinates[1][0] + header_coordinates[1][1]) / 2))
                         # endregion
 
                         # region Deteccion tabla
                         # Detectamos las tablas
-                        # size_factor = proveedor_tabla["detection_parameters"]["size_factor"]
-                        # scale_x = proveedor_tabla["detection_parameters"]["scale_x"]
-                        # scale_y = proveedor_tabla["detection_parameters"]["scale_y"]
-                        size_factor = 0.4
-                        scale_x = 7
-                        scale_y = 22
+                        size_factor = proveedor_tabla["detection_parameters"]["size_factor"]
+                        scale_x = proveedor_tabla["detection_parameters"]["scale_x"]
+                        scale_y = proveedor_tabla["detection_parameters"]["scale_y"]
                         tables_data, src_no_lines = table_detection.table_detector(img_list[table_pag], size_factor,
-                                                                                   scale_x, scale_y)
+                                                                                   scale_x, scale_y, is_img_shown)
                         # Si no se ha enocntrado ninguna tabla saltamos a la siguiente pagina
-                        if len(tables_data) < 1:
+                        if tables_data is None or len(tables_data) < 1:
                             continue
                         # Escogemos la tabla
                         table_data = None
                         # Elegimos la tabla que contiene al header
-                        if header_center != ((None, None), (None, None)):
+                        if header_center != (None, None):
                             for item in tables_data:
                                 if mod_basic.is_point_en_rect(header_center, item["table_coordinates"]):
                                     table_data = item
@@ -439,10 +416,8 @@ def main(proveedor: str, pedidos_path: str,
                         # Dibujamos las detecciones y las mostramos
                         table_img_to_show = img_list[table_pag].copy()
                         table_img_to_show = table_img_to_show[
-                                          table_data["table_coordinates"][0][1]:table_data["table_coordinates"][1][
-                                              1],
-                                          table_data["table_coordinates"][0][0]:table_data["table_coordinates"][1][
-                                              0]]
+                                            table_data["table_coordinates"][0][1]:table_data["table_coordinates"][1][1],
+                                            table_data["table_coordinates"][0][0]:table_data["table_coordinates"][1][0]]
                         # Dibujo tabla
                         cv.rectangle(table_img_to_show, table_data["table_coordinates"][0],
                                      table_data["table_coordinates"][1], (0, 255, 0), 5)
@@ -491,16 +466,14 @@ def main(proveedor: str, pedidos_path: str,
                                                                                      0]))
                         # Creo ROI de la tabla
                         table_img = img_list[table_pag][
-                                    table_data["table_coordinates"][0][1]:table_data["table_coordinates"][1][
-                                        1],
-                                    table_data["table_coordinates"][0][0]:table_data["table_coordinates"][1][
-                                        0]]
+                                    table_data["table_coordinates"][0][1]:table_data["table_coordinates"][1][1],
+                                    table_data["table_coordinates"][0][0]:table_data["table_coordinates"][1][0]]
                         # Recorro y leo las celdas
                         for cell in table_data["cells"]:
                             # Si esta por encima del header no indizo la celda
                             if cell["lines_coordinates"][0][1] < header_pt1[1]:
                                 continue
-                            # # Visualizacion celda
+                            # Visualizacion celda
                             # cv.imshow("cell", table_img_to_show[cell["lines_coordinates"][0][1]:cell["lines_coordinates"][1][1],
                             #           cell["lines_coordinates"][0][0]:cell["lines_coordinates"][1][0]])
                             # cv.waitKey(0)
@@ -513,89 +486,103 @@ def main(proveedor: str, pedidos_path: str,
                                                                                                     "content_coordinates"],
                                                                                                 tesseract_exe_path,
                                                                                                 None,
-                                                                                                [],
                                                                                                 False)
                         # endregion
 
                         # region Transformacion matriz a dataframe
                         df_table = pd.DataFrame(matrix_table)
-                        print(df_table.to_string())
-                        # Borro filas None
-                        df_table = df_table.dropna(how="all")
-                        print(df_table.to_string())
-                        # Borro columnas None
-                        df_table = df_table.dropna(axis=1, how="all")
-                        print(df_table.to_string())
+                        # Borro filas y columnas None
+                        df_table = df_handling.remove_null_rows_cols(df_table)
                         # endregion
 
                         # Añado dataframe a la lista
                         df_list.append(df_table)
 
-                    df_handling.handler(df_list, campos_tabla, proveedor, provider_data=proveedor_data)
+                    # Relleno el dataset
+                    df_set = df_handling.handler(df_list, campos_tabla, proveedor, proveedor_data)
+                    print("------------------")
+                    print(df_set.to_string())
+                    # Aplico regex a los resultados
+                    for campo in campos_tabla:
+                        df_set[campo] = df_set[campo].map(
+                            lambda x: modg.handle_lecture_ocr(x, proveedor_campos[campo]['regex']))
+                    print("------- ######## ---------")
+                    print(df_set.to_string())
+                    print("------------------")
 
                 # endregion
 
-            # Compruebo que las listas de los campos en tabla no estan vacios
-            if any(len(set_data[campo]) <= 0 for campo in campos_tabla):
+            # Compruebo que el dataframe con los valores de los campos en tabla no este vacio
+            if df_set.empty:
                 # Si alguna lista de tabla no tiene valores, saltamos al siguiente set
                 continue
             # endregion
 
-            # Añado nuevo set
-            set_data_list.append(set_data)
-
-        print("set_data_list")
-        print(set_data_list)
-        print()
+            # region Lectura campos hoja
+            for campo in campos_hoja:
+                if set_info[campo] is not None:
+                    img_read = img_list[set_info[campo]]
+                    # Leo la region
+                    list_lecture = modg.lectura_campo(img_read,
+                                                      proveedor_campos[campo]["coordinates"],
+                                                      tesseract_exe_path,
+                                                      proveedor_campos[campo]["method_ocr"],
+                                                      is_img_shown)
+                    # Manejo la lista de resultados
+                    lecture = modg.handle_lecture_ocr(list_lecture, proveedor_campos[campo]['regex'])
+                    # Inserto el resultado en el dataframe
+                    df_set[campo] = None
+                    df_set[campo] = df_set[campo].apply(lambda x: lecture)
+            # endregion
+            # Concateno el nuevo dataframe
+            df = pd.concat([df, df_set], ignore_index=True)
         # endregion
 
-        # region Creacion dataframe
-        # Relleno el dataframe
-        for set_data in set_data_list:
-            # Extraigo el diccionario con el texto
-            set_data_dict = {}
-            for campo in set_data:
-                if campo in campos_tabla:
-                    set_data_dict[campo] = [item[0] for item in set_data[campo]]
-                    set_data_dict["conf_" + campo] = [item[1] for item in set_data[campo]]
-                else:
-                    set_data_dict[campo] = set_data[campo][0]
-                    set_data_dict["conf_" + campo] = set_data[campo][1]
-            # Creo el dataframe con los datos extraidos de la pagina
-            df_n = pd.DataFrame(set_data_dict)
-            print(df_n)
+        # region Manejo dataframe
 
-            # region Calculo de confianza por fila
-            # Creo la lista de los nombres de las columnas auxiliares de confianza
-            conf_columnas = [x for x in list(set_data_dict.keys()) if x.startswith("conf_")]
-            print(df_n[conf_columnas])
-            # Creo la columna de confianza
-            df_n["confidence"] = df_n[conf_columnas].min(axis=1)
-            df_n = pd.DataFrame(df_n, columns=COLUMNAS)
-            # endregion
+        # region Relleno columnas de campos de hoja
+        for campo in campos_hoja:
+            df[campo] = df[campo].ffill(axis=0)
+        # endregion
 
-            # region Columnas extra
-            # Relleno el valor de las columnas extra
-            if "archivo" in COLUMNAS:
-                df_n["archivo"] = filename
-            df_n["client"] = proveedor
-            # endregion
+        # region Calculo de confianza por fila
+        list_conf = []
+        # Recorro las filas del dataframe
+        for i in df.index:
+            # Calculo el valor minimo de confianza de las columnas
+            list_conf_row = []
+            for campo in campos_validos:
+                list_conf_row.append(df[campo][i][1])
+            list_conf.append(min(list_conf_row))
+        # Relleno columna de confianza
+        df["confidence"] = list_conf
+        # endregion
 
-            # region Validacion dataframe
-            # Recorro todas las filas del dataframe para comprobar si el formato del campo es correcto
-            for i in range(len(df_n)):
-                for campo in campos_validos:
-                    # Aplico regex para comprobar el formato
-                    reg_res = modg.regex_group(formato_campos[campo], df_n.loc[i, campo])
-                    # Si el formato no es correcto, el valor de confianza es -100
-                    if reg_res is None or df_n.loc[i, campo] is None or len(reg_res) != len(df_n.loc[i, campo]):
-                        df_n.loc[i, "confidence"] = -100
-            # endregion
+        # region Transformacion de tuplas a texto
+        for campo in campos_validos:
+            df[campo] = df[campo].map(lambda x: x[0] if type(x) is tuple and len(x) > 0 and x[0].strip() else "")
+        # endregion
 
-            # Uno el data frame con el dataframe global
-            print("Dataframe set:")
-            print(df_n)
-            df = pd.concat([df, df_n], ignore_index=True)
+        # region Columnas extra
+        # Relleno el valor de las columnas extra
+        if "archivo" in COLUMNAS:
+            df["archivo"] = filename
+        df["client"] = proveedor
+        # endregion
+
+        # region Validacion dataframe
+        # Recorro todas las filas del dataframe para comprobar si el formato del campo es correcto
+        for i in range(len(df)):
+            for campo in campos_validos:
+                # Aplico regex para comprobar el formato
+                reg_res = modg.regex_group(formato_campos[campo], df.loc[i, campo])
+                # Si el formato no es correcto, el valor de confianza es -100
+                if reg_res is None or df.loc[i, campo] is None or len(reg_res) != len(df.loc[i, campo]):
+                    df.loc[i, "confidence"] = -100
+        # endregion
+
+        # endregion
+
         # endregion
 
         # region Eliminacion visualizacion pedido
@@ -603,6 +590,13 @@ def main(proveedor: str, pedidos_path: str,
             cv.destroyWindow(PEDIDOS_WINDOW)
         # endregion
 
+        # region Visualizacion dataframe
+        print("· Dataframe archivo: ")
+        print(df.to_string())
+        # endregion
+
+        # Concateno el dataframe del archivo al dataframe total
+        df_total = pd.concat([df_total, df], ignore_index=True)
         n_files = n_files + 1
     # endregion
 
@@ -616,14 +610,20 @@ def main(proveedor: str, pedidos_path: str,
         df['confidence'] = [total_confidence] * len(confidences)
 
     # Formatear las columnas de la tabla
-    df = FormatTable(orders=df).format()
+    try:
+        df = FormatTable(orders=df).format()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # return empty df en caso de error
+        df = pd.DataFrame()
     # endregion
 
     # region Visualizacion y guardado de dataframe
     # Imprimo el dataframe
     print()
     print()
-    print("Dataframe total:")
+    print("· Dataframe total:")
     print(df.to_string())
     # Guardo el dataframe en un EXCEL para su visualizacion
     path_dataframe = os.path.join(PATH_RESULTADOS, proveedor)
@@ -638,30 +638,32 @@ def main(proveedor: str, pedidos_path: str,
 
     return df
 
+
 # proveedor = "Engine Power Compoments"
-# proveedor = "WorldClass Industries"
 # proveedor = "Thyssenkrupp Campo Limpo"
-# proveedor = "ESP"
-# proveedor = "EMP"
-# proveedor = "JD REMAN"
 # proveedor = "Thyssenkrupp Crankshaft"
+# proveedor = "EMP"
+# proveedor = "WorldClass Industries"
 # proveedor = "Skyway"
+# proveedor = "ESP"
+# proveedor = "JD REMAN"
+# proveedor = "JD SARAN"
 #
 # pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
 # pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
-# pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo"
 # pedidos_path = r"test"
-# pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\EMP\t1.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\Skyway"
-# pedidos_path = r"CLIIENTES JOHN DEERE\JD REMAN"
 # pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\EMP\t1.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
+# pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\JD SARAN"
 # pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 #
-# main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
+# main(proveedor, pedidos_path, is_img_shown=True, ai_path=".",
 #      poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
 #      tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
