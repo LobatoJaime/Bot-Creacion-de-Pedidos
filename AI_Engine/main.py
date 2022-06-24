@@ -610,7 +610,13 @@ def main(proveedor: str, pedidos_path: str,
         df['confidence'] = [total_confidence] * len(confidences)
 
     # Formatear las columnas de la tabla
-    df = FormatTable(orders=df).format()
+    try:
+        df = FormatTable(orders=df).format()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # return empty df en caso de error
+        df = pd.DataFrame()
     # endregion
 
     # region Visualizacion y guardado de dataframe
