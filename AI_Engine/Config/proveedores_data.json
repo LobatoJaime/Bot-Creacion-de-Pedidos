@@ -1,5 +1,5 @@
 {
-  "Engine Power Components": {
+  "70017703": {
     "table": {
       "coordinates": {
         "all": [
@@ -63,7 +63,7 @@
         "arrival_date": null
       }
   },
-  "Thyssenkrupp Campo Limpo": {
+  "70017078": {
     "table": {
       "coordinates": {
         "all": [
@@ -127,7 +127,7 @@
         "arrival_date": null
       }
   },
-  "Thyssenkrupp Crankshaft": {
+  "70017048": {
     "table": {
       "coordinates": {
         "1": [
@@ -197,7 +197,7 @@
       }
     }
   },
-  "WorldClass Industries": {
+  "70018938": {
     "table": {
       "coordinates": {
         "1": [
@@ -267,7 +267,7 @@
       }
     }
     },
-  "EMP": {
+  "70012672": {
     "table": {
       "coordinates": {
         "all": [
@@ -331,7 +331,7 @@
       }
     }
   },
-  "WorldClass Industries EU": {
+  "70017673": {
     "table": {
       "coordinates": {
         "1": [
@@ -401,7 +401,7 @@
       "arrival_date": null
     }
   },
-  "ESP": {
+  "70001256": {
     "table": {
       "coordinates": {
         "1": [
@@ -471,7 +471,7 @@
       "arrival_date": null
     }
   },
-  "JD REMAN (lines)": {
+  "99999TSE01 (lines)": {
     "table": {
       "coordinates": {
         "1": [
@@ -541,7 +541,7 @@
       "arrival_date": null
     }
   },
-  "JD REMAN": {
+  "99999TSE01": {
     "table": {
       "coordinates": {
         "1": [
@@ -606,7 +606,7 @@
       "arrival_date": null
     }
   },
-  "JD SARAN": {
+  "99999TCD00": {
     "table": {
       "coordinates": {
         "1": [
@@ -731,7 +731,7 @@
       }
     }
   },
-  "TIG": {
+  "70017869": {
     "table": {
       "coordinates": {
         "1": [

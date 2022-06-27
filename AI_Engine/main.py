@@ -26,13 +26,7 @@ def main(proveedor: str, pedidos_path: str,
     """
     Metodo principal de extraccion de datos de proveedores
     Parameters:
-        proveedor: Nombre del proveedor del cual se extraera la informacion. Proveedores disponibles:
-            - Engine Power Compoments
-            - Thyssenkrupp Campo Limpo
-            - WorldClass Industries
-            - EMP
-            - Thyssenkrupp Crankshaft
-            - WorldClass Industries EU
+        proveedor: Nombre del proveedor del cual se extraera la informacion
         pedidos_path: Ruta de la carpeta donde se encuentran los archivos o ruta del propio archivo a extraer
          la informacion
         is_img_shown: (Opcional) Variable para visualizar la extraccion de datos. Por defecto, esta a false
@@ -639,29 +633,31 @@ def main(proveedor: str, pedidos_path: str,
     return df
 
 
-# proveedor = "Engine Power Compoments"
-# proveedor = "Thyssenkrupp Campo Limpo"
-# proveedor = "Thyssenkrupp Crankshaft"
-# proveedor = "EMP"
-# proveedor = "WorldClass Industries"
+# proveedor = "70017078"  # Thyssenkrupp Campo Limpo
+# proveedor = "70017048"  # Thyssenkrupp Crankshaft
+# proveedor = "70012672"  # EMP
+# proveedor = "70018938"  # WorldClass Industries
+# proveedor = "70001256"  # ESP
+# proveedor = "99999TCD00"  # JD SARAN"
+# proveedor = "99999TSE01 (lines)"  # JD REMAN (lines)"
+# proveedor = "70017869"  # TIG"
+# proveedor = "70017703"  # Engine Power Components"
 # proveedor = "Skyway"
-# proveedor = "ESP"
-# proveedor = "JD REMAN"
-# proveedor = "JD SARAN"
+# proveedor = "99999TSE01"  # JD REMAN"
 #
 # pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
 # pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo"
 # pedidos_path = r"test"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway"
 # pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\EMP\t1.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
 # pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\JD SARAN"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Engine Power Components\t42.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\JD REMAN"
 # pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 #
 # main(proveedor, pedidos_path, is_img_shown=True, ai_path=".",
