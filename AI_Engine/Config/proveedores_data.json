@@ -730,5 +730,75 @@
         "method_ocr": 4
       }
     }
+  },
+  "TIG": {
+    "table": {
+      "coordinates": {
+        "1": [
+          null,
+          760,
+          null,
+          null
+        ],
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": 1,
+        "regex": ["[a-zA-Z]*\\d+"],
+        "coordinates": [
+          1287,
+          335,
+          1480,
+          384
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["[a-zA-Z]+\\d{4,}"],
+        "coordinates": [
+          3,
+          null,
+          480,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["[\\d,]+(\\.\\d*){0,1}"],
+        "coordinates": [
+          516,
+          null,
+          738,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "regex": ["\\d{2}\/\\d{2}\/\\d{4}|[a-zA-Z]+ \\d{1,2}, *\\d{4}"],
+        "coordinates": [
+          906,
+          null,
+          1177,
+          null
+        ],
+        "method_ocr": [4,3,1]
+      }
+    }
   }
 }
