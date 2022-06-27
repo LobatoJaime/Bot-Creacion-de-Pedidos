@@ -1,69 +1,75 @@
 {
-  "70017703": {
+  "70001256": {
     "table": {
       "coordinates": {
+        "1": [
+          11,
+          653,
+          1689,
+          2086
+        ],
         "all": [
-          null,
-          null,
-          null,
-          null
+          11,
+          11,
+          1689,
+          2086
         ]
       },
-      "type": "no_lines"
+      "type": "lines"
     },
     "fields": {
-        "order_number": {
-          "in_table": false,
-          "pag": 1,
-          "regex": [],
-          "coordinates": [
-            101,
-            683,
-            238,
-            723
-          ],
-          "method_ocr": 0
-        },
-        "reference": {
-          "in_table": true,
-          "pag": null,
-          "regex": ["[a-zA-Z]+[0-9]+"],
-          "coordinates": [
-            134,
-            null,
-            578,
-            1128
-          ],
-          "method_ocr": 0
-        },
-        "quantity": {
-          "in_table": true,
-          "pag": null,
-          "regex": ["[\\d.,]+"],
-          "coordinates": [
-            582,
-            null,
-            758,
-            1128
-          ],
-          "method_ocr": 0
-        },
-        "ship_out_date": {
-          "in_table": true,
-          "pag": null,
-          "regex": [],
-          "coordinates": [
-            1293,
-            null,
-            1450,
-            1128
-          ],
-          "method_ocr": 0
-        },
-        "arrival_date": null
-      }
+      "order_number": {
+        "in_table": false,
+        "pag": 1,
+        "regex_validation": "[a-zA-Z]*\\d+",
+        "coordinates": [
+          1148,
+          185,
+          1599,
+          224
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": true,
+        "pag": null,
+        "regex_validation": "[a-zA-Z]+\\d+",
+        "coordinates": [
+          444,
+          null,
+          908,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "decimal_separator": ".",
+        "coordinates": [
+          10,
+          null,
+          170,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date":  {
+        "in_table": true,
+        "pag": null,
+        "date_format": ["mm/dd/yyyy"],
+        "coordinates": [
+          174,
+          null,
+          312,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "arrival_date": null
+    }
   },
-  "70017078": {
+  "70012672": {
     "table": {
       "coordinates": {
         "all": [
@@ -76,56 +82,56 @@
       "type": "no_lines"
     },
     "fields": {
-        "order_number": {
-          "in_table": false,
-          "pag": 1,
-          "regex": [],
-          "coordinates": [
-            793,
-            437,
-            982,
-            479
-          ],
-          "method_ocr": 5
-        },
-        "reference": {
-          "in_table": false,
-          "pag": 1,
-          "regex": ["\\([a-zA-Z]+[0-9]+\\)", "[a-zA-Z]+[0-9]+"],
-          "coordinates": [
-            26,
-            1003,
-            664,
-            1043
-          ],
-          "method_ocr": 5
-        },
-        "quantity": {
-          "in_table": true,
-          "pag": null,
-          "regex": [],
-          "coordinates": [
-            521,
-            null,
-            704,
-            null
-          ],
-          "method_ocr": 5
-        },
-        "ship_out_date": {
-          "in_table": true,
-          "pag": null,
-          "regex": [],
-          "coordinates": [
-            32,
-            null,
-            267,
-            null
-          ],
-          "method_ocr": 5
-        },
-        "arrival_date": null
+      "order_number": {
+        "in_table": false,
+        "pag": "all",
+        "regex_validation": "[a-zA-Z]*\\d+",
+        "coordinates": [
+          308,
+          438,
+          438,
+          463
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": false,
+        "pag": "all",
+        "regex_validation": "[a-zA-Z]+\\d+",
+        "coordinates": [
+          308,
+          463,
+          438,
+          493
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "decimal_separator": ".",
+        "coordinates": [
+          918,
+          null,
+          1095,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "date_format": ["mm/dd/yyyy"],
+        "coordinates": [
+          136,
+          null,
+          257,
+          null
+        ],
+        "method_ocr": 4
       }
+    }
   },
   "70017048": {
     "table": {
@@ -149,7 +155,7 @@
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex": ["^[a-zA-Z]*\\d+$"],
+        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           1343,
           446,
@@ -161,7 +167,8 @@
       "reference": {
         "in_table": false,
         "pag": 1,
-        "regex": ["#[a-zA-Z]+[0-9]+", "[a-zA-Z]+[0-9]+"],
+        "regex_validation": "[a-zA-Z]+\\d+",
+        "regex_filter": ["#[a-zA-Z]+\\d+", "[a-zA-Z]+\\d+"],
         "coordinates": [
           158,
           1054,
@@ -173,7 +180,7 @@
       "quantity": {
         "in_table": true,
         "pag": null,
-        "regex": [],
+        "decimal_separator": ",",
         "coordinates": [
           499,
           null,
@@ -186,7 +193,7 @@
       "arrival_date": {
         "in_table": true,
         "pag": null,
-        "regex": [],
+        "date_format": ["D dd.mm.yyyy"],
         "coordinates": [
           27,
           null,
@@ -194,6 +201,275 @@
           null
         ],
         "method_ocr": 4
+      }
+    }
+  },
+  "70017078": {
+    "table": {
+      "coordinates": {
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+        "order_number": {
+          "in_table": false,
+          "pag": 1,
+          "regex_validation": "[a-zA-Z]*\\d+",
+          "coordinates": [
+            793,
+            437,
+            982,
+            479
+          ],
+          "method_ocr": 5
+        },
+        "reference": {
+          "in_table": false,
+          "pag": 1,
+          "regex_validation": "[a-zA-Z]+\\d+",
+          "regex_filter": ["\\([a-zA-Z]+\\d+\\)", "[a-zA-Z]+\\d+"],
+          "coordinates": [
+            26,
+            1003,
+            664,
+            1043
+          ],
+          "method_ocr": 5
+        },
+        "quantity": {
+          "in_table": true,
+          "pag": null,
+          "decimal_separator": ",",
+          "coordinates": [
+            521,
+            null,
+            704,
+            null
+          ],
+          "method_ocr": 5
+        },
+        "ship_out_date": {
+          "in_table": true,
+          "pag": null,
+          "date_format": ["D dd.mm.yyyy"],
+          "coordinates": [
+            32,
+            null,
+            267,
+            null
+          ],
+          "method_ocr": 5
+        },
+        "arrival_date": null
+      }
+  },
+  "70017673": {
+    "table": {
+      "coordinates": {
+        "1": [
+          11,
+          653,
+          1689,
+          2086
+        ],
+        "all": [
+          11,
+          11,
+          1689,
+          2086
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": true,
+        "pag": null,
+        "regex_validation": "[a-zA-Z]*\\d+",
+        "coordinates": [
+          157,
+          null,
+          363,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": false,
+        "pag": 1,
+        "regex_validation": "[a-zA-Z]+\\d+",
+        "coordinates": [
+          48,
+          744,
+          220,
+          792
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "decimal_separator": ",",
+        "coordinates": [
+          971,
+          null,
+          1124,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date":  {
+        "in_table": true,
+        "pag": null,
+        "date_format": ["mm/dd/yyyy"],
+        "coordinates": [
+          736,
+          null,
+          957,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "arrival_date": null
+    }
+  },
+  "70017703": {
+    "table": {
+      "coordinates": {
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+        "order_number": {
+          "in_table": false,
+          "pag": 1,
+          "regex_validation": "[a-zA-Z]*\\d+",
+          "coordinates": [
+            101,
+            683,
+            238,
+            723
+          ],
+          "method_ocr": 0
+        },
+        "reference": {
+          "in_table": true,
+          "pag": null,
+          "regex_validation": "[a-zA-Z]+\\d+",
+          "coordinates": [
+            134,
+            null,
+            578,
+            1128
+          ],
+          "method_ocr": 0
+        },
+        "quantity": {
+          "in_table": true,
+          "pag": null,
+          "decimal_separator": ",",
+          "coordinates": [
+            582,
+            null,
+            758,
+            1128
+          ],
+          "method_ocr": 0
+        },
+        "ship_out_date": {
+          "in_table": true,
+          "pag": null,
+          "date_format": ["dd/mm/yyyy"],
+          "coordinates": [
+            1293,
+            null,
+            1450,
+            1128
+          ],
+          "method_ocr": 0
+        },
+        "arrival_date": null
+      }
+  },
+  "70017869": {
+    "table": {
+      "coordinates": {
+        "1": [
+          null,
+          760,
+          null,
+          null
+        ],
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": 1,
+        "regex_validation": "[a-zA-Z]*\\d+",
+        "coordinates": [
+          1287,
+          335,
+          1480,
+          384
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": true,
+        "pag": null,
+        "regex_validation": "[a-zA-Z]+\\d+",
+        "coordinates": [
+          3,
+          null,
+          480,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "decimal_separator": ".",
+        "coordinates": [
+          516,
+          null,
+          738,
+          null
+        ],
+        "method_ocr": 4
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "date_format": ["mm/dd/yyyy", "LargeMonth dd, yyyy"],
+        "coordinates": [
+          906,
+          null,
+          1177,
+          null
+        ],
+        "method_ocr": [4,3,1]
       }
     }
   },
@@ -219,7 +495,7 @@
       "order_number": {
         "in_table": true,
         "pag": null,
-        "regex": [],
+        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           157,
           null,
@@ -231,7 +507,7 @@
       "reference": {
         "in_table": false,
         "pag": 1,
-        "regex": [],
+        "regex_validation": "[a-zA-Z]+\\d+",
         "coordinates": [
           48,
           744,
@@ -243,7 +519,7 @@
       "quantity": {
         "in_table": true,
         "pag": null,
-        "regex": [],
+        "decimal_separator": ",",
         "coordinates": [
           971,
           null,
@@ -256,7 +532,7 @@
       "arrival_date": {
         "in_table": true,
         "pag": null,
-        "regex": [],
+        "date_format": ["dd.mm.yyyy"],
         "coordinates": [
           736,
           null,
@@ -267,204 +543,132 @@
       }
     }
     },
-  "70012672": {
-    "table": {
-      "coordinates": {
-        "all": [
-          null,
-          null,
-          null,
-          null
-        ]
-      },
-      "type": "no_lines"
-    },
-    "fields": {
-      "order_number": {
-        "in_table": false,
-        "pag": "all",
-        "regex": [],
-        "coordinates": [
-          308,
-          438,
-          438,
-          463
-        ],
-        "method_ocr": 4
-      },
-      "reference": {
-        "in_table": false,
-        "pag": "all",
-        "regex": [],
-        "coordinates": [
-          308,
-          463,
-          438,
-          493
-        ],
-        "method_ocr": 4
-      },
-      "quantity": {
-        "in_table": true,
-        "pag": null,
-        "regex": [],
-        "coordinates": [
-          918,
-          null,
-          1095,
-          null
-        ],
-        "method_ocr": 4
-      },
-      "ship_out_date": null,
-      "arrival_date": {
-        "in_table": true,
-        "pag": null,
-        "regex": [],
-        "coordinates": [
-          136,
-          null,
-          257,
-          null
-        ],
-        "method_ocr": 4
-      }
-    }
-  },
-  "70017673": {
+  "99999TCD00": {
     "table": {
       "coordinates": {
         "1": [
-          11,
-          653,
-          1689,
-          2086
+          null,
+          950,
+          null,
+          null
         ],
         "all": [
-          11,
-          11,
-          1689,
-          2086
+          null,
+          null,
+          null,
+          null
         ]
       },
-      "type": "no_lines"
+      "type": "table",
+      "detection_parameters": {
+        "size_factor": 0.5,
+        "scale_x": 15,
+        "scale_y": 15
+      },
+      "read_all_cells": false
     },
     "fields": {
       "order_number": {
-        "in_table": true,
-        "pag": null,
-        "regex": [],
+        "in_table": false,
+        "pag": 1,
+        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
-          157,
-          null,
-          363,
-          null
+          0,
+          320,
+          493,
+          391
         ],
         "method_ocr": 4
       },
       "reference": {
-        "in_table": false,
-        "pag": 1,
-        "regex": [],
-        "coordinates": [
-          48,
-          744,
-          220,
-          792
-        ],
+        "in_table": true,
+        "pag": null,
+        "regex_validation": "[a-zA-Z]+\\d+",
+        "column_pos": 2,
         "method_ocr": 4
       },
       "quantity": {
         "in_table": true,
         "pag": null,
-        "regex": [],
-        "coordinates": [
-          971,
-          null,
-          1124,
-          null
-        ],
+        "decimal_separator": ",",
+        "column_pos": 3,
         "method_ocr": 4
       },
       "ship_out_date":  {
-        "in_table": true,
-        "pag": null,
-        "regex": [],
+        "in_table": false,
+        "pag": 1,
+        "date_format": ["mm.dd.yyyy"],
         "coordinates": [
-          736,
-          null,
-          957,
-          null
+          278,
+          741,
+          465,
+          833
         ],
         "method_ocr": 4
       },
       "arrival_date": null
     }
   },
-  "70001256": {
+  "99999TSE01": {
     "table": {
       "coordinates": {
         "1": [
-          11,
-          653,
-          1689,
-          2086
+          null,
+          676,
+          null,
+          null
         ],
         "all": [
-          11,
-          11,
-          1689,
-          2086
+          null,
+          298,
+          null,
+          2171
         ]
       },
-      "type": "lines"
+      "type": "table",
+      "detection_parameters": {
+        "size_factor": 0.4,
+        "scale_x": 7,
+        "scale_y": 22
+      },
+      "read_all_cells": false
     },
     "fields": {
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex": [],
+        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
-          1148,
-          185,
-          1599,
-          224
+          960,
+          330,
+          1187,
+          379
         ],
         "method_ocr": 4
       },
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex": ["[a-zA-Z]+\\d{4,}"],
-        "coordinates": [
-          444,
-          null,
-          908,
-          null
-        ],
+        "regex_validation": "[a-zA-Z]+\\d+",
+        "column_pos": 2,
         "method_ocr": 4
       },
       "quantity": {
         "in_table": true,
         "pag": null,
-        "regex": [],
-        "coordinates": [
-          10,
-          null,
-          170,
-          null
-        ],
+        "decimal_separator": ".",
+        "column_pos": 3,
         "method_ocr": 4
       },
       "ship_out_date":  {
-        "in_table": true,
-        "pag": null,
-        "regex": ["\\d{2}/\\d{2}/\\d{4}"],
+        "in_table": false,
+        "pag": 1,
+        "date_format": ["mm/dd/yyyy"],
         "coordinates": [
-          174,
-          null,
-          312,
-          null
+          1005,
+          740,
+          1170,
+          782
         ],
         "method_ocr": 4
       },
@@ -493,7 +697,7 @@
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex": [],
+        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           960,
           330,
@@ -505,7 +709,7 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex": ["[a-zA-Z]+\\d{4,}"],
+        "regex_validation": "[a-zA-Z]+\\d+",
         "coordinates": [
           85,
           null,
@@ -517,7 +721,7 @@
       "quantity": {
         "in_table": true,
         "pag": null,
-        "regex": ["\\d+(,\\d+)*"],
+        "decimal_separator": ".",
         "coordinates": [
           846,
           null,
@@ -529,142 +733,12 @@
       "ship_out_date":  {
         "in_table": false,
         "pag": 1,
-        "regex": [],
+        "date_format": ["mm/dd/yyyy"],
         "coordinates": [
           1005,
           740,
           1170,
           782
-        ],
-        "method_ocr": 4
-      },
-      "arrival_date": null
-    }
-  },
-  "99999TSE01": {
-    "table": {
-      "coordinates": {
-        "1": [
-          null,
-          676,
-          null,
-          null
-        ],
-        "all": [
-          null,
-          298,
-          null,
-          2171
-        ]
-      },
-      "type": "table",
-      "detection_parameters": {
-        "size_factor": 0.4,
-        "scale_x": 7,
-        "scale_y": 22
-      }
-    },
-    "fields": {
-      "order_number": {
-        "in_table": false,
-        "pag": 1,
-        "regex": ["[a-zA-Z]*\\d+"],
-        "coordinates": [
-          960,
-          330,
-          1187,
-          379
-        ],
-        "method_ocr": 4
-      },
-      "reference": {
-        "in_table": true,
-        "pag": null,
-        "regex": ["[a-zA-Z]+\\d{4,}"],
-        "column_pos": 2,
-        "method_ocr": 4
-      },
-      "quantity": {
-        "in_table": true,
-        "pag": null,
-        "regex": ["\\d+(,\\d+)*"],
-        "column_pos": 3,
-        "method_ocr": 4
-      },
-      "ship_out_date":  {
-        "in_table": false,
-        "pag": 1,
-        "regex": ["\\d{1,2}\\.\\d{1,2}\\.\\d{2,4}"],
-        "coordinates": [
-          1005,
-          740,
-          1170,
-          782
-        ],
-        "method_ocr": 4
-      },
-      "arrival_date": null
-    }
-  },
-  "99999TCD00": {
-    "table": {
-      "coordinates": {
-        "1": [
-          null,
-          950,
-          null,
-          null
-        ],
-        "all": [
-          null,
-          null,
-          null,
-          null
-        ]
-      },
-      "type": "table",
-      "detection_parameters": {
-        "size_factor": 0.5,
-        "scale_x": 15,
-        "scale_y": 15
-      }
-    },
-    "fields": {
-      "order_number": {
-        "in_table": false,
-        "pag": 1,
-        "regex": ["[a-zA-Z]*\\d+"],
-        "coordinates": [
-          0,
-          320,
-          493,
-          391
-        ],
-        "method_ocr": 4
-      },
-      "reference": {
-        "in_table": true,
-        "pag": null,
-        "regex": ["[a-zA-Z]+\\d{4,}"],
-        "column_pos": 2,
-        "method_ocr": 4
-      },
-      "quantity": {
-        "in_table": true,
-        "pag": null,
-        "regex": ["\\d+(,\\d+)*"],
-        "column_pos": 3,
-        "method_ocr": 4
-      },
-      "ship_out_date":  {
-        "in_table": false,
-        "pag": 1,
-        "regex": ["\\d{1,2}\\.\\d{1,2}\\.\\d{2,4}"],
-        "coordinates": [
-          278,
-          741,
-          465,
-          833
         ],
         "method_ocr": 4
       },
@@ -692,13 +766,14 @@
         "size_factor": 0.5,
         "scale_x": 20,
         "scale_y": 20
-      }
+      },
+      "read_all_cells": false
     },
     "fields": {
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex": ["\\d{6}"],
+        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           1170,
           77,
@@ -710,14 +785,14 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex": ["[a-zA-Z]+\\d{4,}"],
+        "regex_validation": "[a-zA-Z]+\\d+",
         "column_pos": 2,
         "method_ocr": 4
       },
       "quantity": {
         "in_table": true,
         "pag": null,
-        "regex": ["\\d+(,\\d+)*"],
+        "decimal_separator": ".",
         "column_pos": 6,
         "method_ocr": 4
       },
@@ -725,18 +800,18 @@
       "arrival_date": {
         "in_table": true,
         "pag": null,
-        "regex": [],
+        "date_format": ["mm/dd/yyyy"],
         "column_pos": 5,
         "method_ocr": 4
       }
     }
   },
-  "70017869": {
+  "test": {
     "table": {
       "coordinates": {
         "1": [
           null,
-          760,
+          null,
           null,
           null
         ],
@@ -747,58 +822,47 @@
           null
         ]
       },
-      "type": "lines"
+      "type": "table",
+      "detection_parameters": {
+        "size_factor": 0.5,
+        "scale_x": 20,
+        "scale_y": 20
+      },
+      "read_all_cells": false
     },
     "fields": {
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex": ["[a-zA-Z]*\\d+"],
         "coordinates": [
-          1287,
-          335,
-          1480,
-          384
+          1170,
+          77,
+          1665,
+          224
         ],
         "method_ocr": 4
       },
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex": ["[a-zA-Z]+\\d{4,}"],
-        "coordinates": [
-          3,
-          null,
-          480,
-          null
-        ],
+        "column_pos": 2,
         "method_ocr": 4
       },
       "quantity": {
         "in_table": true,
         "pag": null,
-        "regex": ["[\\d,]+(\\.\\d*){0,1}"],
-        "coordinates": [
-          516,
-          null,
-          738,
-          null
-        ],
+        "decimal_separator": ".",
+        "column_pos": 6,
         "method_ocr": 4
       },
       "ship_out_date": null,
       "arrival_date": {
         "in_table": true,
         "pag": null,
-        "regex": ["\\d{2}\/\\d{2}\/\\d{4}|[a-zA-Z]+ \\d{1,2}, *\\d{4}"],
-        "coordinates": [
-          906,
-          null,
-          1177,
-          null
-        ],
-        "method_ocr": [4,3,1]
+        "column_pos": 5,
+        "method_ocr": 4
       }
     }
   }
+
 }

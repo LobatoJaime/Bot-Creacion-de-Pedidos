@@ -77,7 +77,7 @@ def lectura_campo(img, points, tesseract_exe_path, method=None, is_img_shown=Fal
     return list_lectura
 
 
-def handle_lecture_ocr(list_lecture, regex):
+def handle_lecture_ocr(list_lecture, regex_validation, regex_filter = None):
     """
     Recibe una lista de tuplas de resultados ocr (text, conf) y los maneja para convertirlos a una sola tupla.
 
@@ -94,21 +94,22 @@ def handle_lecture_ocr(list_lecture, regex):
         return "", 100
 
     # region Preparacion parametros
-    regex = [] if regex is None else regex
+    regex_filter = [] if regex_filter is None else regex_filter
     # endregion
 
     # Inicializo el resultado (texto vacio y valor de confianza minimo por defecto)
     text = ""
     conf = min(list_lecture, key=lambda lecture: lecture[1])[1]
 
-    # Aplico regex
-    if len(regex) > 0:
+    # Aplico filtro regex
+    if len(regex_filter) > 0:
         # Ordeno los resultados por valores de confianza de mayor a menor
         list_lecture = reversed(sorted(list_lecture, key=lambda lecture: lecture[1]))
         # Aplico regex en todas las lineas encontradas
         for lecture in list_lecture:
             text_aux = lecture[0]
-            for reg in regex:
+            # Aplico filtro
+            for reg in regex_filter:
                 if text_aux is not None:
                     text_aux = regex_group(reg, text_aux)
             # Si el texto hace match con el regex, cogemos este valor y el valor de confianza de la linea
@@ -116,24 +117,45 @@ def handle_lecture_ocr(list_lecture, regex):
                 text = text_aux
                 conf = lecture[1]
                 break
+        # Si el regex no ha hecho match, junto todas las lineas y aplico el filtro sobre el texto entero
+        if text == "":
+            text_aux = ""
+            # Junto las lineas
+            for lecture in list_lecture:
+                text_aux = text_aux + " " + lecture[0]
+            text_aux = text_aux.strip()
+            # Aplico filtro
+            for reg in regex_filter:
+                if text_aux is not None:
+                    text_aux = regex_group(reg, text_aux)
+            if text_aux is not None:
+                text = text_aux
     else:
-        # Si no hay regex el resultado es la concanetacion de los textos, y la confianza es la minima
+        # Si no hay filtro regex, el resultado es la concanetacion de los textos, y la confianza es la minima
         for lecture in list_lecture:
             text = text + " " + lecture[0]
         text = text.strip()
+
+    # Aplico regex de validacion
+    text = regex_group(regex_validation, text)
+    text = "" if text is None else text
+
     print("result final: (" + text + ", " + str(conf) + ")")
     return text, conf
 
 
-def regex_group(reg, input_text):
+def regex_group(reg, input_text, exact_match=False):
     """
     Aplica un filtro regex a un texto y devuelve el texto coincidente. Si no coincide o hay algun error, devuelve None
     Arguments:
         reg: Regex string
         input_text: String to apply the regex
+        exact_match: If true, the match is strict
     Result:
         First string result of applying the regex. None if not found
     """
+    if exact_match:
+        reg = "^" + reg + "$"
     result = None
     if input_text is not None:
         input_text = re.search(reg, input_text)

@@ -310,10 +310,11 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
                 cv.drawContours(rsz[y1-1:y2+1, x1-1:x2+1], [cell_cnt], -1, (0, 0, 255), 2)
                 cv.rectangle(rsz[y1:y2, x1:x2], (xCell, yCell), (xCell + wCell, yCell + hCell), (0, 255, 0), 1)
                 cv.circle(rsz[y1:y2, x1:x2], (int(xCell + wCell/2), int(yCell + hCell/2)), 5, (255, 255, 0), cv.FILLED)
-                cv.imshow("rsz",
-                          cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
-                                    interpolation=cv.INTER_AREA))
-                cv.waitKey(0)
+                if is_img_shown:
+                    cv.imshow("rsz",
+                              cv.resize(rsz, None, fx=visualization_size_factor, fy=visualization_size_factor,
+                                        interpolation=cv.INTER_AREA))
+                    cv.waitKey(0)
                 # endregion
             else:
                 print(pt1, pt2)

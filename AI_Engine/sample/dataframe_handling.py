@@ -27,8 +27,6 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
             [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
             ...                     ...                     ...
     """
-    # CUSTOM_PROVIDERS = ("Skyway")
-    # provider_name = "" if provider_name not in CUSTOM_PROVIDERS else provider_name
     df_output = pd.DataFrame()
 
     data_table = provider_data["table"]
