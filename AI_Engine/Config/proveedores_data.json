@@ -21,7 +21,6 @@
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           1148,
           185,
@@ -33,7 +32,6 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex_validation": "[a-zA-Z]+\\d+",
         "coordinates": [
           444,
           null,
@@ -85,7 +83,6 @@
       "order_number": {
         "in_table": false,
         "pag": "all",
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           308,
           438,
@@ -97,7 +94,6 @@
       "reference": {
         "in_table": false,
         "pag": "all",
-        "regex_validation": "[a-zA-Z]+\\d+",
         "coordinates": [
           308,
           463,
@@ -155,9 +151,8 @@
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
-          1343,
+          1315,
           446,
           1534,
           495
@@ -167,7 +162,6 @@
       "reference": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]+\\d+",
         "regex_filter": ["#[a-zA-Z]+\\d+", "[a-zA-Z]+\\d+"],
         "coordinates": [
           158,
@@ -195,7 +189,7 @@
         "pag": null,
         "date_format": ["D dd.mm.yyyy"],
         "coordinates": [
-          27,
+          0,
           null,
           223,
           null
@@ -220,7 +214,6 @@
         "order_number": {
           "in_table": false,
           "pag": 1,
-          "regex_validation": "[a-zA-Z]*\\d+",
           "coordinates": [
             793,
             437,
@@ -232,7 +225,6 @@
         "reference": {
           "in_table": false,
           "pag": 1,
-          "regex_validation": "[a-zA-Z]+\\d+",
           "regex_filter": ["\\([a-zA-Z]+\\d+\\)", "[a-zA-Z]+\\d+"],
           "coordinates": [
             26,
@@ -259,7 +251,7 @@
           "pag": null,
           "date_format": ["D dd.mm.yyyy"],
           "coordinates": [
-            32,
+            0,
             null,
             267,
             null
@@ -291,7 +283,6 @@
       "order_number": {
         "in_table": true,
         "pag": null,
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           157,
           null,
@@ -303,7 +294,6 @@
       "reference": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]+\\d+",
         "coordinates": [
           48,
           744,
@@ -355,7 +345,6 @@
         "order_number": {
           "in_table": false,
           "pag": 1,
-          "regex_validation": "[a-zA-Z]*\\d+",
           "coordinates": [
             101,
             683,
@@ -367,7 +356,6 @@
         "reference": {
           "in_table": true,
           "pag": null,
-          "regex_validation": "[a-zA-Z]+\\d+",
           "coordinates": [
             134,
             null,
@@ -425,7 +413,6 @@
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           1287,
           335,
@@ -437,7 +424,6 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex_validation": "[a-zA-Z]+\\d+",
         "coordinates": [
           3,
           null,
@@ -469,7 +455,7 @@
           1177,
           null
         ],
-        "method_ocr": [4,3,1]
+        "method_ocr": 4
       }
     }
   },
@@ -495,7 +481,6 @@
       "order_number": {
         "in_table": true,
         "pag": null,
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           157,
           null,
@@ -507,7 +492,6 @@
       "reference": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]+\\d+",
         "coordinates": [
           48,
           744,
@@ -571,7 +555,6 @@
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           0,
           320,
@@ -583,7 +566,6 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex_validation": "[a-zA-Z]+\\d+",
         "column_pos": 2,
         "method_ocr": 4
       },
@@ -637,7 +619,6 @@
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           960,
           330,
@@ -649,7 +630,6 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex_validation": "[a-zA-Z]+\\d+",
         "column_pos": 2,
         "method_ocr": 4
       },
@@ -697,7 +677,6 @@
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           960,
           330,
@@ -709,7 +688,6 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex_validation": "[a-zA-Z]+\\d+",
         "coordinates": [
           85,
           null,
@@ -773,7 +751,6 @@
       "order_number": {
         "in_table": false,
         "pag": 1,
-        "regex_validation": "[a-zA-Z]*\\d+",
         "coordinates": [
           1170,
           77,
@@ -785,7 +762,6 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "regex_validation": "[a-zA-Z]+\\d+",
         "column_pos": 2,
         "method_ocr": 4
       },

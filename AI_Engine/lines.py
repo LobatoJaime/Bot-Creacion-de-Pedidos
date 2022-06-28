@@ -104,10 +104,10 @@ def search_horiz_lines(image, method, minDist = None):
             # print("  - theta:" + str(angle) + "°")
             if distance >= minDist:
                 if abs(angle) < 1:
-                    print("OK")
+                    #print("OK")
                     output.append((pt1, pt2))
-                else:
-                    print("NO OK")
+                # else:
+                #     print("NO OK")
         # cv.imshow("gray", cv.resize(gray, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
         # cv.imshow("edges", cv.resize(edges, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
     elif method == 4:
