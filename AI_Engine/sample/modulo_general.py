@@ -97,48 +97,52 @@ def handle_lecture_ocr(list_lecture, regex_validation, regex_filter = None):
     regex_filter = [] if regex_filter is None else regex_filter
     # endregion
 
-    # Inicializo el resultado (texto vacio y valor de confianza minimo por defecto)
-    text = ""
+    # Inicializo el resultado (texto total y valor de confianza minimo por defecto)
+    full_text = ""
+    for lecture in list_lecture:
+        full_text = full_text + " " + lecture[0]
+    full_text = full_text.strip()
+    text = full_text
     conf = min(list_lecture, key=lambda lecture: lecture[1])[1]
 
     # Aplico filtro regex
     if len(regex_filter) > 0:
-        # Ordeno los resultados por valores de confianza de mayor a menor
-        list_lecture = reversed(sorted(list_lecture, key=lambda lecture: lecture[1]))
-        # Aplico regex en todas las lineas encontradas
-        for lecture in list_lecture:
-            text_aux = lecture[0]
-            # Aplico filtro
+        # Aplico filtro a cada resultado
+        for i in range(len(list_lecture)):
+            text_aux = list_lecture[i][0]
             for reg in regex_filter:
                 if text_aux is not None:
                     text_aux = regex_group(reg, text_aux)
+            text_aux = "" if text_aux is None else text_aux
+            list_lecture[i] = (text_aux, list_lecture[i][1])
+        # Aplico filtro al texto completo
+        for reg in regex_filter:
+            if full_text is not None:
+                full_text = regex_group(reg, full_text)
+        full_text = "" if full_text is None else full_text
+
+    # Aplico filtro de validacion
+    if len(regex_validation) > 0:
+        # Ordeno los resultados por valores de confianza de mayor a menor
+        list_lecture_sorted = reversed(sorted(list_lecture, key=lambda lecture: lecture[1]))
+        # Aplico regex a cada resultado
+        for lecture in list_lecture_sorted:
+            text_aux = regex_group(regex_validation, lecture[0])
             # Si el texto hace match con el regex, cogemos este valor y el valor de confianza de la linea
             if text_aux is not None:
                 text = text_aux
                 conf = lecture[1]
                 break
-        # Si el regex no ha hecho match, junto todas las lineas y aplico el filtro sobre el texto entero
-        if text == "":
-            text_aux = ""
-            # Junto las lineas
-            for lecture in list_lecture:
-                text_aux = text_aux + " " + lecture[0]
-            text_aux = text_aux.strip()
-            # Aplico filtro
-            for reg in regex_filter:
-                if text_aux is not None:
-                    text_aux = regex_group(reg, text_aux)
+        # Si el regex no ha hecho match, aplico el filtro sobre el texto completo
+        if text_aux is None:
+            text_aux = regex_group(regex_validation, full_text)
+            # Si no se encuentra el texto lo devuelvo vacio
             if text_aux is not None:
                 text = text_aux
-    else:
-        # Si no hay filtro regex, el resultado es la concanetacion de los textos, y la confianza es la minima
-        for lecture in list_lecture:
-            text = text + " " + lecture[0]
-        text = text.strip()
 
     # Aplico regex de validacion
-    text = regex_group(regex_validation, text)
-    text = "" if text is None else text
+    # text = regex_group(regex_validation, text)
+    # text = "" if text is None else text
 
     print("result final: (" + text + ", " + str(conf) + ")")
     return text, conf

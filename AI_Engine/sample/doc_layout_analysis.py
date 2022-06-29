@@ -70,14 +70,11 @@ def process_line(gray, output, join_horizontal_boxes=False):
 
     (contours, _) = cv2.findContours(line_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    for cnt in contours:
+    for cnt in reversed(contours):
         box = cv2.boundingRect(cnt)
         x1, y1, x2, y2 = modg_func.aumentar_box(box, gray.shape, (3, 7, 2, 2))
         boxes.append((x1, y1, x2, y2))
-    # Ordeno de izq a der
-    boxes.sort(key=lambda x: x[0])
-    # Ordeno de arriba a abajo
-    boxes.sort(key=lambda x: x[3])
+    boxes = box_sort(boxes)
     # Si se indica, junto las lineas horizontales (tomo punto abajo izq como referencia)
     if join_horizontal_boxes:
         i = 0
@@ -140,6 +137,26 @@ def process_margin(gray, output):
             cv2.rectangle(output, (x1, y1), (x2, y2), (0, 255, 0), 1)
 
     return boxes, output
+
+
+# ordering the boxes from top to bottom and left to right
+def box_sort(boxes):
+    # Sort left to right
+    boxes.sort(key=lambda x: x[0])
+    # Sort top to bottom
+    swapped = True  # We set swapped to True so the loop looks runs at least once
+    while swapped:
+        swapped = False
+        for i in range(len(boxes) - 1):
+            # We not swap if the center or the bottom of next box is between the top and bottom of actual box
+            # if not ((boxes[i][3] > (boxes[i + 1][3] + boxes[i + 1][1])/2 > boxes[i][1]) or
+            #         (boxes[i][3] > boxes[i + 1][3] > boxes[i][1])):
+            if boxes[i][3] > boxes[i + 1][3] and abs(boxes[i][3] - boxes[i + 1][3]) > 5:
+                # Swap the elements
+                boxes[i], boxes[i + 1] = boxes[i + 1], boxes[i]
+                # Set the flag to True so we'll loop again
+                swapped = True
+    return boxes
 
 
 def main():
