@@ -417,7 +417,7 @@ def main(proveedor: str, pedidos_path: str,
                             column_img = table_img_gray[iy:fy, ix:fx]
                             # Detecto los contornos de las lineas del texto
                             column_img_to_show = column_img.copy() if is_img_shown else None
-                            boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show)
+                            boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show, True)
                             if is_img_shown:
                                 cv.imshow("column_img",
                                           cv.resize(column_img_to_show, None, fx=0.5, fy=0.5,
@@ -557,6 +557,8 @@ def main(proveedor: str, pedidos_path: str,
                             matrix_table[horizontal_index][vertical_index] = cell
                         # endregion
 
+                        print()
+
                         # region Transformacion matriz a dataframe
                         df_table = pd.DataFrame(matrix_table, dtype="object")
                         # Borro filas y columnas None
@@ -569,14 +571,15 @@ def main(proveedor: str, pedidos_path: str,
                             # Recorro las filas
                             for i in df_table.index:
                                 # Leo las celdas
-                                if proveedor_tabla["read_all_cells"] or\
-                                        (not proveedor_tabla["read_all_cells"] and col_index + 1 in column_list):
+                                if df_table[col_name][i] is not None and \
+                                        (proveedor_tabla["read_all_cells"] or\
+                                        (not proveedor_tabla["read_all_cells"] and col_index + 1 in column_list)):
                                     df_table[col_name][i] = modg.lectura_campo(table_img,
                                                                               df_table[col_name][i]["content_coordinates"],
                                                                               tesseract_exe_path, None, False)
                                 # La celda se pone vacia
                                 else:
-                                    df_table[col_name][i] = ("", -100)
+                                    df_table[col_name][i] = [("", -100)]
                         # endregion
 
                         # Añado dataframe a la lista
@@ -730,18 +733,20 @@ def main(proveedor: str, pedidos_path: str,
     return df_total
 
 
-# proveedor = "70017078"  # Thyssenkrupp Campo Limpo
-# proveedor = "70017048"  # Thyssenkrupp Crankshaft
 # proveedor = "70012672"  # EMP
 # proveedor = "70018938"  # WorldClass Industries
-# proveedor = "70001256"  # ESP
-# proveedor = "99999TCD00"  # JD SARAN"
-# proveedor = "99999TSE01 (lines)"  # JD REMAN (lines)"
-# proveedor = "70017869"  # TIG"
-# proveedor = "70017703"  # Engine Power Components"
+# proveedor = "99999TSE01 (lines)"  # JD REMAN (lines)
+# proveedor = "70017703"  # Engine Power Components
+#
+# proveedor = "test"  # test
+#
+# proveedor = "99999TSE01"  # JD REMAN
+# proveedor = "99999TCD00"  # JD SARAN
+# proveedor = "70017869"  # TIG
+# proveedor = "70017078"  # Thyssenkrupp Campo Limpo
 # proveedor = "Skyway"  # Skyway
-# proveedor = "test"  # test"
-# proveedor = "99999TSE01"  # JD REMAN"
+# proveedor = "70001256"  # ESP
+# proveedor = "70017048"  # Thyssenkrupp Crankshaft
 #
 # pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
@@ -750,14 +755,36 @@ def main(proveedor: str, pedidos_path: str,
 # pedidos_path = r"test"
 # pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
-# pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\Engine Power Components\t42.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\JD REMAN"
+# pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Crankshaft"
 # pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 #
 # main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
 #      poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
 #      tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+# list_pro = (
+#     ("70017078", "Thyssenkrupp Campo Limpo"),
+#     ("70017048",  "Thyssenkrupp Crankshaft"),
+#     ("70012672", "EMP"),
+#     ("70018938", "WorldClass Industries"),
+#     ("99999TSE01 (lines)", "JD REMAN (lines)"),
+#     ("70017869", "TIG"),
+#     ("70017703", "Engine Power Components"),
+#     ("Skyway", "Skyway")
+# )
+#
+# list_ex = []
+# for item in list_pro:
+#     try:
+#         main(item[0], os.path.join(pedidos_path_root, "CLIIENTES JOHN DEERE\\", item[1]), is_img_shown=False, ai_path=".",
+#              poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
+#              tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+#     except Exception as e:
+#         list_ex.append((item[0], e))
+#
+# print("Exception:")
+# print(str(list_ex))

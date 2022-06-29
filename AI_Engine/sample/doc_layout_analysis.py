@@ -56,7 +56,7 @@ def process_word(gray, output):
 
 
 # processing line by line boxing
-def process_line(gray, output):
+def process_line(gray, output, join_horizontal_boxes=False):
     boxes = []
     # clean the image using otsu method with the inversed binarized image
     ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
@@ -74,7 +74,27 @@ def process_line(gray, output):
         box = cv2.boundingRect(cnt)
         x1, y1, x2, y2 = modg_func.aumentar_box(box, gray.shape, (3, 7, 2, 2))
         boxes.append((x1, y1, x2, y2))
-        if output is not None:
+    # Ordeno de izq a der
+    boxes.sort(key=lambda x: x[0])
+    # Ordeno de arriba a abajo
+    boxes.sort(key=lambda x: x[3])
+    # Si se indica, junto las lineas horizontales (tomo punto abajo izq como referencia)
+    if join_horizontal_boxes:
+        i = 0
+        while i < len(boxes) - 1:
+            if abs(boxes[i][3] - boxes[i + 1][3]) < 5:
+                boxes[i] = (
+                    min(boxes[i][0], boxes[i + 1][0]),
+                    min(boxes[i][1], boxes[i + 1][1]),
+                    max(boxes[i][2], boxes[i + 1][2]),
+                    max(boxes[i][3], boxes[i + 1][3])
+                )
+                boxes.pop(i + 1)
+            else:
+                i += 1
+    if output is not None:
+        for box in boxes:
+            x1, y1, x2, y2 = box
             cv2.rectangle(output, (x1, y1), (x2, y2), (0, 255, 0), 1)
 
     return boxes, output
@@ -128,8 +148,8 @@ def main():
            r"Power Components\t42.pdf"
     path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\WorldClass " \
            r"Industries\t2.pdf"
-    path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & "\
-           r"Co\Desktop\Proyectos\Pedidos-Tier-2\Proveedores\orders_history\ESP "\
+    path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & " \
+           r"Co\Desktop\Proyectos\Pedidos-Tier-2\Proveedores\orders_history\ESP " \
            r"INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m-1.jpg"
     path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN " \
            r"DEERE\Thyssenkrupp Campo Limpo\t15.pdf"
@@ -169,4 +189,4 @@ def main():
 
     cv2.waitKey(0)
 
-#main()
+# main()

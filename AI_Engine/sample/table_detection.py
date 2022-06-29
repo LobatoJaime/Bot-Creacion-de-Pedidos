@@ -316,8 +316,6 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
                                         interpolation=cv.INTER_AREA))
                     cv.waitKey(0)
                 # endregion
-            else:
-                print(pt1, pt2)
         # endregion
 
         # region Table data output
