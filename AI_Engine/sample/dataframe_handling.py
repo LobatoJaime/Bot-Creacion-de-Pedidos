@@ -1,4 +1,5 @@
 import pandas as pd
+from AI_Engine.sample import modulo_general as modg
 
 
 def handler(df_list, table_fields_list, provider_name, provider_data):
@@ -27,8 +28,6 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
             [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
             ...                     ...                     ...
     """
-    # CUSTOM_PROVIDERS = ("Skyway")
-    # provider_name = "" if provider_name not in CUSTOM_PROVIDERS else provider_name
     df_output = pd.DataFrame()
 
     data_table = provider_data["table"]
@@ -38,9 +37,15 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
     print("-----------")
 
     if provider_name == "Skyway":
+        # Extraigo las columnas
         df_output = default_handler(df_list, table_fields_list, data_fields)
-        df_output = propagate_handler(df_output, "reference")
-        # Borro las filas que tienen campo a None
+        # Hago replace de O por 0 en la columna de quantity
+        print(df_output)
+        df_output["quantity"] = df_output["quantity"].apply(lambda list_lecture: list(map(lambda lecture: (lecture[0].replace("O", "0"), lecture[1]), list_lecture)))
+        print(df_output)
+        # Propago los valores
+        df_output = propagate_handler(df_output, "reference", data_fields)
+        # Borro las filas que tienen campo arrival_date a None
         df_output = df_output[df_output["arrival_date"].notnull()]
     else:
         df_output = default_handler(df_list, table_fields_list, data_fields)
@@ -69,7 +74,7 @@ def default_handler(df_list, table_fields_list, data_fields):
     return df_output
 
 
-def propagate_handler(df, only_field):
+def propagate_handler(df, only_field, data_fields):
     """
     Input:
         field1      | field2    | field1
@@ -86,12 +91,20 @@ def propagate_handler(df, only_field):
         value1.2    value2.3    value3.3
         value1.2    value2.4    value3.4
     """
+
+    def check_regex_in_list_lecture(list_lecture, regex):
+        for lecture in list_lecture:
+            if(modg.regex_group(regex, lecture[0]) is not None):
+                return True
+        return False
+
     #
     # df['New'] = df['reference'].where(df['reference'] is not None or df['reference'][0] != "").ffill()
     # df['A'].map(lambda x: x[0] if type(x) is tuple and len(x) > 0 and x[0] == 34 else None)
 
     # Creo columna auxiliar indicando si hay texto en el campo "only_field"
-    df["existsText"] = df[only_field].map(lambda x: True if type(x) == list and len(x) > 0 else False)
+    df["existsText"] = df[only_field].map(lambda x: True if (type(x) == list and len(x) > 0 and
+                                                             check_regex_in_list_lecture(x, data_fields[only_field]["regex_validation"])) else False)
     print(df.to_string())
     # Relleno los valores de la columna auxiliar
     df[only_field] = df[only_field].where(df["existsText"]).ffill()

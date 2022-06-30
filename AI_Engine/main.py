@@ -26,13 +26,7 @@ def main(proveedor: str, pedidos_path: str,
     """
     Metodo principal de extraccion de datos de proveedores
     Parameters:
-        proveedor: Nombre del proveedor del cual se extraera la informacion. Proveedores disponibles:
-            - Engine Power Compoments
-            - Thyssenkrupp Campo Limpo
-            - WorldClass Industries
-            - EMP
-            - Thyssenkrupp Crankshaft
-            - WorldClass Industries EU
+        proveedor: Nombre del proveedor del cual se extraera la informacion
         pedidos_path: Ruta de la carpeta donde se encuentran los archivos o ruta del propio archivo a extraer
          la informacion
         is_img_shown: (Opcional) Variable para visualizar la extraccion de datos. Por defecto, esta a false
@@ -70,7 +64,8 @@ def main(proveedor: str, pedidos_path: str,
     PATH_RESULTADOS = os.path.join(ai_path, 'Resultados')
     # Filepaths
     FILEPATH_PROVEEDORES_DATA = os.path.join(PATH_CONFIG, r"proveedores_data.json")
-    FILEPATH_FORMATO_CAMPOS = os.path.join(PATH_CONFIG, r"formato_campos.json")
+    FILEPATH_FORMATO_CAMPOS = os.path.join(PATH_CONFIG, r"default_formats.json")
+    FILEPATH_PATH_FORMATS = os.path.join(PATH_CONFIG, "formats.xlsx")
     # File names
     FILE_TABLE_HEADER = r"header"
     FILE_TABLE_END = r"end"
@@ -116,23 +111,104 @@ def main(proveedor: str, pedidos_path: str,
     # endregion
 
     # region Formato campos
-    formato_campos = {}
+    default_formats = {}
     # Leo archivo JSON
     if os.path.exists(FILEPATH_FORMATO_CAMPOS):
         with open(FILEPATH_FORMATO_CAMPOS, 'r') as openfile:
-            formato_campos = json.load(openfile)
+            default_formats = json.load(openfile)
     else:
         mod_basic.close_windows("Configuracion de formato no encontrado")
         return
     # Formateo el diccionario
-    for campo in formato_campos:
-        formato_campos[campo] = "|".join(formato_campos[campo])
+    for campo in default_formats:
+        default_formats[campo] = "|".join(default_formats[campo])
+    # endregion
+
+    # region Formatos
+    # Leo archivo JSON
+    if os.path.exists(FILEPATH_PATH_FORMATS):
+        data = pd.read_excel(FILEPATH_PATH_FORMATS, sheet_name="order_number_format", dtype=str)
+        order_number_formats = pd.DataFrame(data, dtype=str)
+        data = pd.read_excel(FILEPATH_PATH_FORMATS, sheet_name="reference_format", dtype=str)
+        reference_formats = pd.DataFrame(data, dtype=str)
+        data = pd.read_excel(FILEPATH_PATH_FORMATS, sheet_name="number_format", dtype=str)
+        number_formats = pd.DataFrame(data, dtype=str)
+        data = pd.read_excel(FILEPATH_PATH_FORMATS, sheet_name="date_format", dtype=str)
+        date_formats = pd.DataFrame(data, dtype=str)
+    else:
+        mod_basic.close_windows("Formatos no encontrados")
+        return
     # endregion
 
     # Creo variables de acceso directo
     proveedor_data = proveedores_data[proveedor]
     proveedor_campos = proveedor_data["fields"]
     proveedor_tabla = proveedor_data["table"]
+
+    # region Creacion tuplas campos hoja y campos tabla
+    # Creo tuplas de los campos dentro y fuera de tabla
+    campos_tabla, campos_hoja = [], []
+    for campo in CAMPOS:
+        # Compruebo que la configuracion no es nula
+        if proveedor_campos[campo] is not None:
+            if proveedor_campos[campo]['in_table']:
+                campos_tabla.append(campo)
+            else:
+                campos_hoja.append(campo)
+    campos_tabla, campos_hoja = tuple(campos_tabla), tuple(campos_hoja)
+    campos_validos = campos_hoja + campos_tabla
+    # endregion
+
+    # Extraemos las expresiones regulares de cada campo que se utilizaran para la validacion
+    decimal_separator = None
+    date_format_regex = pd.DataFrame(columns=("regex", "format_code"), dtype=str)
+    for campo in proveedor_campos:
+        if proveedor_campos[campo] is not None:
+            # order_number
+            if campo == "order_number":
+                # Si no se ha establecido ningun regex de validacion, establecemos el de por defecto
+                if proveedor_campos["order_number"].get("regex_validation") is None:
+                    proveedor_campos["order_number"]["regex_validation"] = order_number_formats["regex"].iloc[0]
+            # reference
+            elif campo == "reference":
+                # Si no se ha establecido ningun regex de validacion, establecemos el de por defecto
+                if proveedor_campos["reference"].get("regex_validation") is None:
+                    proveedor_campos["reference"]["regex_validation"] = reference_formats["regex"].iloc[0]
+            # quantity
+            elif campo == "quantity":
+                # Si se ha establecido separador decimal, le asignamos el regex correspondiente
+                if proveedor_campos["quantity"].get("decimal_separator") in number_formats[
+                    "decimal_separator"].unique():
+                    # Obtenemos el separador decimal
+                    decimal_separator = proveedor_campos["quantity"]["decimal_separator"]
+                # Si no se ha establecido ningun regex de validacion, establecemos uno
+                if proveedor_campos["quantity"].get("regex_validation") is None:
+                    # Si no se ha establecido separador decimal, le asignamos la combinacion de los regex posibles
+                    if decimal_separator is None:
+                        proveedor_campos["quantity"]["regex_validation"] = "|".join(
+                            number_formats["regex"].unique().tolist())
+                    else:
+                        proveedor_campos["quantity"]["regex_validation"] = number_formats[
+                            number_formats["decimal_separator"] == decimal_separator]["regex"].iloc[0]
+            # ship_out_date y arrival_date
+            elif campo == "ship_out_date" or campo == "arrival_date":
+                # Se ha establecido formato de fecha
+                if proveedor_campos[campo].get("date_format") is not None:
+                    # Si el valor no es una lista, la meto en una para poder hacer el bucle
+                    if type(proveedor_campos[campo].get("date_format")) != list:
+                        proveedor_campos[campo]["date_format"] = [proveedor_campos[campo].get("date_format")]
+                    # Obtengo el dataframe de los formatos de fecha junto a los regex
+                    date_format_regex = date_formats[
+                        date_formats["date_format"].isin(proveedor_campos[campo]["date_format"])][
+                        ["regex", "format_code"]]
+                # No se ha establecido formato de fecha
+                else:
+                    # Obtengo el dataframe entero de los formatos de fecha junto a los regex
+                    date_format_regex = date_formats[["regex", "format_code"]]
+                # Si no se ha establecido ningun regex de validacion, establecemos uno
+                if proveedor_campos[campo].get("regex_validation") is None:
+                    # Le asignamos el regex correspondiente
+                    proveedor_campos[campo]["regex_validation"] = "|".join(date_format_regex["regex"].tolist())
 
     # Leo las imagenes de los headers y final de la tabla
     pathfile_table_header_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
@@ -174,20 +250,6 @@ def main(proveedor: str, pedidos_path: str,
             cv.imshow(PEDIDOS_WINDOW,
                       cv.resize(img_list[0], (shape_resized[1], shape_resized[0]), interpolation=cv.INTER_AREA))
             cv.waitKey(1)
-        # endregion
-
-        # region Creacion tuplas campos hoja y campos tabla
-        # Creo tuplas de los campos dentro y fuera de tabla
-        campos_tabla, campos_hoja = [], []
-        for campo in CAMPOS:
-            # Compruebo que la configuracion no es nula
-            if proveedor_campos[campo] is not None:
-                if proveedor_campos[campo]['in_table']:
-                    campos_tabla.append(campo)
-                else:
-                    campos_hoja.append(campo)
-        campos_tabla, campos_hoja = tuple(campos_tabla), tuple(campos_hoja)
-        campos_validos = campos_hoja + campos_tabla
         # endregion
 
         # region Creacion sets de informacion
@@ -324,7 +386,10 @@ def main(proveedor: str, pedidos_path: str,
                                                                   is_img_shown)
                                 # Manejo la lista de resultados
                                 set_data[campo].append(modg.handle_lecture_ocr(list_lecture,
-                                                                               proveedor_campos[campo]['regex']))
+                                                                               proveedor_campos[campo][
+                                                                                   'regex_validation'],
+                                                                               proveedor_campos[campo].get(
+                                                                                   'regex_filter')))
                             # endregion
 
                         # Relleno el dataset
@@ -352,7 +417,7 @@ def main(proveedor: str, pedidos_path: str,
                             column_img = table_img_gray[iy:fy, ix:fx]
                             # Detecto los contornos de las lineas del texto
                             column_img_to_show = column_img.copy() if is_img_shown else None
-                            boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show)
+                            boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show, True)
                             if is_img_shown:
                                 cv.imshow("column_img",
                                           cv.resize(column_img_to_show, None, fx=0.5, fy=0.5,
@@ -365,7 +430,10 @@ def main(proveedor: str, pedidos_path: str,
                                                                   is_img_shown)
                                 # Manejo la lista de resultados
                                 set_data[campo].append(modg.handle_lecture_ocr(list_lecture,
-                                                                               proveedor_campos[campo]['regex']))
+                                                                               proveedor_campos[campo][
+                                                                                   'regex_validation'],
+                                                                               proveedor_campos[campo].get(
+                                                                                   'regex_filter')))
                     # Relleno el dataset
                     df_set = pd.DataFrame(set_data)
                 # endregion
@@ -468,7 +536,12 @@ def main(proveedor: str, pedidos_path: str,
                         table_img = img_list[table_pag][
                                     table_data["table_coordinates"][0][1]:table_data["table_coordinates"][1][1],
                                     table_data["table_coordinates"][0][0]:table_data["table_coordinates"][1][0]]
-                        # Recorro y leo las celdas
+                        # Creo lista de columnas con contenido
+                        column_list = []
+                        for campo in campos_tabla:
+                            if "column_pos" in proveedor_campos[campo]:
+                                column_list.append(proveedor_campos[campo]["column_pos"])
+                        # Recorro las celdas para eliminar las que no esten en la tabla (debajo de header)
                         for cell in table_data["cells"]:
                             # Si esta por encima del header no indizo la celda
                             if cell["lines_coordinates"][0][1] < header_pt1[1]:
@@ -480,19 +553,33 @@ def main(proveedor: str, pedidos_path: str,
                             # Busco coordenadas top izq de la celda
                             vertical_index = vertical_lines_x_pos.index(cell["lines_coordinates"][0][0])
                             horizontal_index = horizontal_lines_y_pos.index(cell["lines_coordinates"][0][1])
-                            # Hago lectura de la celda
-                            matrix_table[horizontal_index][vertical_index] = modg.lectura_campo(table_img,
-                                                                                                cell[
-                                                                                                    "content_coordinates"],
-                                                                                                tesseract_exe_path,
-                                                                                                None,
-                                                                                                False)
+                            # Si la celda esta en la tabla, se inserta la informacion de la celda
+                            matrix_table[horizontal_index][vertical_index] = cell
                         # endregion
 
+                        print()
+
                         # region Transformacion matriz a dataframe
-                        df_table = pd.DataFrame(matrix_table)
+                        df_table = pd.DataFrame(matrix_table, dtype="object")
                         # Borro filas y columnas None
                         df_table = df_handling.remove_null_rows_cols(df_table)
+                        # endregion
+
+                        # region Lectura de celdas
+                        # Recorro las columnas
+                        for (col_index, col_name) in enumerate(df_table):
+                            # Recorro las filas
+                            for i in df_table.index:
+                                # Leo las celdas
+                                if df_table[col_name][i] is not None and \
+                                        (proveedor_tabla["read_all_cells"] or\
+                                        (not proveedor_tabla["read_all_cells"] and col_index + 1 in column_list)):
+                                    df_table[col_name][i] = modg.lectura_campo(table_img,
+                                                                              df_table[col_name][i]["content_coordinates"],
+                                                                              tesseract_exe_path, None, False)
+                                # La celda se pone vacia
+                                else:
+                                    df_table[col_name][i] = [("", -100)]
                         # endregion
 
                         # Añado dataframe a la lista
@@ -505,7 +592,8 @@ def main(proveedor: str, pedidos_path: str,
                     # Aplico regex a los resultados
                     for campo in campos_tabla:
                         df_set[campo] = df_set[campo].map(
-                            lambda x: modg.handle_lecture_ocr(x, proveedor_campos[campo]['regex']))
+                            lambda x: modg.handle_lecture_ocr(x, proveedor_campos[campo]['regex_validation'],
+                                                              proveedor_campos[campo].get('regex_filter')))
                     print("------- ######## ---------")
                     print(df_set.to_string())
                     print("------------------")
@@ -529,7 +617,8 @@ def main(proveedor: str, pedidos_path: str,
                                                       proveedor_campos[campo]["method_ocr"],
                                                       is_img_shown)
                     # Manejo la lista de resultados
-                    lecture = modg.handle_lecture_ocr(list_lecture, proveedor_campos[campo]['regex'])
+                    lecture = modg.handle_lecture_ocr(list_lecture, proveedor_campos[campo]['regex_validation'],
+                                                      proveedor_campos[campo].get('regex_filter'))
                     # Inserto el resultado en el dataframe
                     df_set[campo] = None
                     df_set[campo] = df_set[campo].apply(lambda x: lecture)
@@ -575,10 +664,12 @@ def main(proveedor: str, pedidos_path: str,
         for i in range(len(df)):
             for campo in campos_validos:
                 # Aplico regex para comprobar el formato
-                reg_res = modg.regex_group(formato_campos[campo], df.loc[i, campo])
+                reg_res = modg.regex_group(proveedor_campos[campo]["regex_validation"], df.loc[i, campo], True)
                 # Si el formato no es correcto, el valor de confianza es -100
                 if reg_res is None or df.loc[i, campo] is None or len(reg_res) != len(df.loc[i, campo]):
                     df.loc[i, "confidence"] = -100
+                    print("(" + str(i) + ", " + campo + ") " + df.loc[i, campo] + " no hace match con " +
+                          proveedor_campos[campo]["regex_validation"])
         # endregion
 
         # endregion
@@ -601,22 +692,25 @@ def main(proveedor: str, pedidos_path: str,
     # endregion
 
     # region Formateo dataframe
+    # Borro las filas con confianza -100
+    #df_total.drop(df_total[df_total['confidence'] == -100].index, inplace=True)
+
     # Sacar un promedio de la columna de confianza
-    confidences = df['confidence'].to_list()
-    if len(confidences) > 1:
-        total_confidence = (sum(confidences) / len(
-            confidences)) / 100  # Dividirlo por 100 para tener valores entre [0-1]
-        total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
-        df['confidence'] = [total_confidence] * len(confidences)
+    # confidences = df_total['confidence'].to_list()
+    # if len(confidences) > 1:
+    #     total_confidence = (sum(confidences) / len(
+    #         confidences)) / 100  # Dividirlo por 100 para tener valores entre [0-1]
+    #     total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
+    #     df_total['confidence'] = [total_confidence] * len(confidences)
 
     # Formatear las columnas de la tabla
-    try:
-        df = FormatTable(orders=df).format()
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        # return empty df en caso de error
-        df = pd.DataFrame()
+    # try:
+    #     df_total = FormatTable(orders=df_total).format()
+    # except Exception as e:
+    #     import traceback
+    #     traceback.print_exc()
+    #     # return empty df en caso de error
+    #     df_total = pd.DataFrame()
     # endregion
 
     # region Visualizacion y guardado de dataframe
@@ -624,46 +718,73 @@ def main(proveedor: str, pedidos_path: str,
     print()
     print()
     print("· Dataframe total:")
-    print(df.to_string())
+    print(df_total.to_string())
     # Guardo el dataframe en un EXCEL para su visualizacion
     path_dataframe = os.path.join(PATH_RESULTADOS, proveedor)
     if not os.path.exists(path_dataframe):
         os.makedirs(path_dataframe)
-    df.to_excel(os.path.join(path_dataframe, "dataFrame.xlsx"))
+    df_total.to_excel(os.path.join(path_dataframe, "dataFrame.xlsx"))
     # endregion
 
     # Borro ventanas
     mod_basic.close_windows("Aplicacion terminada")
     # endregion
 
-    return df
+    return df_total
 
 
-# proveedor = "Engine Power Compoments"
-# proveedor = "Thyssenkrupp Campo Limpo"
-# proveedor = "Thyssenkrupp Crankshaft"
-# proveedor = "EMP"
-# proveedor = "WorldClass Industries"
-# proveedor = "Skyway"
-# proveedor = "ESP"
-# proveedor = "JD REMAN"
-# proveedor = "JD SARAN"
+# proveedor = "70012672"  # EMP
+# proveedor = "70018938"  # WorldClass Industries
+# proveedor = "99999TSE01 (lines)"  # JD REMAN (lines)
+# proveedor = "70017703"  # Engine Power Components
+#
+# proveedor = "test"  # test
+#
+# proveedor = "99999TSE01"  # JD REMAN
+# proveedor = "99999TCD00"  # JD SARAN
+# proveedor = "70017869"  # TIG
+# proveedor = "70017078"  # Thyssenkrupp Campo Limpo
+# proveedor = "Skyway"  # Skyway
+# proveedor = "70001256"  # ESP
+# proveedor = "70017048"  # Thyssenkrupp Crankshaft
 #
 # pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
 # pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo"
 # pedidos_path = r"test"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway"
 # pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\EMP\t1.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
-# pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\JD SARAN"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Engine Power Components\t42.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
+# pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Crankshaft"
 # pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 #
-# main(proveedor, pedidos_path, is_img_shown=True, ai_path=".",
+# main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
 #      poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
 #      tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+# list_pro = (
+#     ("70017078", "Thyssenkrupp Campo Limpo"),
+#     ("70017048",  "Thyssenkrupp Crankshaft"),
+#     ("70012672", "EMP"),
+#     ("70018938", "WorldClass Industries"),
+#     ("99999TSE01 (lines)", "JD REMAN (lines)"),
+#     ("70017869", "TIG"),
+#     ("70017703", "Engine Power Components"),
+#     ("Skyway", "Skyway")
+# )
+#
+# list_ex = []
+# for item in list_pro:
+#     try:
+#         main(item[0], os.path.join(pedidos_path_root, "CLIIENTES JOHN DEERE\\", item[1]), is_img_shown=False, ai_path=".",
+#              poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
+#              tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+#     except Exception as e:
+#         list_ex.append((item[0], e))
+#
+# print("Exception:")
+# print(str(list_ex))

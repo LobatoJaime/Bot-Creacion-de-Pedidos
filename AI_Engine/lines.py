@@ -3,11 +3,12 @@ import numpy as np
 import math
 
 
-def search_horiz_lines(image, method, minDist):
+def search_horiz_lines(image, method, minDist = None):
     """
-    output: [(pt1, pt2), (pt1, pt2), ...]
-    output: [((x1, y1), (x2, y2)), ...]
+    output: [(pt1, pt2), (pt1, pt2), ...] = [((x1, y1), (x2, y2)), ...]
     """
+
+    minDist = int(image.shape[1] * 0.5) if minDist is None else minDist
     output = []
     fx_resize = 1
     fy_resize = 1
@@ -74,9 +75,9 @@ def search_horiz_lines(image, method, minDist):
                       cv.resize(image_to_show, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
             cv.waitKey(0)
 
-        cv.imshow("gray", cv.resize(gray, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
-        cv.imshow("image_thr", cv.resize(image_thr, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
-        cv.imshow("dst_img", cv.resize(dst_img, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
+        # cv.imshow("gray", cv.resize(gray, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
+        # cv.imshow("image_thr", cv.resize(image_thr, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
+        # cv.imshow("dst_img", cv.resize(dst_img, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
     elif method == 3:
         edges = cv.Canny(gray, 50, 150, apertureSize=3)
         minLineLength = 100
@@ -95,18 +96,18 @@ def search_horiz_lines(image, method, minDist):
             # Angle between p1 and p2 in radians
             theta = -math.atan2(dy, dx)
             angle = math.degrees(theta)
-            print(str(i) + ":")
-            print("  - pt1:" + str(pt1))
-            print("  - pt2:" + str(pt2))
-            print("  - dist:" + str(distance))
-            print("  - theta:" + str(theta) + " rad")
-            print("  - theta:" + str(angle) + "°")
+            # print(str(i) + ":")
+            # print("  - pt1:" + str(pt1))
+            # print("  - pt2:" + str(pt2))
+            # print("  - dist:" + str(distance))
+            # print("  - theta:" + str(theta) + " rad")
+            # print("  - theta:" + str(angle) + "°")
             if distance >= minDist:
                 if abs(angle) < 1:
-                    print("OK")
+                    #print("OK")
                     output.append((pt1, pt2))
-                else:
-                    print("NO OK")
+                # else:
+                #     print("NO OK")
         # cv.imshow("gray", cv.resize(gray, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
         # cv.imshow("edges", cv.resize(edges, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
     elif method == 4:
@@ -124,13 +125,13 @@ def search_horiz_lines(image, method, minDist):
         if i >= len(output)-1 or output[i+1][0][1] - output[i][0][1] > 5:
             output_aux.append(output[i])
     output = output_aux
-    for line in output_aux:
-        cv.line(image_to_show, line[0], line[1], (0, 0, 255), 3,
-                cv.LINE_AA)
+    # for line in output_aux:
+    #     cv.line(image_to_show, line[0], line[1], (0, 0, 255), 3,
+    #             cv.LINE_AA)
     #     cv.imshow("lines in image",
     #               cv.resize(image_to_show, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
     #     cv.waitKey(0)
-    # cv.destroyWindow("lines in image")
+    #     cv.destroyWindow("lines in image")
 
     return output
 
