@@ -419,7 +419,8 @@ def main(proveedor: str, pedidos_path: str,
                             column_img = table_img_gray[iy:fy, ix:fx]
                             # Detecto los contornos de las lineas del texto
                             column_img_to_show = column_img.copy() if is_img_shown else None
-                            boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show, True)
+                            boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show,
+                                                                                         True)
                             if is_img_shown:
                                 cv.imshow("column_img",
                                           cv.resize(column_img_to_show, None, fx=0.5, fy=0.5,
@@ -574,11 +575,12 @@ def main(proveedor: str, pedidos_path: str,
                             for i in df_table.index:
                                 # Leo las celdas
                                 if df_table[col_name][i] is not None and \
-                                        (proveedor_tabla["read_all_cells"] or\
-                                        (not proveedor_tabla["read_all_cells"] and col_index + 1 in column_list)):
+                                        (proveedor_tabla["read_all_cells"] or \
+                                         (not proveedor_tabla["read_all_cells"] and col_index + 1 in column_list)):
                                     df_table[col_name][i] = modg.lectura_campo(table_img,
-                                                                              df_table[col_name][i]["content_coordinates"],
-                                                                              tesseract_exe_path, None, False)
+                                                                               df_table[col_name][i][
+                                                                                   "content_coordinates"],
+                                                                               tesseract_exe_path, None, False)
                                 # La celda se pone vacia
                                 else:
                                     df_table[col_name][i] = [("", -100)]
@@ -719,6 +721,12 @@ def main(proveedor: str, pedidos_path: str,
     print("· Dataframe total (sin formateo):")
     print(df_total.to_string())
 
+    # Guardo el dataframe en un EXCEL para su visualizacion
+    path_dataframe = os.path.join(PATH_RESULTADOS, proveedor)
+    if not os.path.exists(path_dataframe):
+        os.makedirs(path_dataframe)
+    df_total.to_excel(os.path.join(path_dataframe, "dataFrame.xlsx"))
+
     # Borro las filas invalidas
     df_total.drop(df_total[df_total['confidence'] == CONF_ROW_INVALID].index, inplace=True)
 
@@ -732,7 +740,8 @@ def main(proveedor: str, pedidos_path: str,
 
     # Formatear las columnas de la tabla
     # try:
-    #     df_total = FormatTable(orders=df_total).format()
+    #     df_total = FormatTable(orders=df_total, decimal_separator=decimal_separator,
+    #                            date_format_regex=date_format_regex).format()
     # except Exception as e:
     #     import traceback
     #     traceback.print_exc()
@@ -745,11 +754,6 @@ def main(proveedor: str, pedidos_path: str,
     print()
     print("· Dataframe total:")
     print(df_total.to_string())
-    # Guardo el dataframe en un EXCEL para su visualizacion
-    path_dataframe = os.path.join(PATH_RESULTADOS, proveedor)
-    if not os.path.exists(path_dataframe):
-        os.makedirs(path_dataframe)
-    df_total.to_excel(os.path.join(path_dataframe, "dataFrame.xlsx"))
     # endregion
 
     # Borro ventanas
@@ -769,8 +773,8 @@ def main(proveedor: str, pedidos_path: str,
 # proveedor = "70017048"  # Thyssenkrupp Crankshaft
 # proveedor = "70017869"  # TIG
 # proveedor = "70017078"  # Thyssenkrupp Campo Limpo
-# proveedor = "Skyway"  # Skyway
 # proveedor = "70001256"  # ESP
+# proveedor = "7001353"  # Skyway
 #
 # pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
@@ -783,8 +787,8 @@ def main(proveedor: str, pedidos_path: str,
 # pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
 # pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\ESP"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
 # pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 #
 # main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
@@ -801,7 +805,7 @@ def main(proveedor: str, pedidos_path: str,
 #     ("70017703", "Engine Power Components"),
 #     ("70017869", "TIG"),
 #     ("70018938", "WorldClass Industries"),
-#     ("Skyway", "Skyway txt"),
+#     ("7001353", "Skyway txt"),
 #     ("99999TSE01 (lines)", "JD REMAN (lines)")
 # )
 #
