@@ -187,7 +187,7 @@
       "arrival_date": {
         "in_table": true,
         "pag": null,
-        "date_format": ["D dd.mm.yyyy"],
+        "date_format": ["W ww.yyyy"],
         "coordinates": [
           0,
           null,
@@ -249,14 +249,18 @@
         "ship_out_date": {
           "in_table": true,
           "pag": null,
-          "date_format": ["D dd.mm.yyyy"],
+          "date_format": [
+            "D dd.mm.yyyy",
+            "M mm.yyyy",
+            "Y yyyy"
+          ],
           "coordinates": [
             0,
             null,
             267,
             null
           ],
-          "method_ocr": 5
+          "method_ocr": 4
         },
         "arrival_date": null
       }

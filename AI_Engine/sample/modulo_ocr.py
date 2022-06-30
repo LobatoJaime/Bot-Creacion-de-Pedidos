@@ -147,7 +147,7 @@ def lectura_texto_data(img_procesada, custom_config):
     # Elimino las filas con valor de confianza -1
     data = data[data.conf != -1]
     # Elimino las filas con valor de confianza menor que 50 (posibles fallos)
-    data = data[data.conf > 50]
+    #data = data[data.conf > 50]
     # Creo las listas de texto extraido con su valor de confianza
     lines = data.groupby(['page_num', 'block_num', 'par_num', 'line_num'])['text'] \
         .apply(lambda x: ' '.join(list(x))).tolist()
