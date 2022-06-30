@@ -26,7 +26,7 @@ from Packages.validate_data.validate_data import validate_data
 
 
 class UploadOrder:
-    def __init__(self, uploaded_file_root: str, client_name: str):
+    def __init__(self, uploaded_file_root: str, sap_code: str, client_name: str):
         """Funcion que sube el pdf a SAP a traves de la AI, devuelve un error en caso de que
         no se pueda subir"""
         self.deleted_rows_log = pd.DataFrame()
@@ -36,6 +36,7 @@ class UploadOrder:
         self.order_changes = None
         self.en_periodo_congelado = None
         self.uploaded_file_root = uploaded_file_root
+        self.sap_code = sap_code
         self.client_name = client_name
         self.orders = None
         self.order_status = ['success', 'script_error', 'not_uploaded']
@@ -58,9 +59,7 @@ class UploadOrder:
         if self.order_exists == 'True' or 'Mixed' in self.order_exists:
             self.order_changes = check_sap_changes(self.orders, self.planes_entrega)
         if self.order_exists == 'False':
-            # self.get_client_info()
-            # self.order_changes = create_new_order_changes(self.orders, sap_code, client_name)
-            return self.order_status[2]  # Luego cambiar para que acepte creacion de pedidos
+            self.order_changes = create_new_order_changes(self.orders, self.sap_code, self.client_name)
         print(self.order_changes.to_string())
         self.backup_order_changes = self.order_changes
 
@@ -89,8 +88,10 @@ class UploadOrder:
         # Guardar cambios en la app
         self.save_changes()
 
+        return self.order_status[0]
+
     def create_order(self):
-        self.orders: pd.DataFrame = create_order_ai(proveedor=self.client_name, pedidos_path=self.uploaded_file_root,
+        self.orders: pd.DataFrame = create_order_ai(proveedor=self.sap_code, pedidos_path=self.uploaded_file_root,
                                                     is_img_shown=False,
                                                     poppler_path=local_poppler_path,
                                                     tesseract_exe_path=local_tesseract_exe_path)
@@ -162,6 +163,3 @@ class UploadOrder:
         folder = find_newest_dir(changes_history_folder)
         create_comparison_table_excel(folder_root=folder)
 
-    def get_client_info(self):
-        # ESPERAR A QUE HAGAN LOS CAMBIOS EN LA AI
-        pass

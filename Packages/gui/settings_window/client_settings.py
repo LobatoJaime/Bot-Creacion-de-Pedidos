@@ -50,13 +50,14 @@ class ClientSettings:
     def add_client_clicked(self):
         name = self.name_entry.get()
         sap_code = self.code_entry.get()
+        email = ''
         if name in self.clients_df['Customer'].to_list():
             messagebox.showwarning(title='Error', message='Ya existe un cliente con ese nombre')
             return
         if sap_code in self.clients_df['sap_code'].to_list():
             messagebox.showwarning(title='Error', message='Ya existe un cliente con ese codigo de SAP')
             return
-        self.clients_df.loc[len(self.clients_df)] = [name, sap_code]
+        self.clients_df.loc[len(self.clients_df)] = [name, sap_code, email]
         self.clients_df = self.clients_df.sort_values(by='Customer')
         self.clients_df.to_excel(codigo_sap_clientes_root, index=False)
         self.clients_table.frame.destroy()
@@ -92,6 +93,7 @@ class ClientsTable:
         clients_table = pd.DataFrame(data, dtype=str)
         self.df = clients_table
         self.headers = list(clients_table)
+        self.headers.remove('emails')
         self.frame = ttk.Frame(parent_window)
         self.frame.rowconfigure(0, weight=1)
         self.frame.columnconfigure(0, weight=1)

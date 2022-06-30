@@ -7,7 +7,7 @@ import numpy as np
 from tkinter import filedialog, messagebox
 import datetime as dt
 from AI_Engine.main import main
-from ...constants import downloads_folder
+from ...constants import downloads_folder, codigo_sap_clientes_root
 import numpy as np
 from ..scrollable_frame import ScrollFrame
 from .scan_pdf_loading_pop_up import LoadingPopUp
@@ -469,7 +469,12 @@ class CreateOrderTable:
 
 
 def run_ai_in_bg(client_name: str, path: str, queue: Queue, poppler_path, tesseract_exe_path):
-    orders: pd.DataFrame = main(proveedor=client_name, pedidos_path=path, is_img_shown=False,
+    # obtener codigo sap del cliente
+    clients_table = pd.DataFrame(data=pd.read_excel(codigo_sap_clientes_root), dtype=str)
+    filtered_clients_table = clients_table[clients_table['Customer'] == client_name]
+    sap_code = filtered_clients_table['sap_code'][filtered_clients_table.index[0]]
+    # escanear pdf
+    orders: pd.DataFrame = main(proveedor=sap_code, pedidos_path=path, is_img_shown=False,
                                 poppler_path=poppler_path,
                                 tesseract_exe_path=tesseract_exe_path)
     queue.put(orders)

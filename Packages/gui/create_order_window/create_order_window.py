@@ -3,7 +3,7 @@ from tkinter import ttk
 from Packages.gui.create_order_window.create_order_table import CreateOrderTable
 from ..menu_bar import MenuBar
 from ..save_order_file import save_order_file
-from ...constants import ai_supported_clients
+from ...constants import ai_supported_clients, get_ai_supported_clients
 
 
 class CreateOrderWindow:
@@ -54,7 +54,7 @@ class CreateOrderWindow:
         self.ai_button = ttk.Button(self.settings_label_frame, text='Escanear PDF',
                                              command=lambda: [self.create_order_table.scan_pdf(self.ai_client_name.get(), self.file_uploaded_text)], style='success.TButton')
         self.ai_button.grid(row=6, column=0, sticky='w', pady=6, padx=15)
-        self.ai_client_name = ttk.Combobox(self.settings_label_frame, values=ai_supported_clients, state='readonly')
+        self.ai_client_name = ttk.Combobox(self.settings_label_frame, values=get_ai_supported_clients(), state='readonly')
         self.ai_client_name.set('Cliente a escanear')
         self.ai_client_name.grid(row=5, column=0, sticky='w', pady=6, padx=15)
         self.ai_client_name.bind("<<ComboboxSelected>>", lambda event: [self.ai_client_name.selection_clear()])
