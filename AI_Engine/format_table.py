@@ -43,9 +43,8 @@ def format_date(date: str, date_format: pd.DataFrame) -> str:
     for index in date_format.index:
         regex = date_format['regex'][index]
         date_time_format = date_format['format_code'][index]
-        needs_processing = date_format['needs_processing'][index]
         if re.match(regex, date):
-            if needs_processing not in ('', str(np.nan), ' '):
+            if 'W' in date_time_format:
                 date = date + '.Monday'
                 date_time_format = date_time_format + '.%A'
             date_datetime = datetime.datetime.strptime(date, date_time_format)
