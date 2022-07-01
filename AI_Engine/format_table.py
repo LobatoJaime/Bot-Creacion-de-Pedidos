@@ -8,7 +8,7 @@ class FormatTable:
     """Clase donde se van a formatear todos los campos
     necesarios para la tabla dependiendo del cliente"""
 
-    def __init__(self, orders: pd.DataFrame):
+    def __init__(self, orders: pd.DataFrame, decimal_separator: str, date_format_regex: pd.DataFrame):
         self.orders = orders
         self.client = self.orders['client'][self.orders.index[0]]
         data = pd.read_excel(formats_table_path, dtype=str)

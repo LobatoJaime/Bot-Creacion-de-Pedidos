@@ -59,6 +59,8 @@ def main(proveedor: str, pedidos_path: str,
     # COLUMNAS = ("archivo",) + COLUMNAS
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
     HEIGHT_TO_SHOW = 800
+    CONF_ROW_INVALID = -200
+    CONF_ROW_WRONG_FIELD = -100
     # Paths
     PATH_CONFIG = os.path.join(ai_path, 'Config')
     PATH_RESULTADOS = os.path.join(ai_path, 'Resultados')
@@ -417,7 +419,8 @@ def main(proveedor: str, pedidos_path: str,
                             column_img = table_img_gray[iy:fy, ix:fx]
                             # Detecto los contornos de las lineas del texto
                             column_img_to_show = column_img.copy() if is_img_shown else None
-                            boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show, True)
+                            boxes, column_img_to_show = doc_layout_analysis.process_line(column_img, column_img_to_show,
+                                                                                         True)
                             if is_img_shown:
                                 cv.imshow("column_img",
                                           cv.resize(column_img_to_show, None, fx=0.5, fy=0.5,
@@ -572,11 +575,12 @@ def main(proveedor: str, pedidos_path: str,
                             for i in df_table.index:
                                 # Leo las celdas
                                 if df_table[col_name][i] is not None and \
-                                        (proveedor_tabla["read_all_cells"] or\
-                                        (not proveedor_tabla["read_all_cells"] and col_index + 1 in column_list)):
+                                        (proveedor_tabla["read_all_cells"] or \
+                                         (not proveedor_tabla["read_all_cells"] and col_index + 1 in column_list)):
                                     df_table[col_name][i] = modg.lectura_campo(table_img,
-                                                                              df_table[col_name][i]["content_coordinates"],
-                                                                              tesseract_exe_path, None, False)
+                                                                               df_table[col_name][i][
+                                                                                   "content_coordinates"],
+                                                                               tesseract_exe_path, None, False)
                                 # La celda se pone vacia
                                 else:
                                     df_table[col_name][i] = [("", -100)]
@@ -660,16 +664,36 @@ def main(proveedor: str, pedidos_path: str,
         # endregion
 
         # region Validacion dataframe
-        # Recorro todas las filas del dataframe para comprobar si el formato del campo es correcto
+        # Recorro todas las filas del dataframe para comprobar si el formato de los campos son correcto
         for i in range(len(df)):
+            # Creo variables auxiliares
+            campo_tabla_is_valid, campo_hoja_is_valid = {}, {}
+            for campo in campos_tabla:
+                campo_tabla_is_valid[campo] = True
+            for campo in campos_hoja:
+                campo_hoja_is_valid[campo] = True
+            # Recorro los campos para validarlos
             for campo in campos_validos:
                 # Aplico regex para comprobar el formato
                 reg_res = modg.regex_group(proveedor_campos[campo]["regex_validation"], df.loc[i, campo], True)
-                # Si el formato no es correcto, el valor de confianza es -100
+                # Si el formato no es correcto, lo guardo en la variable auxiliar
                 if reg_res is None or df.loc[i, campo] is None or len(reg_res) != len(df.loc[i, campo]):
-                    df.loc[i, "confidence"] = -100
+                    if campo in campos_tabla:
+                        campo_tabla_is_valid[campo] = False
+                    else:
+                        campo_hoja_is_valid[campo] = False
                     print("(" + str(i) + ", " + campo + ") " + df.loc[i, campo] + " no hace match con " +
                           proveedor_campos[campo]["regex_validation"])
+            # Modifico el valor de confianza
+            # Todos los campos tabla son invalidos
+            if all(not campo for campo in campo_tabla_is_valid.values()):
+                df.loc[i, "confidence"] = CONF_ROW_INVALID
+            # Al menos un campo tabla es invalido
+            elif False in campo_tabla_is_valid.values():
+                df.loc[i, "confidence"] = CONF_ROW_WRONG_FIELD
+            # Un campo hoja es invalido
+            elif False in campo_hoja_is_valid.values():
+                df.loc[i, "confidence"] = CONF_ROW_WRONG_FIELD
         # endregion
 
         # endregion
@@ -692,8 +716,19 @@ def main(proveedor: str, pedidos_path: str,
     # endregion
 
     # region Formateo dataframe
-    # Borro las filas con confianza -100
-    #df_total.drop(df_total[df_total['confidence'] == -100].index, inplace=True)
+    # Visulaizacion pre formateo
+    print()
+    print("· Dataframe total (sin formateo):")
+    print(df_total.to_string())
+
+    # Guardo el dataframe en un EXCEL para su visualizacion
+    path_dataframe = os.path.join(PATH_RESULTADOS, proveedor)
+    if not os.path.exists(path_dataframe):
+        os.makedirs(path_dataframe)
+    df_total.to_excel(os.path.join(path_dataframe, "dataFrame.xlsx"))
+
+    # Borro las filas invalidas
+    df_total.drop(df_total[df_total['confidence'] == CONF_ROW_INVALID].index, inplace=True)
 
     # Sacar un promedio de la columna de confianza
     # confidences = df_total['confidence'].to_list()
@@ -705,7 +740,8 @@ def main(proveedor: str, pedidos_path: str,
 
     # Formatear las columnas de la tabla
     # try:
-    #     df_total = FormatTable(orders=df_total).format()
+    #     df_total = FormatTable(orders=df_total, decimal_separator=decimal_separator,
+    #                            date_format_regex=date_format_regex).format()
     # except Exception as e:
     #     import traceback
     #     traceback.print_exc()
@@ -716,14 +752,8 @@ def main(proveedor: str, pedidos_path: str,
     # region Visualizacion y guardado de dataframe
     # Imprimo el dataframe
     print()
-    print()
     print("· Dataframe total:")
     print(df_total.to_string())
-    # Guardo el dataframe en un EXCEL para su visualizacion
-    path_dataframe = os.path.join(PATH_RESULTADOS, proveedor)
-    if not os.path.exists(path_dataframe):
-        os.makedirs(path_dataframe)
-    df_total.to_excel(os.path.join(path_dataframe, "dataFrame.xlsx"))
     # endregion
 
     # Borro ventanas
@@ -737,16 +767,14 @@ def main(proveedor: str, pedidos_path: str,
 # proveedor = "70018938"  # WorldClass Industries
 # proveedor = "99999TSE01 (lines)"  # JD REMAN (lines)
 # proveedor = "70017703"  # Engine Power Components
-#
 # proveedor = "test"  # test
-#
 # proveedor = "99999TSE01"  # JD REMAN
 # proveedor = "99999TCD00"  # JD SARAN
+# proveedor = "70017048"  # Thyssenkrupp Crankshaft
 # proveedor = "70017869"  # TIG
 # proveedor = "70017078"  # Thyssenkrupp Campo Limpo
-# proveedor = "Skyway"  # Skyway
 # proveedor = "70001256"  # ESP
-# proveedor = "70017048"  # Thyssenkrupp Crankshaft
+# proveedor = "70001353"  # Skyway
 #
 # pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
@@ -755,32 +783,37 @@ def main(proveedor: str, pedidos_path: str,
 # pedidos_path = r"test"
 # pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
-# pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t48.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\Engine Power Components\t42.pdf"
 # pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
 # pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Crankshaft"
+# pedidos_path = r"CLIIENTES JOHN DEERE\ESP"
+# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
 # pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 #
 # main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
 #      poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
 #      tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+
 # list_pro = (
-#     ("70017078", "Thyssenkrupp Campo Limpo"),
-#     ("70017048",  "Thyssenkrupp Crankshaft"),
+#     ("99999TCD00", "JD SARAN"),
+#     ("99999TSE01", "JD REMAN"),
+#     ("70001256", "ESP"),
 #     ("70012672", "EMP"),
-#     ("70018938", "WorldClass Industries"),
-#     ("99999TSE01 (lines)", "JD REMAN (lines)"),
-#     ("70017869", "TIG"),
+#     ("70017048", "Thyssenkrupp Crankshaft"),
+#     ("70017078", "Thyssenkrupp Campo Limpo"),
 #     ("70017703", "Engine Power Components"),
-#     ("Skyway", "Skyway")
+#     ("70017869", "TIG"),
+#     ("70018938", "WorldClass Industries"),
+#     ("70001353", "Skyway txt"),
+#     ("99999TSE01 (lines)", "JD REMAN (lines)")
 # )
 #
 # list_ex = []
 # for item in list_pro:
 #     try:
-#         main(item[0], os.path.join(pedidos_path_root, "CLIIENTES JOHN DEERE\\", item[1]), is_img_shown=False, ai_path=".",
+#         main(item[0], os.path.join(pedidos_path_root, "CLIIENTES JOHN DEERE\\", item[1]),
+#              is_img_shown=False, ai_path=".",
 #              poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
 #              tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
 #     except Exception as e:

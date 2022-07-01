@@ -36,7 +36,7 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
     print("-----------")
     print("-----------")
 
-    if provider_name == "Skyway":
+    if provider_name == "70001353":  # Skyway
         # Extraigo las columnas
         df_output = default_handler(df_list, table_fields_list, data_fields)
         # Hago replace de O por 0 en la columna de quantity
@@ -97,10 +97,6 @@ def propagate_handler(df, only_field, data_fields):
             if(modg.regex_group(regex, lecture[0]) is not None):
                 return True
         return False
-
-    #
-    # df['New'] = df['reference'].where(df['reference'] is not None or df['reference'][0] != "").ffill()
-    # df['A'].map(lambda x: x[0] if type(x) is tuple and len(x) > 0 and x[0] == 34 else None)
 
     # Creo columna auxiliar indicando si hay texto en el campo "only_field"
     df["existsText"] = df[only_field].map(lambda x: True if (type(x) == list and len(x) > 0 and

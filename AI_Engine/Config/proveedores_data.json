@@ -1,4 +1,63 @@
 {
+  "70001353": {
+    "table": {
+      "coordinates": {
+        "1": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "table",
+      "detection_parameters": {
+        "size_factor": 0.5,
+        "scale_x": 20,
+        "scale_y": 20
+      },
+      "read_all_cells": false
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": 1,
+        "coordinates": [
+          1170,
+          77,
+          1665,
+          224
+        ],
+        "method_ocr": 4
+      },
+      "reference": {
+        "in_table": true,
+        "pag": null,
+        "column_pos": 2,
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "decimal_separator": ".",
+        "column_pos": 6,
+        "method_ocr": 4
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "date_format": ["mm/dd/yyyy"],
+        "column_pos": 5,
+        "method_ocr": 4
+      }
+    }
+  },
   "70001256": {
     "table": {
       "coordinates": {
@@ -725,65 +784,6 @@
         "method_ocr": 4
       },
       "arrival_date": null
-    }
-  },
-  "Skyway": {
-    "table": {
-      "coordinates": {
-        "1": [
-          null,
-          null,
-          null,
-          null
-        ],
-        "all": [
-          null,
-          null,
-          null,
-          null
-        ]
-      },
-      "type": "table",
-      "detection_parameters": {
-        "size_factor": 0.5,
-        "scale_x": 20,
-        "scale_y": 20
-      },
-      "read_all_cells": false
-    },
-    "fields": {
-      "order_number": {
-        "in_table": false,
-        "pag": 1,
-        "coordinates": [
-          1170,
-          77,
-          1665,
-          224
-        ],
-        "method_ocr": 4
-      },
-      "reference": {
-        "in_table": true,
-        "pag": null,
-        "column_pos": 2,
-        "method_ocr": 4
-      },
-      "quantity": {
-        "in_table": true,
-        "pag": null,
-        "decimal_separator": ".",
-        "column_pos": 6,
-        "method_ocr": 4
-      },
-      "ship_out_date": null,
-      "arrival_date": {
-        "in_table": true,
-        "pag": null,
-        "date_format": ["mm/dd/yyyy"],
-        "column_pos": 5,
-        "method_ocr": 4
-      }
     }
   },
   "test": {
