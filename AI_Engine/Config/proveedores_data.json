@@ -283,7 +283,7 @@
             982,
             479
           ],
-          "method_ocr": 5
+          "method_ocr": 7
         },
         "reference": {
           "in_table": false,
@@ -295,7 +295,7 @@
             664,
             1043
           ],
-          "method_ocr": 5
+          "method_ocr": 7
         },
         "quantity": {
           "in_table": true,
@@ -307,7 +307,7 @@
             714,
             null
           ],
-          "method_ocr": 5
+          "method_ocr": 7
         },
         "ship_out_date": {
           "in_table": true,
@@ -319,7 +319,7 @@
             277,
             null
           ],
-          "method_ocr": [4,5]
+          "method_ocr": [7,8]
         },
         "arrival_date": null
       }
@@ -550,7 +550,7 @@
           363,
           null
         ],
-        "method_ocr": 5
+        "method_ocr": [4, 7]
       },
       "reference": {
         "in_table": false,
@@ -573,7 +573,7 @@
           1124,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "ship_out_date": null,
       "arrival_date": {
@@ -586,7 +586,7 @@
           957,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       }
     }
     },
