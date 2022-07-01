@@ -1,4 +1,6 @@
 import datetime
+import re
+
 import pandas as pd
 from Packages.constants import formats_table_path
 import numpy as np
@@ -10,15 +12,12 @@ class FormatTable:
 
     def __init__(self, orders: pd.DataFrame, decimal_separator: str, date_format_regex: pd.DataFrame):
         self.orders = orders
-        self.client = self.orders['client'][self.orders.index[0]]
-        data = pd.read_excel(formats_table_path, dtype=str)
-        formats_table = pd.DataFrame(data, dtype=str)
-        self.client_formats = formats_table[formats_table['client'] == self.client]
-        print(self.client_formats.to_string())
+        self.decimal_separator = decimal_separator
+        self.date_format_regex = date_format_regex
 
     def format(self) -> pd.DataFrame:
-        date_format = self.client_formats['date_format'][self.client_formats.index[0]]
-        decimal_separator = self.client_formats['decimal_separator'][self.client_formats.index[0]]
+        date_format = self.date_format_regex
+        decimal_separator = self.decimal_separator
         for index in self.orders.index:
             arrival_date = str(self.orders['arrival_date'][index])
             shipping_date = str(self.orders['ship_out_date'][index])
@@ -38,52 +37,20 @@ class FormatTable:
         return self.orders
 
 
-def format_date(date: str, date_format: str) -> str:
+def format_date(date: str, date_format: pd.DataFrame) -> str:
     """Convierte la fecha generada por la AI en dd/mm/yyyy"""
-    day = ''
-    month = ''
-    year = ''
     formatted_date = 'N/A'
-
-    if date_format == 'dd/mm/yyyy':
-        position = 0
-        for char in date:
-            if char.isdigit():
-                if len(day) < 2:
-                    day = day.__add__(char)
-                elif len(month) < 2:
-                    month = month.__add__(char)
-                else:
-                    year = year.__add__(char)
-                if len(month) == 1:
-                    if date[position + 2].isdigit():
-                        month = '0' + month
-                if len(day) == 1:
-                    if date[position + 2].isdigit():
-                        day = '0' + day
-            position = position + 1
-
-    elif date_format == 'mm/dd/yyyy':
-        position = 0
-        for char in date:
-            if char.isdigit():
-                if len(month) < 2:
-                    month = month.__add__(char)
-                elif len(day) < 2:
-                    day = day.__add__(char)
-                else:
-                    year = year.__add__(char)
-                if len(month) == 1:
-                    if date[position + 2].isdigit():
-                        month = '0' + month
-                if len(day) == 1:
-                    if date[position + 2].isdigit():
-                        day = '0' + day
-            position = position + 1
-
-    if len(year) == 2:
-        year = '20' + year
-    formatted_date = '{}/{}/{}'.format(day, month, year)
+    for index in date_format.index:
+        regex = date_format['regex'][index]
+        date_time_format = date_format['format_code'][index]
+        needs_processing = date_format['needs_processing'][index]
+        if re.match(regex, date):
+            if needs_processing not in ('', str(np.nan), ' '):
+                date = date + '.Monday'
+                date_time_format = date_time_format + '.%A'
+            date_datetime = datetime.datetime.strptime(date, date_time_format)
+            formatted_date = date_datetime.strftime('%d/%m/%Y')
+            break
     return formatted_date
 
 

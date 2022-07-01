@@ -739,14 +739,14 @@ def main(proveedor: str, pedidos_path: str,
     #     df_total['confidence'] = [total_confidence] * len(confidences)
 
     # Formatear las columnas de la tabla
-    # try:
-    #     df_total = FormatTable(orders=df_total, decimal_separator=decimal_separator,
-    #                            date_format_regex=date_format_regex).format()
-    # except Exception as e:
-    #     import traceback
-    #     traceback.print_exc()
-    #     # return empty df en caso de error
-    #     df_total = pd.DataFrame()
+    try:
+        df_total = FormatTable(orders=df_total, decimal_separator=decimal_separator,
+                               date_format_regex=date_format_regex).format()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # return empty df en caso de error
+        df_total = pd.DataFrame()
     # endregion
 
     # region Visualizacion y guardado de dataframe
