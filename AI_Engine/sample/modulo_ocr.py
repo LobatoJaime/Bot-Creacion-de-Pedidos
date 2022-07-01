@@ -44,7 +44,6 @@ def procesamiento_img(roi, method):
     """
     img_procesada = np.array([])
     custom_config = None
-    roi = cv2.resize(roi, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     # method = 5
     # Metodo 0
     if method == 0:
@@ -85,6 +84,20 @@ def procesamiento_img(roi, method):
         imagen_ruido_off = cv2.GaussianBlur(roi, (5, 5), 0)
         canny = cv2.Canny(imagen_ruido_off, 50, 150)
         img_procesada = cv2.bitwise_not(canny)
+    elif method == 7:
+        # Agrandamiento, blur, threshold e inversion
+        roi = cv2.resize(roi, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+        imagen_ruido_off = cv2.GaussianBlur(roi, (3, 3), 0)
+        ret, thresh = cv2.threshold(imagen_ruido_off, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+        img_procesada = cv2.bitwise_not(thresh)
+    elif method == 8:
+        # Agrandamiento, threshold, dilatacion e inversion
+        roi = cv2.resize(roi, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+        ret, thresh = cv2.threshold(roi, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+        rect_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
+        dilation = cv2.dilate(thresh, rect_kernel, iterations=1)
+        img_procesada = cv2.bitwise_not(dilation)
+
     return img_procesada, custom_config
 
 
@@ -96,7 +109,7 @@ def lectura_texto(gray, tesseract_exe_path, methods=None, is_img_shown=False):
     """
     result = []
     # Metodo por defecto
-    methods = 0 if methods is None else methods
+    methods = 0 if methods is None or methods == [] else methods
     # Paso a lista el metodo si no lo esta ya
     methods = [methods] if type(methods) != list else methods
     img_to_show = gray.copy() if is_img_shown else None
