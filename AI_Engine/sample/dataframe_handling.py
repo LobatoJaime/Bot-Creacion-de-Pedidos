@@ -36,7 +36,7 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
     print("-----------")
     print("-----------")
 
-    if provider_name == "7001353":  # Skyway
+    if provider_name == "70001353":  # Skyway
         # Extraigo las columnas
         df_output = default_handler(df_list, table_fields_list, data_fields)
         # Hago replace de O por 0 en la columna de quantity

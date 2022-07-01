@@ -774,7 +774,7 @@ def main(proveedor: str, pedidos_path: str,
 # proveedor = "70017869"  # TIG
 # proveedor = "70017078"  # Thyssenkrupp Campo Limpo
 # proveedor = "70001256"  # ESP
-# proveedor = "7001353"  # Skyway
+# proveedor = "70001353"  # Skyway
 #
 # pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
 # pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
@@ -805,7 +805,7 @@ def main(proveedor: str, pedidos_path: str,
 #     ("70017703", "Engine Power Components"),
 #     ("70017869", "TIG"),
 #     ("70018938", "WorldClass Industries"),
-#     ("7001353", "Skyway txt"),
+#     ("70001353", "Skyway txt"),
 #     ("99999TSE01 (lines)", "JD REMAN (lines)")
 # )
 #
