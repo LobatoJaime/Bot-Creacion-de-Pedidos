@@ -246,7 +246,11 @@
       "arrival_date": {
         "in_table": true,
         "pag": null,
-        "date_format": ["W ww.yyyy"],
+        "date_format": [
+            "D dd.mm.yyyy",
+            "M mm.yyyy",
+            "Y yyyy"
+          ],
         "coordinates": [
           0,
           null,
@@ -298,9 +302,9 @@
           "pag": null,
           "decimal_separator": ",",
           "coordinates": [
-            521,
+            531,
             null,
-            704,
+            714,
             null
           ],
           "method_ocr": 5
@@ -308,18 +312,14 @@
         "ship_out_date": {
           "in_table": true,
           "pag": null,
-          "date_format": [
-            "D dd.mm.yyyy",
-            "M mm.yyyy",
-            "Y yyyy"
-          ],
+          "date_format": ["W ww.yyyy"],
           "coordinates": [
             0,
             null,
-            267,
+            277,
             null
           ],
-          "method_ocr": 4
+          "method_ocr": [4,5]
         },
         "arrival_date": null
       }

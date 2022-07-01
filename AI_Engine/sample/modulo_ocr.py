@@ -44,6 +44,7 @@ def procesamiento_img(roi, method):
     """
     img_procesada = np.array([])
     custom_config = None
+    roi = cv2.resize(roi, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     # method = 5
     # Metodo 0
     if method == 0:
@@ -87,20 +88,24 @@ def procesamiento_img(roi, method):
     return img_procesada, custom_config
 
 
-def lectura_texto(gray, tesseract_exe_path, method=None, is_img_shown=False):
+def lectura_texto(gray, tesseract_exe_path, methods=None, is_img_shown=False):
     """
     Reconoce el texto de una imagen. Se pueden indicar diferentes metodos.
     Devuelve una lista de textos junto a un valor de confianza.
     Los textos encontrados vacios, no se devuelven.
     """
     result = []
-    method = 0 if method is None else method
+    # Metodo por defecto
+    methods = 0 if methods is None else methods
+    # Paso a lista el metodo si no lo esta ya
+    methods = [methods] if type(methods) != list else methods
     img_to_show = gray.copy() if is_img_shown else None
 
     # Tesseract configuracion
     pytesseract.pytesseract.tesseract_cmd = tesseract_exe_path
+
     #custom_config = r'--psm 7 -c tessedit_char_whitelist=0123456789.'
-    custom_config = r"--psm 7"
+
 
     # Deteccion de texto
     print('################ Output ##################')
@@ -119,16 +124,26 @@ def lectura_texto(gray, tesseract_exe_path, method=None, is_img_shown=False):
             cv2.imshow("Texto", cv2.resize(roi, None, fx=0.8, fy=0.8, interpolation=cv2.INTER_AREA))
             cv2.waitKey(0)
             cv2.destroyWindow("Texto")
-        # Preprocesamiento de la imagen
-        img_procesada, custom_config_aux = procesamiento_img(roi, method)
-        if is_img_shown:
-            cv2.imshow("Texto procesado", cv2.resize(img_procesada, None, fx=0.8, fy=0.8, interpolation=cv2.INTER_AREA))
-            cv2.waitKey(0)
-            cv2.destroyWindow("Texto procesado")
-        if custom_config_aux is not None:
-            custom_config = custom_config_aux
-        # Leo el texto dentro de la region y elimino los espacios a los lados del texto
-        output_data = lectura_texto_data(img_procesada, custom_config)
+        output_data = None
+        # Cojo la lectura con mayor valor de confianza
+        for index, method in enumerate(methods):
+            custom_config = r"--psm 7"
+            img_procesada, custom_config_aux = procesamiento_img(roi, method)
+            if is_img_shown:
+                cv2.imshow("Texto procesado", cv2.resize(img_procesada, None, fx=0.8, fy=0.8, interpolation=cv2.INTER_AREA))
+                cv2.waitKey(0)
+                cv2.destroyWindow("Texto procesado")
+            # Lectura de texto
+            if custom_config_aux is not None:
+                custom_config = custom_config_aux
+            output_data_aux = lectura_texto_data(img_procesada, custom_config)
+            # Si es el primer valor cogemos el valor
+            if index == 0:
+                output_data = output_data_aux
+            # Si la confianza es mayor cogemos el resultado
+            elif output_data_aux[1] > output_data[1]:
+                output_data = output_data_aux
+        # Si el valor del texto es vacio, no lo devuelvo
         if output_data[0] != "":
             result.append(output_data)
     print(result)

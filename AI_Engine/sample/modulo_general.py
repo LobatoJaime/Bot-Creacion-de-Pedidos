@@ -77,7 +77,7 @@ def lectura_campo(img, points, tesseract_exe_path, method=None, is_img_shown=Fal
     return list_lectura
 
 
-def handle_lecture_ocr(list_lecture, regex_validation, regex_filter = None):
+def handle_lecture_ocr(list_lecture, regex_validation, regex_filter=None):
     """
     Recibe una lista de tuplas de resultados ocr (text, conf) y los maneja para convertirlos a una sola tupla.
 
@@ -86,7 +86,9 @@ def handle_lecture_ocr(list_lecture, regex_validation, regex_filter = None):
 
     Parameters:
         list_lecture: Lista de tuplas: [(Texto leido, confianza de la lectura), ...]
-        regex: Lista de filtros regex para busqueda de texto
+        regex_validation: Regex utilizado para validar el texto
+        regex_filter: Lista de regex para filtrado de texto. Estos filtros se aplicaran a los textos antes de
+        aplicar el regex de validacion
     """
 
     # Si la lista de resultados esta vacia, el texto es vacio y la confianza es de 100
