@@ -353,7 +353,7 @@ def table_detector(src, size_factor: float = None, scale_x: int = None, scale_y:
     return tables_data, src_no_lines
 
 
-def main():
+if __name__ == '__main__':
     # region Load source image
     source_path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\Skyway\t0-1.jpg"
     source_path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\Engine Power Components\t129.pdf-0.jpg"
@@ -366,11 +366,9 @@ def main():
     # Check if image is loaded fine
     if not src.data:
         print("Problem loading image!!!")
-        return
+        exit()
     # endregion
 
     tables_data = table_parameter_selector(src)
     get_table(src, tables_data)
 
-
-#main()

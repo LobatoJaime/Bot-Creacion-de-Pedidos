@@ -649,6 +649,7 @@ def main(proveedor: str, pedidos_path: str,
             list_conf.append(min(list_conf_row))
         # Relleno columna de confianza
         df["confidence"] = list_conf
+        print(df.to_string())
         # endregion
 
         # region Transformacion de tuplas a texto
@@ -763,61 +764,64 @@ def main(proveedor: str, pedidos_path: str,
     return df_total
 
 
-# proveedor = "70012672"  # EMP
-# proveedor = "70018938"  # WorldClass Industries
-# proveedor = "99999TSE01 (lines)"  # JD REMAN (lines)
-# proveedor = "70017703"  # Engine Power Components
-# proveedor = "test"  # test
-# proveedor = "99999TSE01"  # JD REMAN
-# proveedor = "99999TCD00"  # JD SARAN
-# proveedor = "70017048"  # Thyssenkrupp Crankshaft
-# proveedor = "70017869"  # TIG
-# proveedor = "70017078"  # Thyssenkrupp Campo Limpo
-# proveedor = "70001256"  # ESP
-# proveedor = "70001353"  # Skyway
-#
-# pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
-# pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
-# pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
-# pedidos_path = r"extra\Thyssenkrupp Campo Limpo"
-# pedidos_path = r"test"
-# pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Engine Power Components\t42.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
-# pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
-# pedidos_path = r"CLIIENTES JOHN DEERE\ESP"
-# pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
-# pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
-#
-# main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
-#      poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
-#      tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+if __name__ == '__main__':
+    proveedor = "70012672"  # EMP
+    proveedor = "99999TSE01 (lines)"  # JD REMAN (lines)
+    proveedor = "70017703"  # Engine Power Components
+    proveedor = "test"  # test
+    proveedor = "99999TSE01"  # JD REMAN
+    proveedor = "99999TCD00"  # JD SARAN
+    proveedor = "70017048"  # Thyssenkrupp Crankshaft
+    proveedor = "70017869"  # TIG
+    proveedor = "70017078"  # Thyssenkrupp Campo Limpo
+    proveedor = "70001256"  # ESP
+    proveedor = "70001353"  # Skyway
+    proveedor = "70018938"  # WorldClass Industries
 
-# list_pro = (
-#     ("99999TCD00", "JD SARAN"),
-#     ("99999TSE01", "JD REMAN"),
-#     ("70001256", "ESP"),
-#     ("70012672", "EMP"),
-#     ("70017048", "Thyssenkrupp Crankshaft"),
-#     ("70017078", "Thyssenkrupp Campo Limpo"),
-#     ("70017703", "Engine Power Components"),
-#     ("70017869", "TIG"),
-#     ("70018938", "WorldClass Industries"),
-#     ("70001353", "Skyway txt"),
-#     ("99999TSE01 (lines)", "JD REMAN (lines)")
-# )
-#
-# list_ex = []
-# for item in list_pro:
-#     try:
-#         main(item[0], os.path.join(pedidos_path_root, "CLIIENTES JOHN DEERE\\", item[1]),
-#              is_img_shown=False, ai_path=".",
-#              poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
-#              tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
-#     except Exception as e:
-#         list_ex.append((item[0], e))
-#
-# print("Exception:")
-# print(str(list_ex))
+    pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
+    pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
+    pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
+    pedidos_path = r"extra\Thyssenkrupp Campo Limpo"
+    pedidos_path = r"test"
+    pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\Engine Power Components\t42.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
+    pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
+    pedidos_path = r"CLIIENTES JOHN DEERE\ESP"
+    pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
+    pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
+
+    main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
+         poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
+         tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+
+    #############################################
+
+    list_pro = (
+        ("99999TCD00", "JD SARAN"),
+        ("99999TSE01", "JD REMAN"),
+        ("70001256", "ESP"),
+        ("70012672", "EMP"),
+        ("70017048", "Thyssenkrupp Crankshaft"),
+        ("70017078", "Thyssenkrupp Campo Limpo"),
+        ("70017703", "Engine Power Components"),
+        ("70017869", "TIG"),
+        ("70018938", "WorldClass Industries"),
+        ("70001353", "Skyway txt"),
+        ("99999TSE01 (lines)", "JD REMAN (lines)")
+    )
+
+    list_ex = []
+    for item in list_pro:
+        try:
+            main(item[0], os.path.join(pedidos_path_root, "CLIIENTES JOHN DEERE\\", item[1]),
+                 is_img_shown=False, ai_path=".",
+                 poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
+                 tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+        except Exception as e:
+            list_ex.append((item[0], e))
+
+    print("Exception:")
+    print(str(list_ex))

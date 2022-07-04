@@ -246,7 +246,11 @@
       "arrival_date": {
         "in_table": true,
         "pag": null,
-        "date_format": ["W ww.yyyy"],
+        "date_format": [
+            "D dd.mm.yyyy",
+            "M mm.yyyy",
+            "Y yyyy"
+          ],
         "coordinates": [
           0,
           null,
@@ -279,7 +283,7 @@
             982,
             479
           ],
-          "method_ocr": 5
+          "method_ocr": 7
         },
         "reference": {
           "in_table": false,
@@ -291,35 +295,31 @@
             664,
             1043
           ],
-          "method_ocr": 5
+          "method_ocr": 7
         },
         "quantity": {
           "in_table": true,
           "pag": null,
           "decimal_separator": ",",
           "coordinates": [
-            521,
+            531,
             null,
-            704,
+            714,
             null
           ],
-          "method_ocr": 5
+          "method_ocr": 7
         },
         "ship_out_date": {
           "in_table": true,
           "pag": null,
-          "date_format": [
-            "D dd.mm.yyyy",
-            "M mm.yyyy",
-            "Y yyyy"
-          ],
+          "date_format": ["W ww.yyyy"],
           "coordinates": [
             0,
             null,
-            267,
+            277,
             null
           ],
-          "method_ocr": 4
+          "method_ocr": [7,8]
         },
         "arrival_date": null
       }
@@ -550,7 +550,7 @@
           363,
           null
         ],
-        "method_ocr": 5
+        "method_ocr": [4, 7]
       },
       "reference": {
         "in_table": false,
@@ -573,7 +573,7 @@
           1124,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "ship_out_date": null,
       "arrival_date": {
@@ -586,7 +586,7 @@
           957,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       }
     }
     },
