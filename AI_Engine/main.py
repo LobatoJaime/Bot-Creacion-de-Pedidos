@@ -426,7 +426,7 @@ def main(proveedor: str, pedidos_path: str,
                                           cv.resize(column_img_to_show, None, fx=0.5, fy=0.5,
                                                     interpolation=cv.INTER_AREA))
                             # Por cada contorno leo el campo
-                            for box in reversed(boxes):
+                            for box in boxes:
                                 # Leo la region
                                 list_lecture = modg.lectura_campo(column_img, box, tesseract_exe_path,
                                                                   proveedor_campos[campo]["method_ocr"],
@@ -627,6 +627,7 @@ def main(proveedor: str, pedidos_path: str,
                     df_set[campo] = None
                     df_set[campo] = df_set[campo].apply(lambda x: lecture)
             # endregion
+
             # Concateno el nuevo dataframe
             df = pd.concat([df, df_set], ignore_index=True)
         # endregion
@@ -732,12 +733,12 @@ def main(proveedor: str, pedidos_path: str,
     df_total.drop(df_total[df_total['confidence'] == CONF_ROW_INVALID].index, inplace=True)
 
     # Sacar un promedio de la columna de confianza
-    # confidences = df_total['confidence'].to_list()
-    # if len(confidences) > 1:
-    #     total_confidence = (sum(confidences) / len(
-    #         confidences)) / 100  # Dividirlo por 100 para tener valores entre [0-1]
-    #     total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
-    #     df_total['confidence'] = [total_confidence] * len(confidences)
+    confidences = df_total['confidence'].to_list()
+    if len(confidences) > 1:
+        total_confidence = (sum(confidences) / len(
+            confidences)) / 100  # Dividirlo por 100 para tener valores entre [0-1]
+        total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
+        df_total['confidence'] = [total_confidence] * len(confidences)
 
     # Formatear las columnas de la tabla
     try:
@@ -765,18 +766,18 @@ def main(proveedor: str, pedidos_path: str,
 
 
 if __name__ == '__main__':
-    proveedor = "70012672"  # EMP
     proveedor = "99999TSE01 (lines)"  # JD REMAN (lines)
     proveedor = "70017703"  # Engine Power Components
     proveedor = "test"  # test
     proveedor = "99999TSE01"  # JD REMAN
     proveedor = "99999TCD00"  # JD SARAN
     proveedor = "70017048"  # Thyssenkrupp Crankshaft
-    proveedor = "70017869"  # TIG
     proveedor = "70017078"  # Thyssenkrupp Campo Limpo
-    proveedor = "70001256"  # ESP
     proveedor = "70001353"  # Skyway
     proveedor = "70018938"  # WorldClass Industries
+    proveedor = "70001256"  # ESP
+    proveedor = "70017869"  # TIG
+    proveedor = "70012672"  # EMP
 
     pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
     pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
@@ -785,12 +786,12 @@ if __name__ == '__main__':
     pedidos_path = r"test"
     pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
     pedidos_path = r"CLIIENTES JOHN DEERE\Engine Power Components\t42.pdf"
-    pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
     pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
-    pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
-    pedidos_path = r"CLIIENTES JOHN DEERE\ESP"
     pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
     pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
+    pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
+    pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\EMP"
     pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 
     main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
@@ -799,29 +800,30 @@ if __name__ == '__main__':
 
     #############################################
 
-    list_pro = (
-        ("99999TCD00", "JD SARAN"),
-        ("99999TSE01", "JD REMAN"),
-        ("70001256", "ESP"),
-        ("70012672", "EMP"),
-        ("70017048", "Thyssenkrupp Crankshaft"),
-        ("70017078", "Thyssenkrupp Campo Limpo"),
-        ("70017703", "Engine Power Components"),
-        ("70017869", "TIG"),
-        ("70018938", "WorldClass Industries"),
-        ("70001353", "Skyway txt"),
-        ("99999TSE01 (lines)", "JD REMAN (lines)")
-    )
-
-    list_ex = []
-    for item in list_pro:
-        try:
-            main(item[0], os.path.join(pedidos_path_root, "CLIIENTES JOHN DEERE\\", item[1]),
-                 is_img_shown=False, ai_path=".",
-                 poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
-                 tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
-        except Exception as e:
-            list_ex.append((item[0], e))
-
-    print("Exception:")
-    print(str(list_ex))
+    # list_pro = (
+    #     ("99999TCD00", "JD SARAN"),
+    #     ("99999TSE01", "JD REMAN"),
+    #     ("70001256", "ESP"),
+    #     ("70012672", "EMP"),
+    #     ("70017048", "Thyssenkrupp Crankshaft"),
+    #     ("70017078", "Thyssenkrupp Campo Limpo"),
+    #     ("70017703", "Engine Power Components"),
+    #     ("70017869", "TIG"),
+    #     ("70018938", "WorldClass Industries"),
+    #     ("70001353", "Skyway txt"),
+    #     ("99999TSE01 (lines)", "JD REMAN (lines)")
+    # )
+    #
+    # list_ex = []
+    # for item in list_pro:
+    #     try:
+    #         main(item[0], os.path.join(pedidos_path_root, "CLIIENTES JOHN DEERE\\", item[1]),
+    #              is_img_shown=False, ai_path=".",
+    #              poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
+    #              tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+    #     except Exception as e:
+    #         list_ex.append((item[0], e))
+    #
+    # print("Exception:")
+    # print(str(list_ex))
+    # print("En esta prueba se ha incluido redimensionamiento de roi")
