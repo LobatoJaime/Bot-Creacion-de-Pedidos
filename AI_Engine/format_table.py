@@ -45,7 +45,7 @@ def format_date(date: str, date_format: pd.DataFrame) -> str:
         date_time_format = date_format['format_code'][index]
         if re.match(regex, date):
             if '%W' in date_time_format:
-                date = date + '.Monday'
+                date = date + '.Thursday'
                 date_time_format = date_time_format + '.%A'
             date_datetime = datetime.datetime.strptime(date, date_time_format)
             formatted_date = date_datetime.strftime('%d/%m/%Y')
