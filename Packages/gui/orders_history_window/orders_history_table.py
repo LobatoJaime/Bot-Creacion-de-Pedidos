@@ -59,6 +59,7 @@ class OrdersHistoryTable:
         self.filter_box.columnconfigure(0, weight=1)
         self.filter_box.columnconfigure(1, weight=1)
         client_title = ttk.Label(self.filter_box, text='Cliente:').grid(row=0, column=0, sticky='w')
+        self.client_names.sort()
         self.client_filter = ttk.Combobox(self.filter_box, values=self.client_names, state='readonly')
         self.client_filter.bind("<<ComboboxSelected>>", lambda event: self.filter_clicked())
         self.client_filter.grid(row=1, column=0, sticky='w')
