@@ -33,20 +33,20 @@
           1665,
           224
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "reference": {
         "in_table": true,
         "pag": null,
         "column_pos": 2,
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "quantity": {
         "in_table": true,
         "pag": null,
         "decimal_separator": ".",
         "column_pos": 6,
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "ship_out_date": null,
       "arrival_date": {
@@ -54,7 +54,7 @@
         "pag": null,
         "date_format": ["mm/dd/yyyy"],
         "column_pos": 5,
-        "method_ocr": 4
+        "method_ocr": 7
       }
     }
   },
@@ -86,7 +86,7 @@
           1599,
           224
         ],
-        "method_ocr": 4
+        "method_ocr": [4, 7]
       },
       "reference": {
         "in_table": true,
@@ -482,18 +482,18 @@
           1480,
           384
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "reference": {
         "in_table": true,
         "pag": null,
         "coordinates": [
-          3,
+          350,
           null,
           480,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "quantity": {
         "in_table": true,
@@ -505,7 +505,7 @@
           738,
           50
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "ship_out_date": null,
       "arrival_date": {
@@ -518,7 +518,7 @@
           1185,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       }
     }
   },
@@ -624,20 +624,20 @@
           493,
           391
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "reference": {
         "in_table": true,
         "pag": null,
         "column_pos": 2,
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "quantity": {
         "in_table": true,
         "pag": null,
         "decimal_separator": ",",
         "column_pos": 3,
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "ship_out_date":  {
         "in_table": false,
@@ -649,7 +649,7 @@
           465,
           833
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
       "arrival_date": null
     }
