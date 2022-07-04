@@ -86,7 +86,7 @@
           1599,
           224
         ],
-        "method_ocr": 4
+        "method_ocr": [4, 7]
       },
       "reference": {
         "in_table": true,
