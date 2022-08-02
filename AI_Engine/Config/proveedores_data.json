@@ -39,14 +39,14 @@
         "in_table": true,
         "pag": null,
         "column_pos": 2,
-        "method_ocr": 7
+        "method_ocr": 0
       },
       "quantity": {
         "in_table": true,
         "pag": null,
         "decimal_separator": ".",
         "column_pos": 6,
-        "method_ocr": 7
+        "method_ocr": 0
       },
       "ship_out_date": null,
       "arrival_date": {
@@ -54,7 +54,7 @@
         "pag": null,
         "date_format": ["mm/dd/yyyy"],
         "column_pos": 5,
-        "method_ocr": 7
+        "method_ocr": 0
       }
     }
   },

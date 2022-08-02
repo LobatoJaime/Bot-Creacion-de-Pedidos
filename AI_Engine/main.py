@@ -555,9 +555,11 @@ def main(proveedor: str, pedidos_path: str,
                                     table_data["table_coordinates"][0][0]:table_data["table_coordinates"][1][0]]
                         # Creo lista de columnas con contenido
                         column_list = []
+                        ocr_list = []
                         for campo in campos_tabla:
                             if "column_pos" in proveedor_campos[campo]:
                                 column_list.append(proveedor_campos[campo]["column_pos"])
+                                ocr_list.append(proveedor_campos[campo]["method_ocr"])
                         # Recorro las celdas para eliminar las que no esten en la tabla (debajo de header)
                         for cell in table_data["cells"]:
                             # Si esta por encima del header no indizo la celda
@@ -574,8 +576,6 @@ def main(proveedor: str, pedidos_path: str,
                             matrix_table[horizontal_index][vertical_index] = cell
                         # endregion
 
-                        print()
-
                         # region Transformacion matriz a dataframe
                         df_table = pd.DataFrame(matrix_table, dtype="object")
                         # Borro filas y columnas None
@@ -590,11 +590,27 @@ def main(proveedor: str, pedidos_path: str,
                                 # Leo las celdas
                                 if df_table[col_name][i] is not None and \
                                         (proveedor_tabla["read_all_cells"] or \
-                                         (not proveedor_tabla["read_all_cells"] and col_index + 1 in column_list)):
+                                        (not proveedor_tabla["read_all_cells"] and col_index + 1 in column_list)):
+                                    # Calculo metodo ocr
+                                    method_ocr = []
+                                    # Ocr por columna
+                                    if col_index + 1 in column_list:
+                                        index = column_list.index(col_index + 1)
+                                        method_ocr = ocr_list[index]
+                                    # Si no esta en columna, combinacion de ocr
+                                    else:
+                                        for ocr_i in ocr_list:
+                                            if type(ocr_i) == list:
+                                                for ocr_j in ocr_i:
+                                                    if ocr_j not in method_ocr:
+                                                        method_ocr.append(ocr_j)
+                                            else:
+                                                if ocr_i not in method_ocr:
+                                                    method_ocr.append(ocr_i)
                                     df_table[col_name][i] = modg.lectura_campo(table_img,
                                                                                df_table[col_name][i][
                                                                                    "content_coordinates"],
-                                                                               tesseract_exe_path, None, False)
+                                                                               tesseract_exe_path, method_ocr, False)
                                 # La celda se pone vacia
                                 else:
                                     df_table[col_name][i] = [("", -100)]
@@ -602,6 +618,7 @@ def main(proveedor: str, pedidos_path: str,
 
                         # Añado dataframe a la lista
                         df_list.append(df_table)
+                        print()
 
                     # Relleno el dataset
                     df_set = df_handling.handler(df_list, campos_tabla, proveedor, proveedor_data)
@@ -789,10 +806,10 @@ if __name__ == '__main__':
     proveedor = "70017078"  # Thyssenkrupp Campo Limpo
     proveedor = "70017703"  # Engine Power Components
     proveedor = "70018938"  # WorldClass Industries
-    proveedor = "70001353"  # Skyway
     proveedor = "70017869"  # TIG
     proveedor = "70017048"  # Thyssenkrupp Crankshaft
     proveedor = "70001256"  # ESP
+    proveedor = "70001353"  # Skyway
 
     pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
     pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
@@ -803,11 +820,11 @@ if __name__ == '__main__':
     pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
     pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
     pedidos_path = r"extra\WorldClass Industries"
-    pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt"
     pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
     pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Crankshaft\t118.pdf"
     pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
     pedidos_path = r"extra\ESP\ESP ERROR.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt"
     pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 
     main(proveedor, pedidos_path, is_img_shown=True, ai_path=".",
