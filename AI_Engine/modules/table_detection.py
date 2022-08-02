@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from AI_Engine.sample import modulo_basic_functions as mod_basic
+from AI_Engine.modules import modulo_basic_functions as mod_basic
 
 
 def nothing(x):

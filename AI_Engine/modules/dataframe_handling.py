@@ -1,5 +1,5 @@
 import pandas as pd
-from AI_Engine.sample import modulo_general as modg
+from AI_Engine.modules import modulo_general as modg
 
 
 def handler(df_list, table_fields_list, provider_name, provider_data):

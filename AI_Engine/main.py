@@ -10,13 +10,13 @@ import os
 import pandas as pd
 import numpy as np
 import json
-from AI_Engine.sample import modulo_general as modg
-from AI_Engine.sample import modulo_basic_functions as mod_basic
-from AI_Engine.sample import doc_layout_analysis
-from AI_Engine.sample import table_detection
-from AI_Engine.sample import dataframe_handling as df_handling
-from AI_Engine.format_table import FormatTable
-from AI_Engine.lines import search_horiz_lines
+from AI_Engine.modules import modulo_general as modg
+from AI_Engine.modules import modulo_basic_functions as mod_basic
+from AI_Engine.modules import doc_layout_analysis
+from AI_Engine.modules import table_detection
+from AI_Engine.modules import dataframe_handling as df_handling
+from AI_Engine.modules.format_table import FormatTable
+from AI_Engine.modules.lines import search_horiz_lines
 from Packages.constants import poppler_online_path, tesseract_exe_online_path, ai_online_path
 
 
