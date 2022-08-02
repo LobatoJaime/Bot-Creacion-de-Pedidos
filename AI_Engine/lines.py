@@ -135,8 +135,9 @@ def search_horiz_lines(image, method, minDist = None):
 
     return output
 
-# image = cv.imread(r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & "
-#                   r"Co\Desktop\Proyectos\Pedidos-Tier-2\Proveedores\orders_history\ESP "
-#                   r"INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m-1.jpg")
-# method = 3
-# search_lines(image, method)
+if __name__ == '__main__':
+    image = cv.imread(r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & "
+                      r"Co\Desktop\Proyectos\Pedidos-Tier-2\Proveedores\orders_history\ESP "
+                      r"INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m-1.jpg")
+    method = 3
+    search_lines(image, method)

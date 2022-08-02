@@ -58,74 +58,162 @@
       }
     }
   },
-  "70001256": {
-    "table": {
-      "coordinates": {
-        "1": [
-          11,
-          653,
-          1689,
-          2086
-        ],
-        "all": [
-          11,
-          11,
-          1689,
-          2086
-        ]
+  "70001256": [
+    {
+      "config": {
+        "image": "config_0.jpg",
+        "pag": 1
       },
-      "type": "lines"
+      "table": {
+        "coordinates": {
+          "1": [
+            11,
+            653,
+            1689,
+            2086
+          ],
+          "all": [
+            11,
+            11,
+            1689,
+            2086
+          ]
+        },
+        "type": "lines"
+      },
+      "fields": {
+        "order_number": {
+          "in_table": false,
+          "pag": 1,
+          "coordinates": [
+            1148,
+            185,
+            1599,
+            224
+          ],
+          "method_ocr": [
+            4,
+            7
+          ]
+        },
+        "reference": {
+          "in_table": true,
+          "pag": null,
+          "coordinates": [
+            444,
+            null,
+            908,
+            null
+          ],
+          "method_ocr": 4
+        },
+        "quantity": {
+          "in_table": true,
+          "pag": null,
+          "decimal_separator": ".",
+          "coordinates": [
+            10,
+            null,
+            170,
+            null
+          ],
+          "method_ocr": 4
+        },
+        "ship_out_date": {
+          "in_table": true,
+          "pag": null,
+          "date_format": [
+            "mm/dd/yyyy"
+          ],
+          "coordinates": [
+            174,
+            null,
+            312,
+            null
+          ],
+          "method_ocr": 4
+        },
+        "arrival_date": null
+      }
     },
-    "fields": {
-      "order_number": {
-        "in_table": false,
-        "pag": 1,
-        "coordinates": [
-          1148,
-          185,
-          1599,
-          224
-        ],
-        "method_ocr": [4, 7]
+    {
+      "config": {
+        "image": "config_1.jpg",
+        "pag": 1
       },
-      "reference": {
-        "in_table": true,
-        "pag": null,
-        "coordinates": [
-          444,
-          null,
-          908,
-          null
-        ],
-        "method_ocr": 4
+      "table": {
+        "coordinates": {
+          "1": [
+            11,
+            653,
+            1689,
+            2086
+          ],
+          "all": [
+            11,
+            11,
+            1689,
+            2086
+          ]
+        },
+        "type": "lines"
       },
-      "quantity": {
-        "in_table": true,
-        "pag": null,
-        "decimal_separator": ".",
-        "coordinates": [
-          10,
-          null,
-          170,
-          null
-        ],
-        "method_ocr": 4
-      },
-      "ship_out_date":  {
-        "in_table": true,
-        "pag": null,
-        "date_format": ["mm/dd/yyyy"],
-        "coordinates": [
-          174,
-          null,
-          312,
-          null
-        ],
-        "method_ocr": 4
-      },
-      "arrival_date": null
+      "fields": {
+        "order_number": {
+          "in_table": false,
+          "pag": 1,
+          "coordinates": [
+            1243,
+            147,
+            1520,
+            185
+          ],
+          "method_ocr": [
+            4,
+            7
+          ]
+        },
+        "reference": {
+          "in_table": true,
+          "pag": null,
+          "coordinates": [
+            444,
+            null,
+            908,
+            null
+          ],
+          "method_ocr": 4
+        },
+        "quantity": {
+          "in_table": true,
+          "pag": null,
+          "decimal_separator": ".",
+          "coordinates": [
+            10,
+            null,
+            170,
+            null
+          ],
+          "method_ocr": 4
+        },
+        "ship_out_date": {
+          "in_table": true,
+          "pag": null,
+          "date_format": [
+            "mm/dd/yyyy"
+          ],
+          "coordinates": [
+            174,
+            null,
+            312,
+            null
+          ],
+          "method_ocr": 4
+        },
+        "arrival_date": null
+      }
     }
-  },
+  ],
   "70012672": {
     "table": {
       "coordinates": {
@@ -717,132 +805,5 @@
       },
       "arrival_date": null
     }
-  },
-  "99999TSE01 (lines)": {
-    "table": {
-      "coordinates": {
-        "1": [
-          null,
-          676,
-          null,
-          null
-        ],
-        "all": [
-          null,
-          298,
-          null,
-          2171
-        ]
-      },
-      "type": "lines"
-    },
-    "fields": {
-      "order_number": {
-        "in_table": false,
-        "pag": 1,
-        "coordinates": [
-          960,
-          330,
-          1187,
-          379
-        ],
-        "method_ocr": 4
-      },
-      "reference": {
-        "in_table": true,
-        "pag": null,
-        "coordinates": [
-          85,
-          null,
-          840,
-          null
-        ],
-        "method_ocr": 4
-      },
-      "quantity": {
-        "in_table": true,
-        "pag": null,
-        "decimal_separator": ".",
-        "coordinates": [
-          846,
-          null,
-          1009,
-          null
-        ],
-        "method_ocr": 4
-      },
-      "ship_out_date":  {
-        "in_table": false,
-        "pag": 1,
-        "date_format": ["mm/dd/yyyy"],
-        "coordinates": [
-          1005,
-          740,
-          1170,
-          782
-        ],
-        "method_ocr": 4
-      },
-      "arrival_date": null
-    }
-  },
-  "test": {
-    "table": {
-      "coordinates": {
-        "1": [
-          null,
-          null,
-          null,
-          null
-        ],
-        "all": [
-          null,
-          null,
-          null,
-          null
-        ]
-      },
-      "type": "table",
-      "detection_parameters": {
-        "size_factor": 0.5,
-        "scale_x": 20,
-        "scale_y": 20
-      },
-      "read_all_cells": false
-    },
-    "fields": {
-      "order_number": {
-        "in_table": false,
-        "pag": 1,
-        "coordinates": [
-          1170,
-          77,
-          1665,
-          224
-        ],
-        "method_ocr": 4
-      },
-      "reference": {
-        "in_table": true,
-        "pag": null,
-        "column_pos": 2,
-        "method_ocr": 4
-      },
-      "quantity": {
-        "in_table": true,
-        "pag": null,
-        "decimal_separator": ".",
-        "column_pos": 6,
-        "method_ocr": 4
-      },
-      "ship_out_date": null,
-      "arrival_date": {
-        "in_table": true,
-        "pag": null,
-        "column_pos": 5,
-        "method_ocr": 4
-      }
-    }
   }
-
 }

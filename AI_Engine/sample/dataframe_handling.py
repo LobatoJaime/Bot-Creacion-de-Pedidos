@@ -8,14 +8,13 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
 
     The content of the cells cannot be modified, it should only be used to search for keywords to make the table
     The content of cells can be a tuple of text and confidence (one line of text)
-    or a list of tuples(more than one line)
+    or a list of tuples (more than one line)
 
     Parameters:
         df_list: Input lists of dataframes
             The input dataframes are in this form:
-                 field1                 | field2                | field3
-                [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
-                [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
+                [(text, conf), ...]   | [(text, conf), ...]   | [(text, conf), ...]
+                [(text, conf), ...]   | [(text, conf), ...]   | [(text, conf), ...]
                 ...                     ...                     ...
         table_fields_list: List of table fields names
         provider_name: Name of the provider
@@ -23,9 +22,9 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
 
     Returns:
         Output dataframe in this form:
-            field1                 | field2                | field3
-            [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
-            [(text, conf), ...]     [(text, conf), ...]     [(text, conf), ...]
+            field1                | field2                | field3
+            [(text, conf), ...]   | [(text, conf), ...]   | [(text, conf), ...]
+            [(text, conf), ...]   | [(text, conf), ...]   | [(text, conf), ...]
             ...                     ...                     ...
     """
     df_output = pd.DataFrame()

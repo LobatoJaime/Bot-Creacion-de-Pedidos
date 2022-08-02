@@ -66,7 +66,6 @@ def main(proveedor: str, pedidos_path: str,
     PATH_RESULTADOS = os.path.join(ai_path, 'Resultados')
     # Filepaths
     FILEPATH_PROVEEDORES_DATA = os.path.join(PATH_CONFIG, r"proveedores_data.json")
-    FILEPATH_FORMATO_CAMPOS = os.path.join(PATH_CONFIG, r"default_formats.json")
     FILEPATH_PATH_FORMATS = os.path.join(PATH_CONFIG, "formats.xlsx")
     # File names
     FILE_TABLE_HEADER = r"header"
@@ -105,25 +104,12 @@ def main(proveedor: str, pedidos_path: str,
     if proveedor not in proveedores_data:
         mod_basic.close_windows("Configuracion de proveedores no contiene información del proveedor")
         return
-    else:
-        # Compruebo que sea un diccionario
-        if not type(proveedores_data[proveedor]) is dict:
-            mod_basic.close_windows("El formato de la Configuracion de proveedores no es correcta")
-            return
-    # endregion
-
-    # region Formato campos
-    default_formats = {}
-    # Leo archivo JSON
-    if os.path.exists(FILEPATH_FORMATO_CAMPOS):
-        with open(FILEPATH_FORMATO_CAMPOS, 'r') as openfile:
-            default_formats = json.load(openfile)
-    else:
-        mod_basic.close_windows("Configuracion de formato no encontrado")
-        return
-    # Formateo el diccionario
-    for campo in default_formats:
-        default_formats[campo] = "|".join(default_formats[campo])
+    # Si tiene varias configuraciones es una lista
+    if type(proveedores_data[proveedor]) is list:
+        for config_i in proveedores_data[proveedor]:
+            # Leo las imagenes de configuracion
+            if "config" in config_i and "image" in config_i["config"]:
+                config_i["config"]["image"] = cv.imread(os.path.join(PATH_CONFIG, proveedor, config_i["config"]["image"]))
     # endregion
 
     # region Formatos
@@ -141,76 +127,6 @@ def main(proveedor: str, pedidos_path: str,
         mod_basic.close_windows("Formatos no encontrados")
         return
     # endregion
-
-    # Creo variables de acceso directo
-    proveedor_data = proveedores_data[proveedor]
-    proveedor_campos = proveedor_data["fields"]
-    proveedor_tabla = proveedor_data["table"]
-
-    # region Creacion tuplas campos hoja y campos tabla
-    # Creo tuplas de los campos dentro y fuera de tabla
-    campos_tabla, campos_hoja = [], []
-    for campo in CAMPOS:
-        # Compruebo que la configuracion no es nula
-        if proveedor_campos[campo] is not None:
-            if proveedor_campos[campo]['in_table']:
-                campos_tabla.append(campo)
-            else:
-                campos_hoja.append(campo)
-    campos_tabla, campos_hoja = tuple(campos_tabla), tuple(campos_hoja)
-    campos_validos = campos_hoja + campos_tabla
-    # endregion
-
-    # Extraemos las expresiones regulares de cada campo que se utilizaran para la validacion
-    decimal_separator = None
-    date_format_regex = pd.DataFrame(columns=("regex", "format_code"), dtype=str)
-    for campo in proveedor_campos:
-        if proveedor_campos[campo] is not None:
-            # order_number
-            if campo == "order_number":
-                # Si no se ha establecido ningun regex de validacion, establecemos el de por defecto
-                if proveedor_campos["order_number"].get("regex_validation") is None:
-                    proveedor_campos["order_number"]["regex_validation"] = order_number_formats["regex"].iloc[0]
-            # reference
-            elif campo == "reference":
-                # Si no se ha establecido ningun regex de validacion, establecemos el de por defecto
-                if proveedor_campos["reference"].get("regex_validation") is None:
-                    proveedor_campos["reference"]["regex_validation"] = reference_formats["regex"].iloc[0]
-            # quantity
-            elif campo == "quantity":
-                # Si se ha establecido separador decimal, le asignamos el regex correspondiente
-                if proveedor_campos["quantity"].get("decimal_separator") in number_formats[
-                    "decimal_separator"].unique():
-                    # Obtenemos el separador decimal
-                    decimal_separator = proveedor_campos["quantity"]["decimal_separator"]
-                # Si no se ha establecido ningun regex de validacion, establecemos uno
-                if proveedor_campos["quantity"].get("regex_validation") is None:
-                    # Si no se ha establecido separador decimal, le asignamos la combinacion de los regex posibles
-                    if decimal_separator is None:
-                        proveedor_campos["quantity"]["regex_validation"] = "|".join(
-                            number_formats["regex"].unique().tolist())
-                    else:
-                        proveedor_campos["quantity"]["regex_validation"] = number_formats[
-                            number_formats["decimal_separator"] == decimal_separator]["regex"].iloc[0]
-            # ship_out_date y arrival_date
-            elif campo == "ship_out_date" or campo == "arrival_date":
-                # Se ha establecido formato de fecha
-                if proveedor_campos[campo].get("date_format") is not None:
-                    # Si el valor no es una lista, la meto en una para poder hacer el bucle
-                    if type(proveedor_campos[campo].get("date_format")) != list:
-                        proveedor_campos[campo]["date_format"] = [proveedor_campos[campo].get("date_format")]
-                    # Obtengo el dataframe de los formatos de fecha junto a los regex
-                    date_format_regex = date_formats[
-                        date_formats["date_format"].isin(proveedor_campos[campo]["date_format"])][
-                        ["regex", "format_code"]]
-                # No se ha establecido formato de fecha
-                else:
-                    # Obtengo el dataframe entero de los formatos de fecha junto a los regex
-                    date_format_regex = date_formats[["regex", "format_code"]]
-                # Si no se ha establecido ningun regex de validacion, establecemos uno
-                if proveedor_campos[campo].get("regex_validation") is None:
-                    # Le asignamos el regex correspondiente
-                    proveedor_campos[campo]["regex_validation"] = "|".join(date_format_regex["regex"].tolist())
 
     # Leo las imagenes de los headers y final de la tabla
     pathfile_table_header_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
@@ -232,8 +148,6 @@ def main(proveedor: str, pedidos_path: str,
         # Compruebo que el archivo sea PDF
         if not os.path.splitext(filename)[1].lower() == ".pdf":
             continue
-        # if n_files > 4:
-        #     break
         # endregion
 
         # Imprimo nombre del archivo
@@ -252,6 +166,98 @@ def main(proveedor: str, pedidos_path: str,
             cv.imshow(PEDIDOS_WINDOW,
                       cv.resize(img_list[0], (shape_resized[1], shape_resized[0]), interpolation=cv.INTER_AREA))
             cv.waitKey(1)
+        # endregion
+
+        # region Determinacion de configuracion
+        # Si tiene varias configuraciones es una lista
+        if type(proveedores_data[proveedor]) is dict:
+            proveedor_data = proveedores_data[proveedor]
+        else:
+            # Configuracion por defecto
+            proveedor_data = proveedores_data[proveedor][0]
+            max_val = -1
+            for config_i in proveedores_data[proveedor]:
+                # Configuracion por imagen
+                if "config" in config_i and "image" in config_i["config"] and "pag" in config_i["config"]:
+                    max_val_aux = modg.apply_template_matching(img_list[config_i["config"]["pag"] - 1],
+                                                               config_i["config"]["image"])[2]
+                    # Selecciono la configuracion si se ha detectado la imagen y si el valor de deteccion es superior
+                    # a las demas configuraciones
+                    if max_val_aux != -1 and max_val_aux > max_val:
+                        max_val = max_val_aux
+                        proveedor_data = config_i
+        # endregion
+
+        # region Variables de acceso directo
+        proveedor_campos = proveedor_data["fields"]
+        proveedor_tabla = proveedor_data["table"]
+        # endregion
+
+        # region Creacion tuplas campos hoja y campos tabla
+        # Creo tuplas de los campos dentro y fuera de tabla
+        campos_tabla, campos_hoja = [], []
+        for campo in CAMPOS:
+            # Compruebo que la configuracion no es nula
+            if proveedor_campos[campo] is not None:
+                if proveedor_campos[campo]['in_table']:
+                    campos_tabla.append(campo)
+                else:
+                    campos_hoja.append(campo)
+        campos_tabla, campos_hoja = tuple(campos_tabla), tuple(campos_hoja)
+        campos_validos = campos_hoja + campos_tabla
+        # endregion
+
+        # region Extraccion regex
+        # Extraemos las expresiones regulares de cada campo que se utilizaran para la validacion
+        decimal_separator = None
+        date_format_regex = pd.DataFrame(columns=("regex", "format_code"), dtype=str)
+        for campo in proveedor_campos:
+                if proveedor_campos[campo] is not None:
+                    # order_number
+                    if campo == "order_number":
+                        # Si no se ha establecido ningun regex de validacion, establecemos el de por defecto
+                        if proveedor_campos["order_number"].get("regex_validation") is None:
+                            proveedor_campos["order_number"]["regex_validation"] = order_number_formats["regex"].iloc[0]
+                    # reference
+                    elif campo == "reference":
+                        # Si no se ha establecido ningun regex de validacion, establecemos el de por defecto
+                        if proveedor_campos["reference"].get("regex_validation") is None:
+                            proveedor_campos["reference"]["regex_validation"] = reference_formats["regex"].iloc[0]
+                    # quantity
+                    elif campo == "quantity":
+                        # Si se ha establecido separador decimal, le asignamos el regex correspondiente
+                        if proveedor_campos["quantity"].get("decimal_separator") in number_formats[
+                            "decimal_separator"].unique():
+                            # Obtenemos el separador decimal
+                            decimal_separator = proveedor_campos["quantity"]["decimal_separator"]
+                        # Si no se ha establecido ningun regex de validacion, establecemos uno
+                        if proveedor_campos["quantity"].get("regex_validation") is None:
+                            # Si no se ha establecido separador decimal, le asignamos la combinacion de los regex posibles
+                            if decimal_separator is None:
+                                proveedor_campos["quantity"]["regex_validation"] = "|".join(
+                                    number_formats["regex"].unique().tolist())
+                            else:
+                                proveedor_campos["quantity"]["regex_validation"] = number_formats[
+                                    number_formats["decimal_separator"] == decimal_separator]["regex"].iloc[0]
+                    # ship_out_date y arrival_date
+                    elif campo == "ship_out_date" or campo == "arrival_date":
+                        # Se ha establecido formato de fecha
+                        if proveedor_campos[campo].get("date_format") is not None:
+                            # Si el valor no es una lista, la meto en una para poder hacer el bucle
+                            if type(proveedor_campos[campo].get("date_format")) != list:
+                                proveedor_campos[campo]["date_format"] = [proveedor_campos[campo].get("date_format")]
+                            # Obtengo el dataframe de los formatos de fecha junto a los regex
+                            date_format_regex = date_formats[
+                                date_formats["date_format"].isin(proveedor_campos[campo]["date_format"])][
+                                ["regex", "format_code"]]
+                        # No se ha establecido formato de fecha
+                        else:
+                            # Obtengo el dataframe entero de los formatos de fecha junto a los regex
+                            date_format_regex = date_formats[["regex", "format_code"]]
+                        # Si no se ha establecido ningun regex de validacion, establecemos uno
+                        if proveedor_campos[campo].get("regex_validation") is None:
+                            # Le asignamos el regex correspondiente
+                            proveedor_campos[campo]["regex_validation"] = "|".join(date_format_regex["regex"].tolist())
         # endregion
 
         # region Creacion sets de informacion
@@ -411,6 +417,12 @@ def main(proveedor: str, pedidos_path: str,
 
                         # region Conversion tabla a escala de grises
                         table_img_gray = modg.convert_rgb_to_grayscale(table_img)
+                        if is_img_shown:
+                            cv.imshow("table_img_gray",
+                                      cv.resize(table_img_gray, None, fx=0.5, fy=0.5,
+                                                interpolation=cv.INTER_AREA))
+                            cv.waitKey(0)
+                            cv.destroyWindow("table_img_gray")
                         # endregion
 
                         for campo in campos_tabla:
@@ -457,9 +469,11 @@ def main(proveedor: str, pedidos_path: str,
 
                         # region Deteccion tabla
                         # Detectamos las tablas
-                        size_factor = proveedor_tabla["detection_parameters"]["size_factor"]
-                        scale_x = proveedor_tabla["detection_parameters"]["scale_x"]
-                        scale_y = proveedor_tabla["detection_parameters"]["scale_y"]
+                        size_factor, scale_x, scale_y = None, None, None
+                        if "detection_parameters" in proveedor_tabla:
+                            size_factor = proveedor_tabla["detection_parameters"].get("size_factor")
+                            scale_x = proveedor_tabla["detection_parameters"].get("scale_x")
+                            scale_y = proveedor_tabla["detection_parameters"].get("scale_y")
                         tables_data, src_no_lines = table_detection.table_detector(img_list[table_pag], size_factor,
                                                                                    scale_x, scale_y, is_img_shown)
                         # Si no se ha enocntrado ninguna tabla saltamos a la siguiente pagina
@@ -733,12 +747,12 @@ def main(proveedor: str, pedidos_path: str,
     df_total.drop(df_total[df_total['confidence'] == CONF_ROW_INVALID].index, inplace=True)
 
     # Sacar un promedio de la columna de confianza
-    confidences = df_total['confidence'].to_list()
-    if len(confidences) > 1:
-        total_confidence = (sum(confidences) / len(
-            confidences)) / 100  # Dividirlo por 100 para tener valores entre [0-1]
-        total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
-        df_total['confidence'] = [total_confidence] * len(confidences)
+    # confidences = df_total['confidence'].to_list()
+    # if len(confidences) > 1:
+    #     total_confidence = (sum(confidences) / len(
+    #         confidences)) / 100  # Dividirlo por 100 para tener valores entre [0-1]
+    #     total_confidence = round(total_confidence, 2)  # Redondear a 2 decimales
+    #     df_total['confidence'] = [total_confidence] * len(confidences)
 
     # Formatear las columnas de la tabla
     try:
@@ -756,6 +770,7 @@ def main(proveedor: str, pedidos_path: str,
     print()
     print("· Dataframe total:")
     print(df_total.to_string())
+    df_total.to_excel(os.path.join(path_dataframe, "dataFrame.xlsx"))
     # endregion
 
     # Borro ventanas
@@ -767,34 +782,35 @@ def main(proveedor: str, pedidos_path: str,
 
 if __name__ == '__main__':
     proveedor = "99999TSE01 (lines)"  # JD REMAN (lines)
-    proveedor = "70017703"  # Engine Power Components
     proveedor = "test"  # test
     proveedor = "99999TSE01"  # JD REMAN
     proveedor = "99999TCD00"  # JD SARAN
-    proveedor = "70017048"  # Thyssenkrupp Crankshaft
-    proveedor = "70017078"  # Thyssenkrupp Campo Limpo
-    proveedor = "70001353"  # Skyway
-    proveedor = "70018938"  # WorldClass Industries
-    proveedor = "70001256"  # ESP
-    proveedor = "70017869"  # TIG
     proveedor = "70012672"  # EMP
+    proveedor = "70017078"  # Thyssenkrupp Campo Limpo
+    proveedor = "70017703"  # Engine Power Components
+    proveedor = "70018938"  # WorldClass Industries
+    proveedor = "70001353"  # Skyway
+    proveedor = "70017869"  # TIG
+    proveedor = "70017048"  # Thyssenkrupp Crankshaft
+    proveedor = "70001256"  # ESP
 
     pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
     pedidos_path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
     pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
-    pedidos_path = r"extra\Thyssenkrupp Campo Limpo"
     pedidos_path = r"test"
     pedidos_path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463\10-02-2022_11h-06m.pdf"
-    pedidos_path = r"CLIIENTES JOHN DEERE\Engine Power Components\t42.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
     pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
     pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
-    pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries"
-    pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
+    pedidos_path = r"extra\WorldClass Industries"
+    pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt"
     pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
-    pedidos_path = r"CLIIENTES JOHN DEERE\EMP"
+    pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Crankshaft\t118.pdf"
+    pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
+    pedidos_path = r"extra\ESP\ESP ERROR.pdf"
     pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 
-    main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
+    main(proveedor, pedidos_path, is_img_shown=True, ai_path=".",
          poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
          tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
 
