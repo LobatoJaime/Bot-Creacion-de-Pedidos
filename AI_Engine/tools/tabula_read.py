@@ -2,11 +2,14 @@ import tabula
 import numpy as np
 import pandas as pd
 
-path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\L_R516237_D_Z60_AliA_A_00_A_012622_154737.pdf"
-df = tabula.read_pdf(path, pages="all")
+page = 2
+path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Análisis Gráficos ML\1.- Desgaste Disco Afeitador\L_R120631_L_Z30_A_AliA_00" \
+       r"\Piezas Críticas\L_R120631_L_Z30_A_AliA_00_A_022121_083340"
+df = tabula.read_pdf(path + ".pdf", pages=page)
 
-path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\L_R516237_D_Z60_AliA_A_00_A_012622_154737_df"
+path = path + "_" + str(page) + "_df"
 i = 0
 for df_i in df:
     i = i+1
     df_i.to_excel(path + str(i) + ".xlsx")
+print("Se acabo")

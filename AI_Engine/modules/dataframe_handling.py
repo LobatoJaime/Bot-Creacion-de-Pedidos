@@ -39,13 +39,14 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
         # Extraigo las columnas
         df_output = default_handler(df_list, table_fields_list, data_fields)
         # Hago replace de O por 0 en la columna de quantity
-        print(df_output)
+        print(df_output.to_string())
         df_output["quantity"] = df_output["quantity"].apply(lambda list_lecture: list(map(lambda lecture: (lecture[0].replace("O", "0"), lecture[1]), list_lecture)))
-        print(df_output)
+        print(df_output.to_string())
         # Propago los valores
         df_output = propagate_handler(df_output, "reference", data_fields)
-        # Borro las filas que tienen campo arrival_date a None
+        # Borro las filas que tienen campo arrival_date a None o vacio
         df_output = df_output[df_output["arrival_date"].notnull()]
+        df_output = df_output[df_output["arrival_date"].aggregate(lambda x:x[0][1]) != -100]
     else:
         df_output = default_handler(df_list, table_fields_list, data_fields)
 
@@ -53,6 +54,26 @@ def handler(df_list, table_fields_list, provider_name, provider_data):
     return df_output
 
 
+def no_ocr_handler(df, table_fields_list, provider_name, provider_data):
+    """
+    Handlder para manejar dataframes no ocr
+    """
+    df_output = pd.DataFrame()
+
+    data_table = provider_data["table"]
+    data_fields = provider_data["fields"]
+    print("-----------")
+    print("-----------")
+    print("-----------")
+
+    if provider_name == "70016983":  # Concentric
+        df_output = concentric_handler(df)
+
+    print(df_output.to_string())
+    return df_output
+
+
+# region Handlers
 def default_handler(df_list, table_fields_list, data_fields):
     """
     Concatenate the list of dataframes into one dataframe, removes the headers and removes None rows
@@ -73,7 +94,7 @@ def default_handler(df_list, table_fields_list, data_fields):
     return df_output
 
 
-def propagate_handler(df, only_field, data_fields):
+def propagate_handler(df, propagate_field, data_fields):
     """
     Input:
         field1      | field2    | field1
@@ -97,14 +118,12 @@ def propagate_handler(df, only_field, data_fields):
                 return True
         return False
 
-    # Creo columna auxiliar indicando si hay texto en el campo "only_field"
-    df["existsText"] = df[only_field].map(lambda x: True if (type(x) == list and len(x) > 0 and
-                                                             check_regex_in_list_lecture(x, data_fields[only_field]["regex_validation"])) else False)
-    print(df.to_string())
+    # Creo columna auxiliar indicando si hay texto (validado con regex) en el campo "propagate_field"
+    df["existsText"] = df[propagate_field].map(lambda x: True if (type(x) == list and len(x) > 0 and
+                                                                  check_regex_in_list_lecture(x, data_fields[propagate_field]["regex_validation"])) else False)
     # Relleno los valores de la columna auxiliar
-    df[only_field] = df[only_field].where(df["existsText"]).ffill()
-    print(df.to_string())
-    # Borro las filas que tienen texto en el campo "only_field"
+    df[propagate_field] = df[propagate_field].where(df["existsText"]).ffill()
+    # Borro las filas que tienen texto en el campo "propagate_field"
     df = df[df["existsText"] == False]
     # Elimino la columna auxiliar
     df.pop("existsText")
@@ -113,6 +132,37 @@ def propagate_handler(df, only_field, data_fields):
     return df
 
 
+def concentric_handler(df):
+    import warnings
+    warnings.filterwarnings("ignore")
+
+    # Variables
+    column_count = df.shape[1] - 3
+    row_count = df.shape[0]
+    columns_names = df.columns.values
+    columns_names_list = list(columns_names)
+    # Bucle
+    for z in range(row_count):
+        globals()[f"df_filter{z}"] = pd.DataFrame(
+            columns=['reference', 'quantity', 'ship_out_date'])
+
+        # Relleno el dataframe
+        for i in range(column_count):
+            x = i + 3
+            globals()[f"df_filter{z}"] = globals()[f"df_filter{z}"].append({'order_number':'OPEN ORDER',
+                                                                            'reference': df.iloc[z, 0],
+                                                                            'quantity': df.iloc[z][x],
+                                                                            'ship_out_date': columns_names_list[x]},
+                                                                           ignore_index=True)
+        # Borro las filas con cantidad 0
+        globals()[f"df_filter{z}"].drop(globals()[f"df_filter{z}"].index[globals()[f"df_filter{z}"]['quantity'] == 0.0],
+                                        inplace=True)
+
+    return globals()[f"df_filter{z}"]
+# endregion
+
+
+# region Utils
 def remove_null_rows_cols(df):
     # Borro filas None
     df = df.dropna(how="all")
@@ -121,3 +171,27 @@ def remove_null_rows_cols(df):
 
     return df
 
+
+def df_text_to_tuple(df, conf_value):
+    """
+    Convierte un dataframe con valores a un dataframe con tuplas (text, conf). El valor de confianza
+    especificado se aplicara a todas las celdas
+
+    Input:
+        field1  | field2    | field3
+        text    | text      | text
+        text    | text      | text
+        ...      ...         ...
+    Output:
+        field1          | field2        | field3
+        (text, conf)    | [(text, conf) | [(text, conf)
+        (text, conf)    | [(text, conf) | [(text, conf)
+        ...              ...             ...
+    """
+    print(df)
+    df = df.applymap(lambda x: (x, conf_value))
+    print(df)
+
+    return df
+
+# endregion

@@ -276,6 +276,22 @@
       }
     }
   },
+  "70016983": {
+    "table": {
+      "sheet": "JD Ibrica",
+      "header": 4,
+      "index_col": 0
+    },
+    "fields": {
+      "order_number": {
+        "regex_validation": "OPEN ORDER"
+      },
+      "reference": {},
+      "quantity": {},
+      "ship_out_date": {},
+      "arrival_date": null
+    }
+  },
   "70017048": {
     "table": {
       "coordinates": {
