@@ -867,8 +867,6 @@ def main(proveedor: str, pedidos_path: str,
                     df.loc[i, "confidence"] = CONF_ROW_WRONG_FIELD
             # endregion
 
-
-
         # endregion
 
         # endregion

@@ -68,6 +68,8 @@ def no_ocr_handler(df, table_fields_list, provider_name, provider_data):
 
     if provider_name == "70016983":  # Concentric
         df_output = concentric_handler(df)
+    else:
+        df_output = default_handler([df], table_fields_list, data_fields)
 
     print(df_output.to_string())
     return df_output
