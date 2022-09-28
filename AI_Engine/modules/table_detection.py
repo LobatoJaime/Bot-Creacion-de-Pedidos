@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from AI_Engine.sample import modulo_basic_functions as mod_basic
+from AI_Engine.modules import modulo_basic_functions as mod_basic
 
 
 def nothing(x):
@@ -33,7 +33,7 @@ def table_parameter_selector(src):
         if scale_y == 0:
             scale_y = 1
         # Detectamos las tablas
-        tables_data, src_no_lines = table_detector(src, size_factor, scale_x, scale_y, True)
+        tables_data, src_no_lines = table_detector(src, size_factor, scale_x, scale_y, False)
         # Dibujamos las detecciones y las mostramos
         src_to_show = src.copy()
         for table_data in tables_data:
@@ -60,7 +60,7 @@ def table_parameter_selector(src):
     return tables_data
 
 
-def get_table(src, tables_data):
+def show_tables(src, tables_data):
     if len(src.shape) == 3:
         gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
     else:
@@ -370,5 +370,5 @@ if __name__ == '__main__':
     # endregion
 
     tables_data = table_parameter_selector(src)
-    get_table(src, tables_data)
+    show_tables(src, tables_data)
 

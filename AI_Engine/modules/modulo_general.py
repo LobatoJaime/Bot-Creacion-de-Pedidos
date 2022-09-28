@@ -1,7 +1,7 @@
 import re
 import cv2 as cv
-from AI_Engine.sample.modulo_ocr import lectura_texto
-from AI_Engine.sample import modulo_basic_functions as mod_basic
+from AI_Engine.modules.modulo_ocr import lectura_texto
+from AI_Engine.modules import modulo_basic_functions as mod_basic
 
 
 def apply_list_template_matching(img, template_list):

@@ -1,7 +1,7 @@
 # import necessary packages
 import numpy as np
 import cv2
-from AI_Engine.sample import modulo_basic_functions as modg_func
+from AI_Engine.modules import modulo_basic_functions as modg_func
 import os
 
 

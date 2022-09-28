@@ -1,7 +1,9 @@
 import datetime
 import re
+import numbers
 
 import pandas as pd
+from pandas.api.types import is_datetime64_dtype
 from Packages.constants import formats_table_path
 import numpy as np
 
@@ -19,20 +21,25 @@ class FormatTable:
         date_format = self.date_format_regex
         decimal_separator = self.decimal_separator
         for index in self.orders.index:
-            arrival_date = str(self.orders['arrival_date'][index])
-            shipping_date = str(self.orders['ship_out_date'][index])
-            quantity = str(self.orders['quantity'][index])
-
-            if arrival_date != str(np.nan):
-                new_date = format_date(arrival_date, date_format)
-                self.orders['arrival_date'][index] = new_date
-
-            if shipping_date != str(np.nan):
-                new_date = format_date(shipping_date, date_format)
-                self.orders['ship_out_date'][index] = new_date
-
-            new_quantity = format_quantity(quantity, decimal_separator)
-            self.orders['quantity'][index] = new_quantity
+            if not isinstance(self.orders['arrival_date'][index], datetime.datetime):
+                arrival_date = str(self.orders['arrival_date'][index])
+                if arrival_date != str(np.nan):
+                    self.orders['arrival_date'][index] = format_date(arrival_date, date_format)
+            if not isinstance(self.orders['ship_out_date'][index], datetime.datetime):
+                shipping_date = str(self.orders['ship_out_date'][index])
+                if shipping_date != str(np.nan):
+                    self.orders['ship_out_date'][index] = format_date(shipping_date, date_format)
+            if not isinstance(self.orders['quantity'][index], numbers.Number):
+                quantity = str(self.orders['quantity'][index])
+                new_quantity = format_quantity(quantity, decimal_separator)
+                self.orders['quantity'][index] = new_quantity
+            else:
+                self.orders['quantity'][index] = str(int(self.orders['quantity'][index]))
+        # Si las columna son tipo fecha las convierto a string con el formato adecuado
+        if is_datetime64_dtype(self.orders['arrival_date']):
+            self.orders['arrival_date'] = self.orders['arrival_date'].dt.strftime('%d/%m/%Y')
+        if is_datetime64_dtype(self.orders['ship_out_date']):
+            self.orders['ship_out_date'] = self.orders['ship_out_date'].dt.strftime('%d/%m/%Y')
 
         return self.orders
 

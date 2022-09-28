@@ -3,8 +3,8 @@ import pytesseract
 import numpy as np
 import pandas as pd
 from Packages.constants import tesseract_exe_online_path
-from AI_Engine.sample import doc_layout_analysis
-from AI_Engine.sample import modulo_basic_functions as mod_basic
+from AI_Engine.modules import doc_layout_analysis
+from AI_Engine.modules import modulo_basic_functions as mod_basic
 
 
 def get_contornos_lineas(gray):

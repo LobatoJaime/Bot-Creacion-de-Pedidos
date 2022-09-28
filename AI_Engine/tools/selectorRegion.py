@@ -6,7 +6,7 @@ Created on Tue Mar 29 11:25:17 2022
 """
 
 import cv2 as cv
-from AI_Engine.sample import modulo_basic_functions as mod_basic
+from AI_Engine.modules import modulo_basic_functions as mod_basic
 import sys
 import os
 import json
@@ -102,20 +102,20 @@ path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\P
 path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo\header.jpg"
 path = r"orders_history\Thyssen Krupp Cranks_5500044982_DZ104463"
 path = r"extra\Thyssenkrupp Campo Limpo"
-path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo"
-path = r"extra\Thyssenkrupp Campo Limpo\20-04-2022_09h-22m.pdf"
 path = r"orders_history\ESP INTERNATIONAL_1223728_R116529\10-02-2022_09h-13m.pdf"
+path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
+path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\Nueva carpeta\Bot-Creacion-de-Pedidos\AI_Engine\Config\70017048\header.jpg"
+path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Crankshaft\t15.pdf"
+path = r"extra\ESP\ESP ERROR.pdf"
 path = os.path.join(path_root, path)
-path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores\CLIIENTES JOHN DEERE\JD REMAN\t76.pdf"
-path = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proyectos\Bot-Creacion-de-Pedidos\AI_Engine\Config\JD REMAN\header.jpg"
-pagNum = 2
+pagNum = 1
 
 # Lectura archivo
 img_original = file_reading(path, pagNum)
 
 # Calculos las dimensiones
 shape_original = img_original.shape[:2]  # height, width
-height = 100
+height = 1000
 shape_resized = (height, round((shape_original[1] / shape_original[0]) * height))
 
 # Resize de la imagen original
@@ -146,7 +146,7 @@ print("============================================")
 # Serializing json 
 json_object = json.dumps(coordenadasDict, indent=4)
 
-# Writing to sample.json
+# Writing to modules.json
 with open(CoordinatesFile, "w") as outfile:
     outfile.write(json_object)
 
