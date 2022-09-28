@@ -17,14 +17,14 @@ def download_planes_entrega_from_sap(order_number: str):
     session.findById("wnd[0]/tbar[0]/okcd").text = "/n/DEERE/V_SD_SA"
     session.findById("wnd[0]").sendVKey(0)
     session.findById("wnd[0]/tbar[1]/btn[17]").press()
+
+    # --------------------------PRUEBA-------------------------------------------
+    session.findById("wnd[1]/usr/txtV-LOW").text = "zblade"
     session.findById("wnd[1]/usr/txtENAME-LOW").text = ""
-    session.findById("wnd[1]/usr/txtENAME-LOW").setFocus()
-    session.findById("wnd[1]/usr/txtENAME-LOW").caretPosition = 0
+    session.findById("wnd[1]/usr/txtV-LOW").caretPosition = 6
     session.findById("wnd[1]/tbar[0]/btn[8]").press()
-    session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").setCurrentCell(46, "TEXT")
-    session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").firstVisibleRow = 28
-    session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").selectedRows = "46"
-    session.findById("wnd[1]/tbar[0]/btn[2]").press()
+    session.findById("wnd[0]/usr/chkP_CALQTY").selected = True
+    # ---------------------------------------------------------------------------
     session.findById("wnd[0]/usr/txtS_BSTNK-LOW").text = order_number
     # ---------------------MOSTRAR PEDIDOS EN CAMINO (WIP)-----------------------
     session.findById("wnd[0]").maximize()
