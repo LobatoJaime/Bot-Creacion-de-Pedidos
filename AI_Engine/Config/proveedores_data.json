@@ -821,5 +821,137 @@
       },
       "arrival_date": null
     }
-  }
+  },
+  "Soucy": {
+    "table": {
+      "coordinates": {
+        "1": [
+          11,
+          653,
+          1689,
+          2086
+        ],
+        "all": [
+          11,
+          11,
+          1689,
+          2086
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": true,
+        "pag": null,
+        "coordinates": [
+          157,
+          null,
+          363,
+          null
+        ],
+        "method_ocr": [4, 7]
+      },
+      "reference": {
+        "in_table": false,
+        "pag": 1,
+        "coordinates": [
+          40,
+          720,
+          220,
+          792
+        ],
+        "method_ocr": 4
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "decimal_separator": ",",
+        "coordinates": [
+          971,
+          null,
+          1124,
+          null
+        ],
+        "method_ocr": 7
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "date_format": ["dd.mm.yyyy"],
+        "coordinates": [
+          736,
+          null,
+          957,
+          null
+        ],
+        "method_ocr": 7
+      }
+    }
+    },
+  "99999TCE00": {
+    "table": {
+      "coordinates": {
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": "all",
+        "is_relative_coor": true,
+        "coordinates": [
+          420,
+          -4,
+          647,
+          27
+        ],
+        "method_ocr": 7
+      },
+      "reference": {
+        "in_table": false,
+        "pag": "all",
+        "is_relative_coor": true,
+        "coordinates": [
+          420,
+          -4,
+          647,
+          27
+        ],
+        "method_ocr": 7
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": 8,
+        "decimal_separator": ".",
+        "coordinates": [
+          735,
+          null,
+          867,
+          null
+        ],
+        "method_ocr": 7
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": 8,
+        "date_format": ["yyyy-mm-dd"],
+        "coordinates": [
+          172,
+          null,
+          361,
+          null
+        ],
+        "method_ocr": 7
+      }
+    }
+    }
 }
