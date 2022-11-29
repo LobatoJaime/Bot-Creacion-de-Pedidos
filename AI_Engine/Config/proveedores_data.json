@@ -758,6 +758,70 @@
       "arrival_date": null
     }
   },
+  "99999TCE00": {
+    "table": {
+      "coordinates": {
+        "all": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "type": "no_lines"
+    },
+    "fields": {
+      "order_number": {
+        "in_table": false,
+        "pag": "all",
+        "is_relative_coor": true,
+        "coordinates": [
+          420,
+          -4,
+          647,
+          27
+        ],
+        "method_ocr": 7
+      },
+      "reference": {
+        "in_table": false,
+        "pag": "all",
+        "is_relative_coor": true,
+        "coordinates": [
+          420,
+          -4,
+          647,
+          27
+        ],
+        "method_ocr": 7
+      },
+      "quantity": {
+        "in_table": true,
+        "pag": null,
+        "decimal_separator": ".",
+        "coordinates": [
+          735,
+          null,
+          867,
+          null
+        ],
+        "method_ocr": 7
+      },
+      "ship_out_date": null,
+      "arrival_date": {
+        "in_table": true,
+        "pag": null,
+        "date_format": ["yyyy-mm-dd"],
+        "coordinates": [
+          172,
+          null,
+          361,
+          null
+        ],
+        "method_ocr": 7
+      }
+    }
+    },
   "99999TSE01": {
     "table": {
       "coordinates": {
@@ -884,7 +948,7 @@
       }
     }
     },
-  "99999TCE00": {
+  "Agrostroj": {
     "table": {
       "coordinates": {
         "all": [
@@ -894,42 +958,40 @@
           null
         ]
       },
-      "type": "no_lines"
+      "type": "lines"
     },
     "fields": {
       "order_number": {
         "in_table": false,
-        "pag": "all",
-        "is_relative_coor": true,
+        "pag": 1,
         "coordinates": [
-          420,
-          -4,
-          647,
-          27
+          433,
+          246,
+          660,
+          292
         ],
         "method_ocr": 7
       },
       "reference": {
-        "in_table": false,
-        "pag": "all",
-        "is_relative_coor": true,
+        "in_table": true,
+        "pag": null,
         "coordinates": [
-          420,
-          -4,
-          647,
-          27
+          953,
+          2,
+          1163,
+          50
         ],
         "method_ocr": 7
       },
       "quantity": {
         "in_table": true,
         "pag": null,
-        "decimal_separator": ".",
+        "decimal_separator": ",",
         "coordinates": [
-          735,
-          null,
-          867,
-          null
+          139,
+          70,
+          317,
+          114
         ],
         "method_ocr": 7
       },
@@ -937,12 +999,12 @@
       "arrival_date": {
         "in_table": true,
         "pag": null,
-        "date_format": ["yyyy-mm-dd"],
+        "date_format": ["dd.mm.yyyy"],
         "coordinates": [
-          172,
-          null,
-          361,
-          null
+          307,
+          112,
+          577,
+          -2
         ],
         "method_ocr": 7
       }
