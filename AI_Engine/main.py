@@ -72,6 +72,11 @@ def main(proveedor: str, pedidos_path: str,
     # File names
     FILE_TABLE_HEADER = r"header"
     FILE_TABLE_END = r"end"
+    FILE_ORDER_NUMBER = r"order_number"
+    FILE_REFERNCE = r"reference"
+    FILE_QUANTITY = r"quantity"
+    FILE_SHIP_OUT_DATE = r"ship_out_date"
+    FILE_ARRIVAL_DATE = r"arrival_date"
     # endregion
 
     # region Variables
@@ -131,9 +136,11 @@ def main(proveedor: str, pedidos_path: str,
         return
     # endregion
 
-    # Leo las imagenes de los headers y final de la tabla
+    # Leo las imagenes de configuracion
     img_table_header_list, img_table_end_list = [], []
+    img_order_number_list, img_reference_list, img_quantity_list, img_ship_out_date_list, img_arrival_date_list = [], [], [], [], []
     if os.path.exists(os.path.join(PATH_CONFIG, proveedor)):
+        # Leo las imagenes de los headers y final de la tabla
         pathfile_table_header_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
                                       os.listdir(os.path.join(PATH_CONFIG, proveedor)) if
                                       filename.startswith(FILE_TABLE_HEADER)]
@@ -142,6 +149,27 @@ def main(proveedor: str, pedidos_path: str,
                                    filename.startswith(FILE_TABLE_END)]
         img_table_header_list = [cv.imread(pathfile) for pathfile in pathfile_table_header_list]
         img_table_end_list = [cv.imread(pathfile) for pathfile in pathfile_table_end_list]
+        # Leo las imagenes de los campos
+        pathfile_order_number_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
+                                      os.listdir(os.path.join(PATH_CONFIG, proveedor)) if
+                                      filename.startswith(FILE_ORDER_NUMBER)]
+        pathfile_reference_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
+                                   os.listdir(os.path.join(PATH_CONFIG, proveedor)) if
+                                   filename.startswith(FILE_REFERNCE)]
+        pathfile_quantity_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
+                                  os.listdir(os.path.join(PATH_CONFIG, proveedor)) if
+                                  filename.startswith(FILE_QUANTITY)]
+        pathfile_ship_out_date_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
+                                       os.listdir(os.path.join(PATH_CONFIG, proveedor)) if
+                                       filename.startswith(FILE_SHIP_OUT_DATE)]
+        pathfile_arrival_date_list = [os.path.join(PATH_CONFIG, proveedor, filename) for filename in
+                                      os.listdir(os.path.join(PATH_CONFIG, proveedor)) if
+                                      filename.startswith(FILE_ARRIVAL_DATE)]
+        img_order_number_list = [cv.imread(pathfile) for pathfile in pathfile_order_number_list]
+        img_reference_list = [cv.imread(pathfile) for pathfile in pathfile_reference_list]
+        img_quantity_list = [cv.imread(pathfile) for pathfile in pathfile_quantity_list]
+        img_ship_out_date_list = [cv.imread(pathfile) for pathfile in pathfile_ship_out_date_list]
+        img_arrival_date_list = [cv.imread(pathfile) for pathfile in pathfile_arrival_date_list]
     # endregion
 
     # region Lectura del proveedor
@@ -319,7 +347,9 @@ def main(proveedor: str, pedidos_path: str,
 
             # region Creacion dataframe
             # Recorremos cada set de informacion
-            for set_info in sets_info:
+            for set_index, set_info in enumerate(sets_info):
+                print("Set:" + str(set_index))
+                print("__________________")
                 set_data = {}
                 df_set = pd.DataFrame(dtype=object)
 
@@ -651,6 +681,134 @@ def main(proveedor: str, pedidos_path: str,
 
                     # endregion
 
+                    # region Tabla "custom"
+                    if proveedor_tabla["type"] == "custom":
+
+                        # region Soucy
+                        if proveedor == "Soucy":
+
+                            # region Creacion tabla combinada
+                            table_img = modg.create_combined_table_img(set_info["table"], img_table_info_list)
+                            # endregion
+
+                            if table_img is not None:
+
+                                # region Conversion tabla a escala de grises
+                                table_img_gray = modg.convert_rgb_to_grayscale(table_img)
+                                # endregion
+
+                                # region Visualizacion tabla del set
+                                if is_img_shown:
+                                    cv.imshow("img_table",
+                                              cv.resize(table_img, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA))
+                                    cv.waitKey(0)
+                                    cv.destroyWindow("img_table")
+                                # endregion
+
+                                # region Busqueda de lineas horizontales
+                                lines = search_horiz_lines(table_img_gray, 3)
+                                # endregion
+
+                                # region Eliminacion de lineas horizontales
+                                thresh = cv.threshold(table_img_gray, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU)[1]
+                                horizontal_kernel = cv.getStructuringElement(cv.MORPH_RECT, (40, 1))
+                                remove_horizontal = cv.morphologyEx(thresh, cv.MORPH_OPEN, horizontal_kernel,
+                                                                    iterations=1)
+                                cnts = cv.findContours(remove_horizontal, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                                cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+                                tabla_procesada = table_img_gray.copy()
+                                for c in cnts:
+                                    cv.drawContours(tabla_procesada, [c], -1, (255, 255, 255), 5)
+
+                                # region Visualizacion tabla sin lineas
+                                if is_img_shown:
+                                    cv.imshow("tabla_procesada",
+                                              cv.resize(tabla_procesada, None, fx=0.5, fy=0.5,
+                                                        interpolation=cv.INTER_AREA))
+                                    cv.waitKey(0)
+                                    cv.destroyWindow("tabla_procesada")
+                                # endregion
+
+                                # endregion
+
+                                # region Creacion de lista de imagenes por fila de tabla
+                                filas_img = []
+                                y1, y_end = 0, tabla_procesada.shape[0]
+                                for line in lines:
+                                    y2 = line[0][1]
+                                    filas_img.append(tabla_procesada[y1:y2])
+                                    y1 = y2
+                                filas_img.append(tabla_procesada[y1:y_end])
+                                # endregion
+
+                                # region Lectura de campos
+                                # Recorro las imagenes de las filas
+                                for fila_img in filas_img:
+
+                                    # region Visualizacion fila
+                                    if is_img_shown:
+                                        cv.imshow("fila",
+                                                  cv.resize(fila_img, None, fx=0.5, fy=0.5,
+                                                            interpolation=cv.INTER_AREA))
+                                        cv.waitKey(0)
+                                        cv.destroyWindow("fila")
+                                    # endregion
+
+                                    # region Lectura de campo por fila
+                                    for campo in campos_tabla:
+                                        ix, iy, fx, fy = proveedor_campos[campo]["coordinates"]
+                                        # Comprobamos si el cuadro esta vacio
+                                        # Para ello, hacemos un threshold y luego erosionamos la imagen para limpiar
+                                        # el ruido. Si no se encuentra algun contorno, la imagen esta vacia
+                                        ret, thresh = cv.threshold(fila_img[iy:fy, ix:fx], 0, 255,
+                                                                    cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
+                                        roi = cv.erode(thresh, cv.getStructuringElement(cv.MORPH_RECT, (3, 3)), (-1, -1))
+                                        if is_img_shown:
+                                            cv.imshow("thresh",
+                                                      cv.resize(thresh, None, fx=0.5, fy=0.5,
+                                                                interpolation=cv.INTER_AREA))
+                                            cv.imshow("erode",
+                                                      cv.resize(roi, None, fx=0.5, fy=0.5,
+                                                                interpolation=cv.INTER_AREA))
+                                            cv.waitKey(0)
+                                            cv.destroyWindow("thresh")
+                                            cv.destroyWindow("erode")
+                                        (contours, _) = cv.findContours(roi.copy(), cv.RETR_EXTERNAL,
+                                                                         cv.CHAIN_APPROX_SIMPLE)
+                                        if len(contours) < 1:
+                                            list_lecture = [("", 100)]
+                                        else:
+                                            # Leo la region
+                                            list_lecture = modg.lectura_campo(fila_img,
+                                                                              proveedor_campos[campo]["coordinates"],
+                                                                              tesseract_exe_path,
+                                                                                                        proveedor_campos[campo]["method_ocr"],
+                                                                              is_img_shown)
+                                        # Manejo la lista de resultados
+                                        set_data[campo].append(modg.handle_lecture_ocr(list_lecture,
+                                                                                       proveedor_campos[campo][
+                                                                                           'regex_validation'],
+                                                                                       proveedor_campos[campo].get(
+                                                                                           'regex_filter')))
+                                    # endregion
+
+                                # Relleno el dataset
+                                df_set = pd.DataFrame(set_data)
+                                print(df_set.to_string())
+                                # Recorro las filas del dataframe
+                                for i in df_set.index:
+                                    for campo in campos_tabla:
+                                        if df_set[campo][i] == ("", 100):
+                                            df_set = df_set.drop([i])
+                                            break
+                                print(df_set.to_string())
+                                df_set.reset_index()
+                                print(df_set.to_string())
+                                # endregion
+                        #endregion
+
+                    # endregion
+
                 # Compruebo que el dataframe con los valores de los campos en tabla no este vacio
                 if df_set.empty:
                     # Si alguna lista de tabla no tiene valores, saltamos al siguiente set
@@ -661,9 +819,30 @@ def main(proveedor: str, pedidos_path: str,
                 for campo in campos_hoja:
                     if set_info[campo] is not None:
                         img_read = img_list[set_info[campo]]
+                        campo_coordinates = proveedor_campos[campo]["coordinates"].copy()
+                        # Busco la posicion relativa del campo
+                        if "is_relative_coor" in proveedor_campos[campo] and proveedor_campos[campo]["is_relative_coor"] is True:
+                            # Asigno la lista de templates del campo
+                            template_list = []
+                            if campo == "order_number":
+                                template_list = img_order_number_list
+                            elif campo == "reference":
+                                template_list = img_reference_list
+                            elif campo == "quantity":
+                                template_list = img_quantity_list
+                            elif campo == "ship_out_date":
+                                template_list = img_ship_out_date_list
+                            elif campo == "arrival_date":
+                                template_list = img_arrival_date_list
+                            # Encuentro las coordenadas del template
+                            top_left, bottom_right = modg.apply_list_template_matching(img_read, template_list)
+                            campo_coordinates[0] = top_left[0] + campo_coordinates[0]
+                            campo_coordinates[1] = top_left[1] + campo_coordinates[1]
+                            campo_coordinates[2] = top_left[0] + campo_coordinates[2]
+                            campo_coordinates[3] = top_left[1] + campo_coordinates[3]
                         # Leo la region
                         list_lecture = modg.lectura_campo(img_read,
-                                                          proveedor_campos[campo]["coordinates"],
+                                                          campo_coordinates,
                                                           tesseract_exe_path,
                                                           proveedor_campos[campo]["method_ocr"],
                                                           is_img_shown)
@@ -943,27 +1122,39 @@ if __name__ == '__main__':
     proveedor = "70012672"  # EMP
     proveedor = "70017078"  # Thyssenkrupp Campo Limpo
     proveedor = "70017703"  # Engine Power Components
-    proveedor = "70018938"  # WorldClass Industries
     proveedor = "70017869"  # TIG
     proveedor = "70017048"  # Thyssenkrupp Crankshaft
     proveedor = "70001353"  # Skyway
     proveedor = "70016983"  # Concentric
     proveedor = "70001256"  # ESP
+    proveedor = "70018938"  # WorldClass Industries
+    proveedor = "99999TCE00"  # JD Israel
+    proveedor = "Soucy"  # Soucy
 
     pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
     pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
     pedidos_path = r"extra\WorldClass Industries"
     pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
-    pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Crankshaft\t118.pdf"
     pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
     pedidos_path = r"extra\ESP\ESP ERROR.pdf"
     pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt"
     pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t14.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries\openpowci6262.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\JD Israel"
+    pedidos_path = r"CLIIENTES JOHN DEERE\Soucy"
     pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 
-    main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
-         poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
-         tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+    local = True
+    if local:
+        df = main(proveedor, pedidos_path, is_img_shown=False, ai_path=".",
+                  poppler_path=r"C:\Program Files (x86)\poppler-22.01.0\Library\bin",
+                  tesseract_exe_path=r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+    else:
+        df = main(proveedor, pedidos_path, is_img_shown=False, ai_path=None,
+                  poppler_path=None,
+                  tesseract_exe_path=None)
+
+    print()
 
     #############################################
 

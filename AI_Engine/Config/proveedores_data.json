@@ -825,53 +825,47 @@
   "Soucy": {
     "table": {
       "coordinates": {
-        "1": [
-          11,
-          653,
-          1689,
-          2086
-        ],
         "all": [
-          11,
-          11,
-          1689,
-          2086
+          null,
+          null,
+          null,
+          null
         ]
       },
-      "type": "no_lines"
+      "type": "custom"
     },
     "fields": {
       "order_number": {
-        "in_table": true,
-        "pag": null,
-        "coordinates": [
-          157,
-          null,
-          363,
-          null
-        ],
-        "method_ocr": [4, 7]
-      },
-      "reference": {
         "in_table": false,
         "pag": 1,
         "coordinates": [
-          40,
-          720,
-          220,
-          792
+          1161,
+          24,
+          1418,
+          81
         ],
-        "method_ocr": 4
+        "method_ocr": 7
+      },
+      "reference": {
+        "in_table": true,
+        "pag": null,
+        "coordinates": [
+          83,
+          2,
+          561,
+          -2
+        ],
+        "method_ocr": 7
       },
       "quantity": {
         "in_table": true,
         "pag": null,
-        "decimal_separator": ",",
+        "decimal_separator": ".",
         "coordinates": [
-          971,
-          null,
-          1124,
-          null
+          808,
+          2,
+          978,
+          -2
         ],
         "method_ocr": 7
       },
@@ -879,12 +873,12 @@
       "arrival_date": {
         "in_table": true,
         "pag": null,
-        "date_format": ["dd.mm.yyyy"],
+        "date_format": ["mm/dd/yyyy"],
         "coordinates": [
-          736,
-          null,
-          957,
-          null
+          1150,
+          2,
+          1308,
+          -2
         ],
         "method_ocr": 7
       }
@@ -929,7 +923,7 @@
       },
       "quantity": {
         "in_table": true,
-        "pag": 8,
+        "pag": null,
         "decimal_separator": ".",
         "coordinates": [
           735,
@@ -942,7 +936,7 @@
       "ship_out_date": null,
       "arrival_date": {
         "in_table": true,
-        "pag": 8,
+        "pag": null,
         "date_format": ["yyyy-mm-dd"],
         "coordinates": [
           172,

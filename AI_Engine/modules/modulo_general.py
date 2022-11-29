@@ -69,8 +69,13 @@ def lectura_campo(img, points, tesseract_exe_path, method=None, is_img_shown=Fal
         ix, iy, fx, fy = points
     elif len(points) == 2:
         (ix, iy), (fx, fy) = points
-    roi = gray[iy:fy, ix:fx]
+    roi = gray[iy:fy, ix:fx] # Se le suma
 
+    if is_img_shown:
+        copy_img = img.copy()
+        cv.rectangle(copy_img, (ix, iy), (fx, fy), (0, 0, 255), 2)
+        cv.imshow("copy_img", cv.resize(copy_img, None, fx=0.4, fy=0.4, interpolation=cv.INTER_AREA))
+        cv.waitKey(10)
     # Leo el texto
     list_lectura = lectura_texto(roi, tesseract_exe_path, method, is_img_shown)
 
