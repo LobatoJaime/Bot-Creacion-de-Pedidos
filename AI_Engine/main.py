@@ -701,8 +701,8 @@ def main(proveedor: str, pedidos_path: str,
                     # region Tabla "custom"
                     if proveedor_tabla["type"] == "custom":
 
-                        # region Soucy
-                        if proveedor == "Soucy":
+                        # region 70018728
+                        if proveedor == "70018728":
 
                             # region Creacion tabla combinada
                             table_img, header_n_list = modg.create_combined_table_img(set_info["table"], img_table_info_list)
@@ -1158,11 +1158,11 @@ if __name__ == '__main__':
     proveedor = "70001353"  # Skyway
     proveedor = "70016983"  # Concentric
     proveedor = "70001256"  # ESP
-    proveedor = "99999TCE00"  # JD Israel
-    proveedor = "Agrostroj"  # Agrostroj
+    proveedor = "99999PZC00"  # JD Israel
+    proveedor = "70017278"  # Agrostroj
     proveedor = "70018938"  # WorldClass Industries
     proveedor = "70017673"  # WorldClass Industries EU
-    proveedor = "Soucy"  # Soucy
+    proveedor = "70018728"  # Soucy
 
     proveedor = "70001256"  # ESP
 
