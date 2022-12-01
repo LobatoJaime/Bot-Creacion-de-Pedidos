@@ -456,7 +456,7 @@
           363,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": [4, 7]
       },
       "reference": {
         "in_table": false,
@@ -479,21 +479,21 @@
           1124,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
-      "ship_out_date":  {
+      "ship_out_date": null,
+      "arrival_date": {
         "in_table": true,
         "pag": null,
-        "date_format": ["mm/dd/yyyy"],
+        "date_format": ["dd.mm.yyyy"],
         "coordinates": [
           736,
           null,
           957,
           null
         ],
-        "method_ocr": 4
-      },
-      "arrival_date": null
+        "method_ocr": 7
+      }
     }
   },
   "70017703": {
