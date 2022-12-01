@@ -913,24 +913,40 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "coordinates": [
-          83,
-          2,
-          561,
-          -2
-        ],
+        "coordinates": {
+          "1": [
+            83,
+            2,
+            561,
+            -2
+          ],
+          "2": [
+            88,
+            2,
+            567,
+            -2
+          ]
+        },
         "method_ocr": 7
       },
       "quantity": {
         "in_table": true,
         "pag": null,
         "decimal_separator": ".",
-        "coordinates": [
-          808,
-          2,
-          978,
-          -2
-        ],
+        "coordinates": {
+          "1": [
+            808,
+            2,
+            978,
+            -2
+          ],
+          "2": [
+            811,
+            2,
+            987,
+            -2
+          ]
+        },
         "method_ocr": 7
       },
       "ship_out_date": null,
@@ -938,12 +954,20 @@
         "in_table": true,
         "pag": null,
         "date_format": ["mm/dd/yyyy"],
-        "coordinates": [
-          1150,
-          2,
-          1308,
-          -2
-        ],
+        "coordinates": {
+          "1": [
+            1150,
+            2,
+            1308,
+            -2
+          ],
+          "2": [
+            1154,
+            2,
+            1309,
+            -2
+          ]
+        },
         "method_ocr": 7
       }
     }

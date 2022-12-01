@@ -58,7 +58,7 @@ def main(proveedor: str, pedidos_path: str,
     # General constants
     PEDIDOS_WINDOW = 'PDF pedidos'
     COLUMNAS = ("order_number", "client", "reference", "quantity", "ship_out_date", "arrival_date", "confidence")
-    # COLUMNAS = ("archivo",) + COLUMNAS
+    #COLUMNAS = ("archivo",) + COLUMNAS
     CAMPOS = ("order_number", "reference", "quantity", "ship_out_date", "arrival_date")
     HEIGHT_TO_SHOW = 800
     CONF_ROW_INVALID = -200
@@ -333,6 +333,10 @@ def main(proveedor: str, pedidos_path: str,
                                                                   img_table_header_list,
                                                                   img_table_end_list,
                                                                   proveedor_tabla["coordinates"])
+                for index, img_table_info in enumerate(img_table_info_list):
+                    pathname, extension = os.path.splitext(pathfile_table_header_list[img_table_info["header_n"]])
+                    img_table_info["header_n"] = pathname.split('\\')[-1].\
+                        replace(FILE_TABLE_HEADER, "").replace("-", "")
 
                 # region Visualizacion lista imagenes de tabla
                 if is_img_shown and False:
@@ -364,7 +368,7 @@ def main(proveedor: str, pedidos_path: str,
                     if proveedor_tabla["type"] == "lines":
 
                         # region Creacion tabla combinada
-                        table_img = modg.create_combined_table_img(set_info["table"], img_table_info_list)
+                        table_img, header_n_list = modg.create_combined_table_img(set_info["table"], img_table_info_list)
                         # endregion
 
                         if table_img is not None:
@@ -429,9 +433,15 @@ def main(proveedor: str, pedidos_path: str,
 
                                 # region Lectura de campo por fila
                                 for campo in campos_tabla:
+                                    # Escojo coordenadas dependiendo del header encontrado (por ahora solo coge el
+                                    # header de la primera pagina)
+                                    if type(proveedor_campos[campo]["coordinates"]) is dict:
+                                        coordinates = proveedor_campos[campo]["coordinates"][header_n_list[0]]
+                                    else:
+                                        coordinates = proveedor_campos[campo]["coordinates"]
                                     # Leo la region
                                     list_lecture = modg.lectura_campo(fila_img,
-                                                                      proveedor_campos[campo]["coordinates"],
+                                                                      coordinates,
                                                                       tesseract_exe_path,
                                                                       proveedor_campos[campo]["method_ocr"],
                                                                       is_img_shown)
@@ -452,7 +462,7 @@ def main(proveedor: str, pedidos_path: str,
                     elif proveedor_tabla["type"] == "no_lines":
 
                         # region Creacion tabla combinada
-                        table_img = modg.create_combined_table_img(set_info["table"], img_table_info_list)
+                        table_img, header_n_list = modg.create_combined_table_img(set_info["table"], img_table_info_list)
                         # endregion
 
                         if table_img is not None:
@@ -468,8 +478,15 @@ def main(proveedor: str, pedidos_path: str,
                             # endregion
 
                             for campo in campos_tabla:
+                                # Escojo coordenadas dependiendo del header encontrado (por ahora solo coge el
+                                # header de la primera pagina)
+                                if type(proveedor_campos[campo]["coordinates"]) is dict:
+                                    coordinates = proveedor_campos[campo]["coordinates"][header_n_list[0]]
+                                else:
+                                    coordinates = proveedor_campos[campo]["coordinates"]
+
                                 # Creo el ROI que contiene la columna
-                                ix, iy, fx, fy = proveedor_campos[campo]["coordinates"]
+                                ix, iy, fx, fy = coordinates
                                 column_img = table_img_gray[iy:fy, ix:fx]
                                 # Detecto los contornos de las lineas del texto
                                 column_img_to_show = column_img.copy() if is_img_shown else None
@@ -688,7 +705,7 @@ def main(proveedor: str, pedidos_path: str,
                         if proveedor == "Soucy":
 
                             # region Creacion tabla combinada
-                            table_img = modg.create_combined_table_img(set_info["table"], img_table_info_list)
+                            table_img, header_n_list = modg.create_combined_table_img(set_info["table"], img_table_info_list)
                             # endregion
 
                             if table_img is not None:
@@ -756,32 +773,44 @@ def main(proveedor: str, pedidos_path: str,
 
                                     # region Lectura de campo por fila
                                     for campo in campos_tabla:
-                                        ix, iy, fx, fy = proveedor_campos[campo]["coordinates"]
+                                        # Escojo coordenadas dependiendo del header encontrado (por ahora solo coge el
+                                        # header de la primera pagina)
+                                        if type(proveedor_campos[campo]["coordinates"]) is dict:
+                                            coordinates = proveedor_campos[campo]["coordinates"][header_n_list[0]]
+                                        else:
+                                            coordinates = proveedor_campos[campo]["coordinates"]
+                                        ix, iy, fx, fy = coordinates
+                                        # ix = 0 if ix is None else ix
+                                        # iy = 0 if iy is None else iy
+                                        # fx = fila_img.shape[1] if fx is None or fx < 0 else 0 + fx if fx is not None else 0
+                                        # fy = fila_img.shape[0] if fy is None or fy < 0 else 0 + fy if fy is not None else 0
+
                                         # Comprobamos si el cuadro esta vacio
                                         # Para ello, hacemos un threshold y luego erosionamos la imagen para limpiar
                                         # el ruido. Si no se encuentra algun contorno, la imagen esta vacia
                                         ret, thresh = cv.threshold(fila_img[iy:fy, ix:fx], 0, 255,
                                                                    cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
-                                        roi = cv.erode(thresh, cv.getStructuringElement(cv.MORPH_RECT, (3, 3)),
-                                                       (-1, -1))
+
+                                        # erosion = cv.erode(thresh, cv.getStructuringElement(cv.MORPH_RECT, (3, 3)),
+                                        #                (-1, -1))
                                         if is_img_shown:
                                             cv.imshow("thresh",
                                                       cv.resize(thresh, None, fx=0.5, fy=0.5,
                                                                 interpolation=cv.INTER_AREA))
-                                            cv.imshow("erode",
-                                                      cv.resize(roi, None, fx=0.5, fy=0.5,
-                                                                interpolation=cv.INTER_AREA))
+                                            # cv.imshow("erode",
+                                            #           cv.resize(erosion, None, fx=0.5, fy=0.5,
+                                            #                     interpolation=cv.INTER_AREA))
                                             cv.waitKey(0)
                                             cv.destroyWindow("thresh")
-                                            cv.destroyWindow("erode")
-                                        (contours, _) = cv.findContours(roi.copy(), cv.RETR_EXTERNAL,
-                                                                        cv.CHAIN_APPROX_SIMPLE)
-                                        if len(contours) < 1:
+                                            # cv.destroyWindow("erode")
+                                        # (contours, _) = cv.findContours(erosion.copy(), cv.RETR_EXTERNAL,
+                                        #                                 cv.CHAIN_APPROX_SIMPLE)
+                                        if ret > 220:
                                             list_lecture = [("", 100)]
                                         else:
                                             # Leo la region
                                             list_lecture = modg.lectura_campo(fila_img,
-                                                                              proveedor_campos[campo]["coordinates"],
+                                                                              coordinates,
                                                                               tesseract_exe_path,
                                                                               proveedor_campos[campo]["method_ocr"],
                                                                               is_img_shown)
@@ -837,7 +866,7 @@ def main(proveedor: str, pedidos_path: str,
                             elif campo == "arrival_date":
                                 template_list = img_arrival_date_list
                             # Encuentro las coordenadas del template
-                            top_left, bottom_right = modg.apply_list_template_matching(img_read, template_list)
+                            top_left, bottom_right, _ = modg.apply_list_template_matching(img_read, template_list)
                             campo_coordinates[0] = top_left[0] + campo_coordinates[0]
                             campo_coordinates[1] = top_left[1] + campo_coordinates[1]
                             campo_coordinates[2] = top_left[0] + campo_coordinates[2]
@@ -1130,10 +1159,12 @@ if __name__ == '__main__':
     proveedor = "70016983"  # Concentric
     proveedor = "70001256"  # ESP
     proveedor = "99999TCE00"  # JD Israel
-    proveedor = "Soucy"  # Soucy
     proveedor = "Agrostroj"  # Agrostroj
     proveedor = "70018938"  # WorldClass Industries
     proveedor = "70017673"  # WorldClass Industries EU
+    proveedor = "Soucy"  # Soucy
+
+    proveedor = "70001256"  # ESP
 
     pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
     pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
@@ -1145,7 +1176,7 @@ if __name__ == '__main__':
     pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t14.pdf"
     pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries\John Deere Iberica_ERRORES.pdf"
     pedidos_path = r"CLIIENTES JOHN DEERE\JD Israel"
-    pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries EU\openpowci2119.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t91.pdf"
     pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 
     is_img_shown = False
