@@ -8,10 +8,10 @@ def search_horiz_lines(image, method, minDist = None):
     output: [(pt1, pt2), (pt1, pt2), ...] = [((x1, y1), (x2, y2)), ...]
     """
 
-    minDist = int(image.shape[1] * 0.5) if minDist is None else minDist
+    minDist = int(image.shape[1] * 0.8) if minDist is None else minDist
     output = []
-    fx_resize = 1
-    fy_resize = 1
+    fx_resize = 0.5
+    fy_resize = 0.5
 
     image_to_show = image.copy()
     if len(image.shape) == 3:
@@ -126,7 +126,7 @@ def search_horiz_lines(image, method, minDist = None):
             output_aux.append(output[i])
     output = output_aux
     # for line in output_aux:
-    #     cv.line(image_to_show, line[0], line[1], (0, 0, 255), 3,
+    #     cv.line(image_to_show, line[0], line[1], (0, 0, 255), 5,
     #             cv.LINE_AA)
     #     cv.imshow("lines in image",
     #               cv.resize(image_to_show, None, fx=fx_resize, fy=fy_resize, interpolation=cv.INTER_AREA))
