@@ -456,7 +456,7 @@
           363,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": [4, 7]
       },
       "reference": {
         "in_table": false,
@@ -479,21 +479,21 @@
           1124,
           null
         ],
-        "method_ocr": 4
+        "method_ocr": 7
       },
-      "ship_out_date":  {
+      "ship_out_date": null,
+      "arrival_date": {
         "in_table": true,
         "pag": null,
-        "date_format": ["mm/dd/yyyy"],
+        "date_format": ["dd.mm.yyyy"],
         "coordinates": [
           736,
           null,
           957,
           null
         ],
-        "method_ocr": 4
-      },
-      "arrival_date": null
+        "method_ocr": 7
+      }
     }
   },
   "70017703": {
@@ -758,7 +758,7 @@
       "arrival_date": null
     }
   },
-  "99999TCE00": {
+  "99999PZC00": {
     "table": {
       "coordinates": {
         "all": [
@@ -886,7 +886,7 @@
       "arrival_date": null
     }
   },
-  "Soucy": {
+  "70018728": {
     "table": {
       "coordinates": {
         "all": [
@@ -913,24 +913,40 @@
       "reference": {
         "in_table": true,
         "pag": null,
-        "coordinates": [
-          83,
-          2,
-          561,
-          -2
-        ],
+        "coordinates": {
+          "1": [
+            83,
+            2,
+            561,
+            -2
+          ],
+          "2": [
+            88,
+            2,
+            567,
+            -2
+          ]
+        },
         "method_ocr": 7
       },
       "quantity": {
         "in_table": true,
         "pag": null,
         "decimal_separator": ".",
-        "coordinates": [
-          808,
-          2,
-          978,
-          -2
-        ],
+        "coordinates": {
+          "1": [
+            808,
+            2,
+            978,
+            -2
+          ],
+          "2": [
+            811,
+            2,
+            987,
+            -2
+          ]
+        },
         "method_ocr": 7
       },
       "ship_out_date": null,
@@ -938,17 +954,25 @@
         "in_table": true,
         "pag": null,
         "date_format": ["mm/dd/yyyy"],
-        "coordinates": [
-          1150,
-          2,
-          1308,
-          -2
-        ],
+        "coordinates": {
+          "1": [
+            1150,
+            2,
+            1308,
+            -2
+          ],
+          "2": [
+            1154,
+            2,
+            1309,
+            -2
+          ]
+        },
         "method_ocr": 7
       }
     }
     },
-  "Agrostroj": {
+  "70017278": {
     "table": {
       "coordinates": {
         "all": [

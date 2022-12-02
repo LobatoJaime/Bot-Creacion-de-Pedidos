@@ -8,11 +8,12 @@ def apply_list_template_matching(img, template_list):
     """Busca una lista de templates en una imagen. Escoge el template con mayor coincidencia y devuelve las
     coordenadas top left y bottom right"""
     output = (None, None), (None, None), -1
-    for template in template_list:
+    template_n = 0
+    for index, template in enumerate(template_list):
         result = apply_template_matching(img, template)
         if result[2] > output[2]:
-            output = result
-    return output[:2]
+            output, template_n = result, index
+    return output[0], output[1], template_n
 
 
 def apply_template_matching(img, template):
@@ -213,8 +214,8 @@ def create_table_info_list(img_list, img_table_header_list, img_table_end_list, 
         ix, iy, fx, fy = table_coordinates[index]
         roi = img_list[pag_i][iy:fy, ix:fx]
         # Busco el header y el end
-        header_top_left, header_bottom_right = apply_list_template_matching(roi, img_table_header_list)
-        end_top_left, end_bottom_right = apply_list_template_matching(roi, img_table_end_list)
+        header_top_left, header_bottom_right, header_n = apply_list_template_matching(roi, img_table_header_list)
+        end_top_left, end_bottom_right, _ = apply_list_template_matching(roi, img_table_end_list)
         # Visualizacion de la deteccion
         # roi_to_show = roi.copy()
         # cv.rectangle(roi_to_show, header_top_left, header_bottom_right, (0, 0, 255), 2)
@@ -234,6 +235,7 @@ def create_table_info_list(img_list, img_table_header_list, img_table_end_list, 
         # Inserto la informacion en el info dict
         info_dict = {
             "header_coordinates": (header_top_left, header_bottom_right),
+            "header_n": header_n,
             "end_coordinates": (end_top_left, end_bottom_right),
             "roi": roi,
         }
@@ -279,13 +281,17 @@ def create_table_list(img_list, img_table_header, img_table_end, table_coordinat
 
 
 def create_combined_table_img(set_info_table, img_table_info_list):
+    header_n_list = []
     # Creacion imagen combinada de la tabla del set
     table_list = []
     for table_pag in set_info_table:
         if img_table_info_list[table_pag]["header_coordinates"] != ((None, None), (None, None)):
-            table_list.append(img_table_info_list[table_pag]["roi"])
+            if img_table_info_list[table_pag]["roi"].shape[0] != 0 and\
+                    img_table_info_list[table_pag]["roi"].shape[1] != 0:
+                table_list.append(img_table_info_list[table_pag]["roi"])
+                header_n_list.append(img_table_info_list[table_pag]["header_n"])
     table_img = mod_basic.vconcat_resize(table_list)
-    return table_img
+    return table_img, header_n_list
 
 
 def convert_rgb_to_grayscale(img):
