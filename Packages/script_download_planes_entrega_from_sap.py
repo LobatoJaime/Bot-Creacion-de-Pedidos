@@ -19,7 +19,7 @@ def download_planes_entrega_from_sap(order_number: str):
     session.findById("wnd[0]/tbar[1]/btn[17]").press()
 
     # --------------------------PRUEBA-------------------------------------------
-    session.findById("wnd[1]/usr/txtV-LOW").text = "zblade"
+    session.findById("wnd[1]/usr/txtV-LOW").text = "ZAMBLADE"
     session.findById("wnd[1]/usr/txtENAME-LOW").text = ""
     session.findById("wnd[1]/usr/txtV-LOW").caretPosition = 6
     session.findById("wnd[1]/tbar[0]/btn[8]").press()
