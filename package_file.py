@@ -56,7 +56,7 @@ def package_file(version: str, dist_folder: str):
 
     # Copiar a la carpeta en linea de la app
     file_path = new_path
-    source_path = os.path.join(download_latest_ver_folder, 'AutomatizacionSAP {}.exe'.format(version))
+    source_path = os.path.join(download_latest_ver_folder, 'AutomatizacionSAP.exe')
     shutil.copy(file_path, source_path)
 
     print('El archivo ha sido empaquetado de manera exitosa.\n'
@@ -67,5 +67,5 @@ def package_file(version: str, dist_folder: str):
 if __name__ == '__main__':
     local_folder = r'C:\Users\VJZP49U\Documents\PythonProjects\Temporal-dist'  # Cambiar a disposicion
     online_folder = r'\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\dist'
-    package_file(version='v6.0.0',
+    package_file(version='v6.0.1',
                  dist_folder=online_folder)
