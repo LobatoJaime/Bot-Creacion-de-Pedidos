@@ -12,3 +12,10 @@ online_folder = r'\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Crea
 package_file(version='v4.4.6',
              dist_folder=online_folder)
 ```
+## Para lazar una versión
+1. Cambiar la versión en ```package_file.py```.
+2. Ejecutar el archivo que crea un ejecutable que se haya en la carpeta compartida. Comprobar que funciona correctamente.
+3. En `Release` --> Draft New Release.
+4. Crear un title y un release tag con la última versón.
+5. Generar release notes para ver los cambios entre seseiones.
+6. Adjuntar el ejecutable de la carpeta compartida.
