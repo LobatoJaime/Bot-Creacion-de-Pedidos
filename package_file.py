@@ -67,5 +67,5 @@ def package_file(version: str, dist_folder: str):
 if __name__ == '__main__':
     local_folder = r'C:\Users\VJZP49U\Documents\PythonProjects\Temporal-dist'  # Cambiar a disposicion
     online_folder = r'\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\dist'
-    package_file(version='v6.0.1',
+    package_file(version='v6.0.2',
                  dist_folder=online_folder)
