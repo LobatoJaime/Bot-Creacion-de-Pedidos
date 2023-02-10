@@ -22,7 +22,7 @@ changes_history_folder = os.path.join(resources_folder, 'changes_history')
 orders_history_folder = os.path.join(resources_folder, 'orders_history')
 downloads_folder = os.path.join(os.getenv('USERPROFILE'), 'Downloads')
 images_folder = os.path.join(resources_folder, 'images')
-github_repo_adress = 'https://github.com/luisguareschi/Bot-Creacion-de-Pedidos'
+github_repo_adress = 'https://github.com/JuanDelPinoJD/Bot-Creacion-de-Pedidos'
 actual_version = 'v6.0.2'
 # Obtener clientes que estan soportados por la AI
 ai_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\Bot Creacion de Pedidos\ProjectFiles\Resources\AI_files"

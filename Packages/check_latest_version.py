@@ -20,7 +20,7 @@ def check_latest_version() -> bool:
                                   'Quieres descargar la última versión?'.format(github_repo_adress,
                                                                                 download_latest_ver_folder))
         if msg:
-            download_link = 'https://github.com/luisguareschi/Bot-Creacion-de-Pedidos/releases/download/{}/AutomatizacionSAP.exe'.format(
+            download_link = 'https://github.com/JuanDelPinoJD/Bot-Creacion-de-Pedidos/releases/download/{}/AutomatizacionSAP.exe'.format(
                 last_ver)
             # open download_link in default browser
             webbrowser.open(download_link)
