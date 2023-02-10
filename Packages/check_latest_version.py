@@ -10,7 +10,8 @@ def check_latest_version() -> bool:
     -Devuelve True si la version esta actualizada\n
     -Devuelve false en caso de que no"""
     last_ver = lastversion.latest(github_repo_adress, output_format='tag')
-    if last_ver != actual_version:
+
+    if compare_versions(str(last_ver), actual_version):
         msg = messagebox.askyesno('Versión no compatible',
                                   'Hay una nueva versión disponible. '
                                   'Actualiza la aplicación para evitar posibles errores.\n\n'
@@ -27,3 +28,24 @@ def check_latest_version() -> bool:
         return False
     else:
         return True
+
+
+def compare_versions(last, new):
+    last_version = last.replace('v', '').split('.')
+    new_version = new.replace('v', '').split('.')
+
+    last_string = ''
+    new_string = ''
+
+    for l in last_version:
+        last_string += l
+
+    for n in new_version:
+        new_string += n
+
+    lastV = int(last_string)
+    newV = int(new_string)
+
+    if lastV > newV:
+        return True
+    return False
