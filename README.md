@@ -19,3 +19,6 @@ package_file(version='v4.4.6',
 4. Crear un title y un release tag con la última versón.
 5. Generar release notes para ver los cambios entre seseiones.
 6. Adjuntar el ejecutable de la carpeta compartida.
+
+## Para Incorporar los cambios de la IA
+Simplemente hacer un merge de las ramas. Hacer el merge desde Inteligencia Artificial a main y comprobar que todo funciona. Después desplegar una nueva versión.
