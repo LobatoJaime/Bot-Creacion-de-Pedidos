@@ -36,7 +36,7 @@ def apply_template_matching(img, template):
     res = cv.matchTemplate(img, template, cv.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
     # Si el valor maximo es menor que un threshold, no se ha encontrado ninguna coincidencia
-    if max_val < 0.5:
+    if max_val < 0.7:
         return result
     # Calculo los valores de top_left y bottom_right
     top_left = max_loc
@@ -220,7 +220,7 @@ def create_table_info_list(img_list, img_table_header_list, img_table_end_list, 
         # roi_to_show = roi.copy()
         # cv.rectangle(roi_to_show, header_top_left, header_bottom_right, (0, 0, 255), 2)
         # cv.rectangle(roi_to_show, end_top_left, end_bottom_right, (0, 0, 255), 2)
-        # cv.imshow("roi_to_show", roi_to_show)
+        # cv.imshow("roi_to_show", cv.resize(roi_to_show, None, fx=0.4, fy=0.4, interpolation=cv.INTER_AREA))
         # cv.waitKey(0)
         # cv.destroyWindow("roi_to_show")
         # Creo una nueva region que va desde el header hasta el end (si se ha encontrado)
