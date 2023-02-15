@@ -5,9 +5,9 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Users\\IRDGFRM\\OneDrive-Deere&Co\\OneDrive - Deere & Co\\Documents\\Python Projects\\Bot Creacion de Pedidos'],
+             pathex=['\\fcefactory1\\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\\Bot Creacion de Pedidos'],
              binaries=[],
-             datas=[('C:\\Users\\IRDGFRM\\OneDrive-Deere&Co\\OneDrive - Deere & Co\\Documents\\Python Projects\\Bot Creacion de Pedidos\\venv_3.8\\Lib\\site-packages\\ttkbootstrap', 'ttkbootstrap'),],
+             datas=[('C:\\Users\BUH2M45\\Documents\\GitHub\\Bot-Creacion-de-Pedidos\\venv\\Lib\\site-packages\\ttkbootstrap', 'ttkbootstrap'),],
              hiddenimports=['ttkbootstrap', 'importlib.resources', 'PIL.ImageFont', 'tkinter.font', 'openpyxl', 'pymssql'],
              hookspath=[],
              hooksconfig={},
