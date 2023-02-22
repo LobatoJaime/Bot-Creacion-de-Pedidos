@@ -481,8 +481,7 @@
         ],
         "method_ocr": 7
       },
-      "ship_out_date": null,
-      "arrival_date": {
+      "ship_out_date": {
         "in_table": true,
         "pag": null,
         "date_format": ["dd.mm.yyyy"],
@@ -493,7 +492,8 @@
           null
         ],
         "method_ocr": 7
-      }
+      },
+      "arrival_date": null
     }
   },
   "70017703": {
