@@ -891,9 +891,9 @@
       "coordinates": {
         "all": [
           null,
+          260,
           null,
-          null,
-          null
+          2035
         ]
       },
       "type": "custom"
@@ -903,7 +903,7 @@
         "in_table": false,
         "pag": 1,
         "coordinates": [
-          1161,
+          1152,
           24,
           1418,
           81
@@ -968,7 +968,7 @@
             -2
           ]
         },
-        "method_ocr": 7
+        "method_ocr": [0, 7]
       }
     }
     },
