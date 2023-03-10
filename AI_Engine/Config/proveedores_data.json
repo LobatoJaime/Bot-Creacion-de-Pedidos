@@ -383,7 +383,7 @@
           "pag": 1,
           "coordinates": [
             793,
-            437,
+            439,
             982,
             479
           ],
@@ -406,9 +406,9 @@
           "pag": null,
           "decimal_separator": ",",
           "coordinates": [
-            531,
+            555,
             null,
-            714,
+            740,
             null
           ],
           "method_ocr": 7
@@ -420,7 +420,7 @@
           "coordinates": [
             0,
             null,
-            277,
+            255,
             null
           ],
           "method_ocr": [7,8]

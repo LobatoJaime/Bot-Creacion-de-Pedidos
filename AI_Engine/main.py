@@ -1141,6 +1141,7 @@ def main(proveedor: str, pedidos_path: str,
     # Borro ventanas
     mod_basic.close_windows("Aplicacion terminada")
     # endregion
+    # endregion
 
     return df_total
 
@@ -1164,7 +1165,7 @@ if __name__ == '__main__':
     proveedor = "70017673"  # WorldClass Industries EU
     proveedor = "70018728"  # Soucy
 
-    proveedor = "70001256"  # ESP
+    proveedor = "70017078"  # Thyssenkrupp Campo Limpo
 
     pedidos_path_root = r"C:\Users\W8DE5P2\OneDrive-Deere&Co\OneDrive - Deere & Co\Desktop\Proveedores"
     pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt\John Deere Iberica SPW Open Order Report.pdf"
@@ -1172,14 +1173,12 @@ if __name__ == '__main__':
     pedidos_path = r"CLIIENTES JOHN DEERE\TIG\john deere iberica po 0016415 r1.pdf"
     pedidos_path = r"orders_history\ESP INTERNATIONAL_1223728_R116529"
     pedidos_path = r"extra\ESP\ESP ERROR.pdf"
-    pedidos_path = r"CLIIENTES JOHN DEERE\Skyway txt"
-    pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t14.pdf"
-    pedidos_path = r"CLIIENTES JOHN DEERE\WorldClass Industries\John Deere Iberica_ERRORES.pdf"
-    pedidos_path = r"CLIIENTES JOHN DEERE\JD Israel"
-    pedidos_path = r"CLIIENTES JOHN DEERE\ESP\t91.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo\t16.pdf"
+    pedidos_path = r"CLIIENTES JOHN DEERE\Thyssenkrupp Campo Limpo\Item 70000782_09.03.2023.pdf"
+
     pedidos_path = os.path.join(pedidos_path_root, pedidos_path)
 
-    is_img_shown = False
+    is_img_shown = True
     local = True
     ai_path = "." if local else None
     poppler_path = r"C:\Program Files (x86)\poppler-22.01.0\Library\bin" if local else None
