@@ -1,10 +1,12 @@
+import pandas as pd
 import tkinter as tk
 from ttkbootstrap import Style
 from _tkinter import TclError
 from .create_order_window.create_order_window import CreateOrderWindow
-from ..constants import resources_folder
+from ..constants import resources_folder, usuarios_root
 from .changes_history_window.changes_history_window import ChangesHistoryWindow
 from .orders_history_window.orders_history_window import OrdersHistoryWindow
+from .authorize_order_window.authorize_order_window import AuthorizeOrderWindow
 from .edit_order_window.edit_order_window import EditOrderWindow
 from .select_client_window.select_client_window import SelectClientWindow
 from ..gui.process_complete_window.process_complete_window import ProcessCompleteWindow
@@ -51,6 +53,7 @@ class Gui:
         self.process_complete_window = None
         self.settings_window = None
         self.installation_guide_window = None
+        self.authorize_order_window = None
         self.active_window = 'create_order'
         # --------------------VARIABLES-------------------------
         self.uploaded_file_root = None
@@ -73,11 +76,32 @@ class Gui:
         self.orders_history_window = OrdersHistoryWindow(self.root, self.gui)
         self.edit_order_window = EditOrderWindow(self.root, self.gui)
         self.select_client_window = SelectClientWindow(self.root, self.gui)
+        self.authorize_order_window = AuthorizeOrderWindow(self.root, self.gui)
         # self.process_complete_window = ProcessCompleteWindow(self.root, self.gui)
         self.settings_window = SettingsWindow(self.root, self.gui)
         self.installation_guide_window = InstallationGuideWindow(self.root, self.gui)
-        # Empezar en la pantalla de crear pedido
-        self.create_order_window.show()
+
+        # importar archivo Excel
+        df = pd.read_excel(usuarios_root)
+
+        tipo_usuario = ""
+
+        for idx, row in df.iterrows():
+            if row['Usuario'].upper() == os.getlogin().upper():
+                tipo_usuario = "A"
+
+            if row['Usuario Aprobador'].upper() == os.getlogin().upper():
+                tipo_usuario = "B"
+
+        if tipo_usuario == "A":
+            # Empezar en la pantalla de crear pedido
+            self.create_order_window.show()
+
+        if tipo_usuario == "B":
+            # Empezar en la pantalla de crear pedido
+            self.authorize_order_window.show()
+            self.active_window = "authorize_order"
+
 
     def update(self):
         """Funcion que actualiza la parte visual de la GUI"""

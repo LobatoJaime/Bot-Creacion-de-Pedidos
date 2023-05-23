@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['\\fcefactory1\\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\\Bot Creacion de Pedidos'],
+             pathex=['\\fcefactory1\\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\\BotCreacionDePedidos'],
              binaries=[],
              datas=[('C:\\Users\BUH2M45\\Documents\\GitHub\\Bot-Creacion-de-Pedidos\\venv\\Lib\\site-packages\\ttkbootstrap', 'ttkbootstrap'),],
              hiddenimports=['ttkbootstrap', 'importlib.resources', 'PIL.ImageFont', 'tkinter.font', 'openpyxl', 'pymssql'],
@@ -46,5 +46,5 @@ exe = EXE(pyz,
           target_arch=None,
           codesign_identity=None,
           entitlements_file=None,
-          icon="\\\\fcefactory1\\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\\Bot Creacion de Pedidos\\ProjectFiles\\Resources\\application.ico")
+          icon="\\\\fcefactory1\\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\\BotCreacionDePedidos\\ProjectFiles\\Resources\\application.ico")
 

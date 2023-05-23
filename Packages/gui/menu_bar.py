@@ -6,7 +6,9 @@ from ttkbootstrap import Style
 import pandas as pd
 import numpy as np
 from multiprocessing import Process, Queue, freeze_support
+from tabulate import tabulate
 
+from Bot.send_email import send_email
 from Packages.apply_to_sap.check_order_exists import check_order_exists
 from Packages.format_data.format_data import FormatData
 from Packages.get_planes_entrega import get_planes_entrega
@@ -27,7 +29,8 @@ from ..script_download_new_planes_entrega_from_sap import script_download_new_pl
 from ..validate_data.validate_data import validate_data
 from ..create_comparison_table_excel import create_comparison_table_excel
 from ..find_newest_dir import find_newest_dir
-from ..constants import changes_history_folder, orders_history_folder
+from ..constants import changes_history_folder, usuarios_root
+from ..get_user_info import get_user_info
 import os
 
 
@@ -38,28 +41,53 @@ class MenuBar:
         self.upload_order_window_names = (
             'create_order', 'create_order_loading_screen', 'edit_order', 'edit_order_2', 'select_client')
         button_width = 30
-        main_menu_button = ttk.Button(self.frame, text='Subir Nuevo Pedido',
-                                      command=lambda: [self.new_order_pressed()])
-        main_menu_button.grid(column=0, row=0, pady=0)
-        settings_button = ttk.Button(self.frame, text='Ajustes',
-                                     command=lambda: [self.settings_pressed()])
-        settings_button.grid(column=1, row=0, pady=0)
-        history_button = ttk.Button(self.frame, text='Historial de Cambios',
-                                    command=lambda: [self.changes_history_pressed()])
-        history_button.grid(column=2, row=0, pady=0)
-        orders_history_button = ttk.Button(self.frame, text='Historial de Ordenes',
-                                           command=lambda: [self.orders_history_pressed()])
-        orders_history_button.grid(column=3, row=0, pady=0)
-        installation_button = ttk.Button(self.frame, text='Guia de instalacion',
-                                         command=lambda: [self.installation_guide_pressed()])
-        installation_button.grid(column=4, row=0, pady=0)
-        self.next_button = ttk.Button(self.frame, text='Siguiente paso', style='success.TButton',
-                                      command=lambda: [self.import_important_vars(),
-                                                       self.next_pressed(), self.save_important_vars()])
-        self.next_button.grid(column=5, row=0, sticky='E')
-        for col_number in range(6):
-            self.frame.columnconfigure(col_number, weight=1)
-        self.import_important_vars()
+
+        # importar archivo Excel
+        df = pd.read_excel(usuarios_root)
+
+        tipo_usuario = ""
+
+        for idx, row in df.iterrows():
+            if row['Usuario'].upper() == get_user_info()[1].upper():
+                tipo_usuario = "A"
+
+            if row['Usuario Aprobador'].upper() == get_user_info()[1].upper():
+                tipo_usuario = "B"
+
+        if tipo_usuario == "A":
+
+            main_menu_button = ttk.Button(self.frame, text='Subir Nuevo Pedido',
+                                          command=lambda: [self.new_order_pressed()])
+            main_menu_button.grid(column=0, row=0, pady=0)
+            settings_button = ttk.Button(self.frame, text='Ajustes',
+                                         command=lambda: [self.settings_pressed()])
+            settings_button.grid(column=1, row=0, pady=0)
+            history_button = ttk.Button(self.frame, text='Historial de Cambios',
+                                        command=lambda: [self.changes_history_pressed()])
+            history_button.grid(column=2, row=0, pady=0)
+            orders_history_button = ttk.Button(self.frame, text='Historial de Ordenes',
+                                               command=lambda: [self.orders_history_pressed()])
+            orders_history_button.grid(column=3, row=0, pady=0)
+            installation_button = ttk.Button(self.frame, text='Guia de instalacion',
+                                             command=lambda: [self.installation_guide_pressed()])
+            installation_button.grid(column=4, row=0, pady=0)
+
+            self.next_button = ttk.Button(self.frame, text='Siguiente paso', style='success.TButton',
+                                          command=lambda: [self.import_important_vars(),
+                                                           self.next_pressed(), self.save_important_vars()])
+            self.next_button.grid(column=5, row=0, sticky='E')
+            for col_number in range(7):
+                self.frame.columnconfigure(col_number, weight=1)
+            self.import_important_vars()
+
+        if tipo_usuario == "B":
+            authorize_button = ttk.Button(self.frame, text='Autorizaciones',
+                                             command=lambda: [self.authorize_pressed()])
+            authorize_button.grid(column=6, row=0, pady=0)
+
+    def authorize_pressed(self):
+        self.gui.authorize_order_window.show()
+        self.gui.active_window = 'authorize_order'
 
     def new_order_pressed(self):
         if self.gui.active_window in self.upload_order_window_names:

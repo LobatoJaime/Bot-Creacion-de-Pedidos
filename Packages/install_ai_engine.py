@@ -14,7 +14,7 @@ def check_ai_engine_installed() -> (str, str):
     tesseract, luego pregunta e instala los archivos en caso de que no esten presentes y devuelves los paths
     de donde fue instalado"""
 
-    app_folder = r"C:\Bot Creacion de Pedidos"
+    app_folder = r"C:\BotCreacionDePedidos"
     poppler_path = os.path.join(app_folder, r'poppler-22.01.0\Library\bin')
     tesseract_exe_path = os.path.join(app_folder, r'Tesseract-OCR\tesseract.exe')
     tesseract_folder_path = os.path.join(app_folder, r'Tesseract-OCR')
@@ -31,7 +31,7 @@ def check_ai_engine_installed() -> (str, str):
 
 def download_ai() -> (str, str):
     print('Descargando archivos')
-    app_folder = r"C:\Bot Creacion de Pedidos"
+    app_folder = r"C:\BotCreacionDePedidos"
     poppler_path = os.path.join(app_folder, r'poppler-22.01.0\Library\bin')
     tesseract_exe_path = os.path.join(app_folder, r'Tesseract-OCR\tesseract.exe')
     tesseract_folder_path = os.path.join(app_folder, r'Tesseract-OCR')

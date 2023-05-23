@@ -1,4 +1,10 @@
 import win32com.client
+import pandas as pd
+from pandas import DataFrame
+import os
+from Packages.constants import temporal_exe_path
+import datetime
+
 
 
 def send_email(sender: str, subject: str, body: str, receivers: list, cc: list = None):
@@ -7,17 +13,23 @@ def send_email(sender: str, subject: str, body: str, receivers: list, cc: list =
     obj = win32com.client.Dispatch("Outlook.Application")
     newMail = obj.CreateItem(olMailItem)
     newMail.SentOnBehalfOfName = sender
+    now_time_dt = datetime.datetime.now()
+    now_time = now_time_dt.strftime('%d-%m-%Y_%Hh-%Mm')
+    body += str(now_time)
     newMail.Subject = subject
     newMail.Body = body
     newMail.To = "; ".join(receivers)
     newMail.Sensitivity = 2
     if cc is not None:
         newMail.CC = "; ".join(cc)
+
+
+
     newMail.Send()
 
 
 if __name__ == '__main__':
-    send_email(sender='JDISA_orders@JohnDeere.com',
+    send_email(sender='JDISA_ORDERS@JohnDeere.com',
                subject='TEST',
                body='Es un correo de prueba!',
-               receivers=['GuareschiSotoLuisRicardo@JohnDeere.com'])
+               receivers=['DelPinoVegaJuan@JohnDeere.com'])

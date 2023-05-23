@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from .client_settings import ClientSettings
 from .general_settings import GeneralSettings
+from .authorize_settings import AuthorizeSettings
 
 
 class SelectSettingsBar:
@@ -14,7 +15,7 @@ class SelectSettingsBar:
         self.widget_frame.columnconfigure(0, weight=1)
         self.widget_frame.rowconfigure(0, weight=1)
         headers = ['Ajustes']
-        settings = ['General', 'Clientes']
+        settings = ['General', 'Clientes', 'Aprobaciones']
         self.listbox = tk.Listbox(self.widget_frame, bd=0, font=("Helvetica", 12))
         for i, setting in enumerate(settings):
             self.listbox.insert(i, setting)
@@ -36,3 +37,6 @@ class SelectSettingsBar:
         elif self.selection == 'General':
             self.general_settings = GeneralSettings(self.right_widgets_window)
             self.general_settings.place(relx=0, rely=0, relheight=1, relwidth=1)
+        elif self.selection == 'Aprobaciones':
+            self.authorize_settings = AuthorizeSettings(self.right_widgets_window)
+            self.authorize_settings.place(relx=0, rely=0, relheight=1, relwidth=1)

@@ -131,8 +131,21 @@ class ChangesHistoryTable:
             user_info = self.comparison_table['user_info'][self.comparison_table.index[0]]
         except KeyError:
             user_info = 'No disponible'
-        user_label = tk.Label(self.table_frame, text='Subido por: {}'.format(user_info), justify='right', bg='#ecf0f1')
+
+        changes_info = 'Subido por: {} \n'.format(user_info)
+
+        for file in os.listdir(folder_root):
+            filename = os.fsdecode(file)
+            if filename.endswith(".txt"):
+                archivo = open(os.path.join(folder_root, filename), "r")
+                file_aprob = archivo.read()
+                changes_info += str(file_aprob) + "\n"
+                archivo.close()
+                # print(os.path.join(folder_root, filename))
+
+        user_label = tk.Label(self.table_frame, text=changes_info, justify='right', bg='#ecf0f1')
         user_label.grid(row=0, column=0, sticky='es', padx=5, pady=5)
+
         self.sub_tree.tag_configure('add', background='#79ffb2')
         self.sub_tree.tag_configure('del', background='#ff8080')
         self.sub_tree.tag_configure('change', background='#ffc143')

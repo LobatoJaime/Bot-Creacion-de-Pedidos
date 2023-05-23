@@ -1,13 +1,15 @@
-from Packages.constants import orders_history_folder
+from Packages.constants import authorize_order_folder
 import tkinter as tk
 from tkinter import ttk, messagebox
 import pandas as pd
 import os
 import datetime as dt
+from ...authorization import firm_order
+from ...get_user_info import get_user_info
 import shutil
 
 
-class OrdersHistoryTable:
+class AuthorizeOrderTable:
     """Clase donde se crea el objeto visual para
     visualizar todas las ordenes que han sido subidas
     por cliente y nro de orden"""
@@ -19,9 +21,10 @@ class OrdersHistoryTable:
         self.list_frame = ttk.Frame(parent_window)
         self.list_frame.rowconfigure(0, weight=1)
         self.list_frame.columnconfigure(0, weight=1)
-        folders_names = os.listdir(orders_history_folder)
+        self.authorize_order_folder_user = os.path.join(authorize_order_folder, get_user_info()[1].upper())
+        folders_names = os.listdir(self.authorize_order_folder_user)
         folders_names = sorted(folders_names,
-                               key=lambda x: os.path.getmtime(os.path.join(orders_history_folder, x)), reverse=True)
+                               key=lambda x: os.path.getmtime(os.path.join(self.authorize_order_folder_user, x)), reverse=True)
         headers = ['Cliente', 'Numero de Orden', 'Referencia']
         self.tree = ttk.Treeview(self.list_frame, columns=headers,
                                  show='headings')
@@ -89,7 +92,7 @@ class OrdersHistoryTable:
         self.selected_order_number = selection_order_number
         self.selected_reference = selection_reference
         folder_name = '{}_{}_{}'.format(selection_client, selection_order_number, selection_reference)
-        self.folder_root = os.path.join(orders_history_folder, folder_name)
+        self.folder_root = os.path.join(self.authorize_order_folder_user, folder_name)
         all_file_names = os.listdir(self.folder_root)
         all_file_names = sorted(all_file_names,
                                 key=lambda x: os.path.getmtime(os.path.join(self.folder_root, x)), reverse=True)
@@ -144,6 +147,20 @@ class OrdersHistoryTable:
             except FileNotFoundError:
                 pass
 
+        def firm(path, time, folder_path):
+            confirm_changes = messagebox.askyesno("Warning", 'Desea firmar la orden?\n',
+                                                  icon='info')
+            if not confirm_changes:
+                return
+
+            firm_order(path, time)
+            print(path)
+
+            for file in os.listdir(folder_path):
+                filename = os.fsdecode(file)
+                if time in filename:
+                    os.remove(os.path.join(folder_path, filename))
+
         current_item = self.sub_tree.focus()
         clicked_row = self.sub_tree.item(current_item)
         upload_date = clicked_row['values'][0]
@@ -162,7 +179,7 @@ class OrdersHistoryTable:
         client = self.selected_client
         order_number = self.selected_order_number
         reference = self.selected_reference
-        folder_path = os.path.join(orders_history_folder, '{}_{}_{}'.format(client, order_number, reference))
+        folder_path = os.path.join(self.authorize_order_folder_user, '{}_{}_{}'.format(client, order_number, reference))
         file_paths = []
         for upload_date in self.clicked_values:
             if self.clicked_values[upload_date]:
@@ -196,16 +213,7 @@ class OrdersHistoryTable:
                 info_box.rowconfigure(4, weight=1)
                 info_box.rowconfigure(5, weight=1)
                 info_box.rowconfigure(6, weight=1)
-                info_box.rowconfigure(7, weight=1)
-                info_box.rowconfigure(8, weight=1)
-                info_box.rowconfigure(9, weight=1)
-                info_box.rowconfigure(10, weight=1)
-                info_box.rowconfigure(11, weight=1)
-                info_box.rowconfigure(12, weight=1)
-                info_box.rowconfigure(13, weight=1)
-                info_box.rowconfigure(14, weight=1)
-                info_box.rowconfigure(15, weight=1)
-                info_box.rowconfigure(16, weight=1)
+
                 info_box.columnconfigure(0, weight=1)
                 info_box.columnconfigure(1, weight=1)
 
@@ -214,41 +222,16 @@ class OrdersHistoryTable:
                 aux = ttk.Label(info_box, text=upload_date).grid(row=3, column=0, sticky='w')
                 aux = ttk.Label(info_box, text="").grid(row=4, column=0, sticky='w')
 
+
                 settings_button = ttk.Button(info_box, text='Ver PDF', command=lambda: [open_pdf(file_path.replace("xlsx", "pdf"))])
+                settings_button.grid(column=0, row=5, pady=0)
+
+                label_aprobacion = ttk.Label(info_box, text="").grid(row=6, column=0, sticky='w')
+
+                settings_button = ttk.Button(info_box, text='Firmar',
+                                             command=lambda: [firm(os.path.join(authorize_order_folder, '{}_{}_{}'.format(client, order_number, reference)).replace("authorize_order", "orders_history"), upload_date, folder_path)])
                 settings_button.grid(column=0, row=7, pady=0)
 
-                changes_info = ""
-                found = False
-
-                for file in os.listdir(folder_path):
-                    filename = os.fsdecode(file)
-
-                    if filename.endswith(".txt") and upload_date in filename:
-                        archivo = open(os.path.join(folder_path, filename), "r")
-                        file_aprob = archivo.read()
-
-                        text = file_aprob.split(" ")
-
-                        format_text = text[0] + " " + text[1] + " " + text[2] + "\n " + text[3] + "\n" + text[4] + " " + text[5] + "\n " + text[6]
-
-                        changes_info += str(format_text) + "\n\n"
-                        archivo.close()
-                        found = True
-
-                if not found:
-                    changes_info = "Aprobación no disponible"
-
-                label_aprobacion = ttk.Label(info_box, text=changes_info).grid(row=5, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=6, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=8, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=9, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=10, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=11, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=12, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=13, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=14, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=15, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=16, column=0, sticky='w')
 
         for index in orders_history.index:
             ship_out_date_raw = orders_history['ship_out_date'][index].split(' ')[0]
@@ -336,8 +319,6 @@ class OrdersHistoryTable:
         selection_date = clicked_row['values'][0]
         file_root = os.path.join(self.folder_root, '{}.pdf'.format(selection_date))
         menu = tk.Menu(self.list_frame, tearoff=0)
-        menu.add_command(label="Ver Pedido", command=lambda: [open_pdf(file_root)])
-        menu.add_command(label="Eliminar Pedido", command=lambda: [self.delete_order(file_root, current_item)])
         menu.tk_popup(event.x_root, event.y_root)
         menu.grab_release()
 
