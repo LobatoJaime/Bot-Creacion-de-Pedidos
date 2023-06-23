@@ -2,7 +2,6 @@ import win32com.client
 import pandas as pd
 from pandas import DataFrame
 import os
-from Packages.constants import temporal_exe_path
 import datetime
 
 

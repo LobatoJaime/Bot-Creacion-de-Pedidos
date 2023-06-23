@@ -11,7 +11,10 @@ from .edit_order_window.edit_order_window import EditOrderWindow
 from .select_client_window.select_client_window import SelectClientWindow
 from ..gui.process_complete_window.process_complete_window import ProcessCompleteWindow
 from .settings_window.settings_window import SettingsWindow
+from .ask_authorization_window.ask_authorization_window import AskAuthorizationWindow
 from .installation_guide_window import InstallationGuideWindow
+from .tracking_window.tracking_history_window import TrackingHistoryWindow
+from .approved_orders_window.approved_orders_window import ApprovedOrdersWindow
 import ctypes
 import os
 
@@ -54,6 +57,9 @@ class Gui:
         self.settings_window = None
         self.installation_guide_window = None
         self.authorize_order_window = None
+        self.ask_authorization_window = None
+        self.tracking_window = None
+        self.approved_orders = None
         self.active_window = 'create_order'
         # --------------------VARIABLES-------------------------
         self.uploaded_file_root = None
@@ -77,6 +83,9 @@ class Gui:
         self.edit_order_window = EditOrderWindow(self.root, self.gui)
         self.select_client_window = SelectClientWindow(self.root, self.gui)
         self.authorize_order_window = AuthorizeOrderWindow(self.root, self.gui)
+        self.ask_authorization_window = AskAuthorizationWindow(self.root, self.gui)
+        self.tracking_window = TrackingHistoryWindow(self.root, self.gui)
+        self.approved_orders = ApprovedOrdersWindow(self.root, self.gui)
         # self.process_complete_window = ProcessCompleteWindow(self.root, self.gui)
         self.settings_window = SettingsWindow(self.root, self.gui)
         self.installation_guide_window = InstallationGuideWindow(self.root, self.gui)

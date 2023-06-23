@@ -18,10 +18,13 @@ updated_references_folder = r'\\fgetceapp7\Input'
 planes_entrega_folder = resources_folder
 codigo_sap_clientes_root = os.path.join(resources_folder, 'codigo_sap_clientes.xlsx')
 usuarios_root = os.path.join(resources_folder, 'usuarios.xlsx')
+tracking_root = os.path.join(resources_folder, 'tracking.xlsx')
 exports_folder = os.path.join(resources_folder, 'exports')
 changes_history_folder = os.path.join(resources_folder, 'changes_history')
 orders_history_folder = os.path.join(resources_folder, 'orders_history')
 authorize_order_folder = os.path.join(resources_folder, 'authorize_order')
+tracking_history_folder = os.path.join(resources_folder, 'tracking_history')
+appoved_order_folder = os.path.join(resources_folder, "approved_orders")
 downloads_folder = os.path.join(os.getenv('USERPROFILE'), 'Downloads')
 images_folder = os.path.join(resources_folder, 'images')
 github_repo_adress = 'https://github.com/JuanDelPinoJD/Bot-Creacion-de-Pedidos'
@@ -44,7 +47,6 @@ ai_supported_clients.sort()
 # ----------------------------------------------------
 ai_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\BotCreacionDePedidos\ProjectFiles\Resources\AI_files"
 poppler_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\BotCreacionDePedidos\ProjectFiles\Resources\poppler-22.01.0\Library\bin"
-temporal_exe_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\BotCreacionDePedidos\Temporal"
 poppler_online_folder_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\BotCreacionDePedidos\ProjectFiles\Resources\poppler-22.01.0"
 tesseract_exe_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\BotCreacionDePedidos\ProjectFiles\Resources\Tesseract-OCR\tesseract.exe"
 tesseract_folder_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\BotCreacionDePedidos\ProjectFiles\Resources\Tesseract-OCR"

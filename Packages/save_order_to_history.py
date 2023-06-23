@@ -1,11 +1,12 @@
 import pandas as pd
 import os
-from .constants import orders_history_folder, authorize_order_folder, usuarios_root
+from .constants import orders_history_folder, tracking_history_folder
 import datetime
 import shutil
 from .authorization import authorize_order
 from .send_authorization import send_authorization_email
 from .get_user_info import get_user_info
+from .tracking import add_tracking
 
 
 def save_order_to_history(orders: pd.DataFrame, uploaded_file_root: str):
@@ -28,41 +29,40 @@ def save_order_to_history(orders: pd.DataFrame, uploaded_file_root: str):
     shutil.copy(uploaded_file_root, os.path.join(sub_folder_save_path, po_file_name))
     pdf_save_path = os.path.join(sub_folder_save_path, po_file_name)
 
-    # importar archivo Excel
-    df = pd.read_excel(usuarios_root)
+    authorize_order(sub_folder_save_path, now_time, client, order_number, reference)
 
-    aprobador_folder = None
-    aprobador_email = None
+    shutil.copy(uploaded_file_root, os.path.join(tracking_history_folder, po_file_name))
+    excel_track_path = os.path.join(tracking_history_folder, excel_file_name)
+    orders.to_excel(excel_track_path)
 
-    for idx, row in df.iterrows():
-        if row['Usuario'].upper() == get_user_info()[1].upper():
-            aprobador_folder = row['Usuario Aprobador'].upper()
-            aprobador_email = row['Email Aprobador'].upper()
+    add_tracking(id=now_time,
+                 order=sub_folder_name,
+                 state="Subido SAP",
+                 author='{}/{}'.format(get_user_info()[0], get_user_info()[1]),
+                 date=now_time,
+                 orderpdf=os.path.join(tracking_history_folder, po_file_name),
+                 comparisonexcel=os.path.join(tracking_history_folder, excel_file_name))
 
-    if aprobador_folder is not None:
-        sub_folder_auth_save_path = os.path.join(authorize_order_folder, aprobador_folder)
+    file_dates = []
 
-        if not os.path.isdir(sub_folder_auth_save_path):
-            os.mkdir(sub_folder_auth_save_path)
+    for file in os.listdir(sub_folder_save_path):
+        filename = os.fsdecode(file)
 
-        sub_folder_auth_save_path = os.path.join(sub_folder_auth_save_path, sub_folder_name)
-        excel_auth_save_path = os.path.join(sub_folder_auth_save_path, excel_file_name)
+        name_ext = filename.split(".")
 
-        if not os.path.isdir(sub_folder_auth_save_path):
-            os.mkdir(sub_folder_auth_save_path)
+        if len(name_ext[0]) > len(now_time):
+            file_dates.append(name_ext[0].split("+")[0])
+        else:
+            file_dates.append(name_ext[0])
 
-        orders.to_excel(excel_auth_save_path)
-        po_file_name = '{}.pdf'.format(now_time)
-        shutil.copy(uploaded_file_root, os.path.join(sub_folder_auth_save_path, po_file_name))
-        pdf_save_auth_path = os.path.join(sub_folder_auth_save_path, po_file_name)
+    for file in os.listdir(sub_folder_save_path):
+        filename = os.fsdecode(file)
 
-        print("Creando aprobacion")
-        authorize_order(sub_folder_save_path, now_time)
-        print("Enviando aprobacion")
-        send_authorization_email(user=get_user_info(),
-                                 client=str(client),
-                                 order_number=str(order_number),
-                                 receivers=[aprobador_email])
+        if filename.endswith(".txt") and "aprobacionsol" in filename:
+            if file_dates.count(filename.split("+")[0]) == 1:
+                print("FILE")
+                print(filename)
+                new_name = now_time + "+" + filename.split("+")[1] + "+" + filename.split("+")[2] + "+" + filename.split("+")[3]
+                shutil.copy(os.path.join(sub_folder_save_path, filename), os.path.join(sub_folder_save_path, new_name))
 
-
-
+                os.remove(os.path.join(sub_folder_save_path, filename))

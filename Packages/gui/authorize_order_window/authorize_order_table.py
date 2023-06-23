@@ -1,4 +1,4 @@
-from Packages.constants import authorize_order_folder
+from Packages.constants import authorize_order_folder, tracking_history_folder, appoved_order_folder, usuarios_root
 import tkinter as tk
 from tkinter import ttk, messagebox
 import pandas as pd
@@ -6,7 +6,10 @@ import os
 import datetime as dt
 from ...authorization import firm_order
 from ...get_user_info import get_user_info
+from ...send_authorization import send_notification, send_reject
+from ...tracking import add_tracking
 import shutil
+
 
 
 class AuthorizeOrderTable:
@@ -22,10 +25,16 @@ class AuthorizeOrderTable:
         self.list_frame.rowconfigure(0, weight=1)
         self.list_frame.columnconfigure(0, weight=1)
         self.authorize_order_folder_user = os.path.join(authorize_order_folder, get_user_info()[1].upper())
+
+
+        if not os.path.isdir(self.authorize_order_folder_user):
+            os.mkdir(self.authorize_order_folder_user)
+
         folders_names = os.listdir(self.authorize_order_folder_user)
+
         folders_names = sorted(folders_names,
                                key=lambda x: os.path.getmtime(os.path.join(self.authorize_order_folder_user, x)), reverse=True)
-        headers = ['Cliente', 'Numero de Orden', 'Referencia']
+        headers = ['Cliente', 'Numero de Orden', 'Fecha']
         self.tree = ttk.Treeview(self.list_frame, columns=headers,
                                  show='headings')
         for value in headers:
@@ -51,7 +60,6 @@ class AuthorizeOrderTable:
         self.tree.configure(xscroll=scrollbarX.set)
         scrollbarX.grid(row=1, column=0, sticky='ew')
         self.tree.bind("<Double-1>", self.value_clicked)
-        self.tree.bind("<Button-3>", self.on_right_click)
         # -----------------Filtros---------------------------------------------
         self.rows_id_back_up = self.tree.get_children()
         self.client_names.append('Ver todos')
@@ -67,7 +75,6 @@ class AuthorizeOrderTable:
         self.client_filter.bind("<<ComboboxSelected>>", lambda event: self.filter_clicked())
         self.client_filter.grid(row=1, column=0, sticky='w')
         self.client_filter.set('Ver todos')
-
 
     def value_clicked(self, event):
         try:
@@ -99,7 +106,7 @@ class AuthorizeOrderTable:
         file_names = []
         # Mostrar solo los excels
         for file in all_file_names:
-            if '.pdf' not in file and '.txt' not in file:
+            if '.pdf' not in file and '.txt' not in file and "orders" not in file and "delete" not in file:
                 file_names.append(file)
 
         # Crear sublista
@@ -130,10 +137,8 @@ class AuthorizeOrderTable:
         self.sub_tree.configure(xscroll=scrollbarX.set)
         scrollbarX.grid(row=1, column=0, sticky='ew')
         self.sub_tree.bind("<Double-1>", self.sub_value_clicked)
-        self.sub_tree.bind("<Button-3>", self.on_right_click)
         self.sub_list_frame.place(rely=0.05, relx=0.27, relheight=0.92, relwidth=.1)
         self.sub_tree.configure(selectmode='none')
-        self.sub_tree.bind("<Button-3>", self.on_right_sub_click)
         # Hacer diccionario para ver a que elementos se les ha hecho click
         self.clicked_values = {}
         for upload_date in self.upload_dates:
@@ -147,19 +152,89 @@ class AuthorizeOrderTable:
             except FileNotFoundError:
                 pass
 
-        def firm(path, time, folder_path):
+        def firm(path, time, folder_path, client, order_number, reference):
             confirm_changes = messagebox.askyesno("Warning", 'Desea firmar la orden?\n',
                                                   icon='info')
             if not confirm_changes:
                 return
 
-            firm_order(path, time)
-            print(path)
+            firm_order(path, time, client, order_number, reference)
 
-            for file in os.listdir(folder_path):
-                filename = os.fsdecode(file)
-                if time in filename:
-                    os.remove(os.path.join(folder_path, filename))
+            send_notification(user=get_user_info(),
+                              client=client,
+                              order_number=order_number,
+                              reference=reference)
+
+            po_file_name = '{}.pdf'.format(upload_date)
+            px_file_name = '{}.xlsx'.format(upload_date)
+            px_order_file_name = '{}-orders.xlsx'.format(upload_date)
+            px_delete_row_name = '{}-delete.xlsx'.format(upload_date)
+            txt_file_name = '{}.txt'.format(upload_date)
+            txt_rows_file_name = '{}-rows.txt'.format(upload_date)
+            shutil.copy(os.path.join(folder_path, po_file_name), os.path.join(tracking_history_folder, po_file_name))
+            shutil.copy(os.path.join(folder_path, px_file_name), os.path.join(tracking_history_folder, px_file_name))
+
+            # importar archivo Excel
+            df = pd.read_excel(usuarios_root)
+
+            sap_user = None
+
+            for idx, row in df.iterrows():
+                if row['Usuario Aprobador'].upper() == get_user_info()[1].upper():
+                    sap_user = row['Usuario'].upper()
+
+            approved_folder = os.path.join(appoved_order_folder, sap_user)
+
+            if not os.path.isdir(approved_folder):
+                os.mkdir(approved_folder)
+
+            client_folder = '{}_{}_{}'.format(client, order_number, reference)
+
+            approved_folder = os.path.join(approved_folder, client_folder)
+
+            if not os.path.isdir(approved_folder):
+                os.mkdir(approved_folder)
+
+            shutil.copy(os.path.join(folder_path, po_file_name), os.path.join(approved_folder, po_file_name))
+            shutil.copy(os.path.join(folder_path, px_file_name), os.path.join(approved_folder, px_file_name))
+            shutil.copy(os.path.join(folder_path, txt_file_name), os.path.join(approved_folder, txt_file_name))
+            shutil.copy(os.path.join(folder_path, px_order_file_name), os.path.join(approved_folder, px_order_file_name))
+            shutil.copy(os.path.join(folder_path, px_delete_row_name), os.path.join(approved_folder, px_delete_row_name))
+            shutil.copy(os.path.join(folder_path, txt_rows_file_name), os.path.join(approved_folder, txt_rows_file_name))
+
+            os.remove(os.path.join(folder_path, str(upload_date) + ".pdf"))
+            os.remove(os.path.join(folder_path, str(upload_date) + ".xlsx"))
+            os.remove(os.path.join(folder_path, str(upload_date) + "-orders" + ".xlsx"))
+            os.remove(os.path.join(folder_path, str(upload_date) + "-delete" + ".xlsx"))
+            os.remove(os.path.join(folder_path, str(upload_date) + "-rows.txt"))
+            os.remove(os.path.join(folder_path, str(upload_date) + ".txt"))
+            os.rmdir(folder_path)
+
+            add_tracking(id=time,
+                         order='{}_{}_{}'.format(self.selected_client,
+                                                 self.selected_order_number,
+                                                 reference),
+                         state="Aprobado",
+                         author='{}/{}'.format(get_user_info()[0], get_user_info()[1]),
+                         date=time,
+                         orderpdf=os.path.join(tracking_history_folder, po_file_name),
+                         comparisonexcel=os.path.join(tracking_history_folder, px_file_name))
+
+        def reject(path, time, folder_path, client, order_number, reference):
+            confirm_changes = messagebox.askyesno("Warning", 'Desea rechazar la orden?\n',
+                                                  icon='info')
+            if not confirm_changes:
+                return
+
+            send_reject(user=get_user_info(), client=client, order_number=order_number, reference=reference)
+
+            os.remove(os.path.join(folder_path, str(upload_date) + ".pdf"))
+            os.remove(os.path.join(folder_path, str(upload_date) + ".xlsx"))
+            os.remove(os.path.join(folder_path, str(upload_date) + "-orders" + ".xlsx"))
+            os.remove(os.path.join(folder_path, str(upload_date) + "-delete" + ".xlsx"))
+            os.remove(os.path.join(folder_path, str(upload_date) + ".txt"))
+            os.remove(os.path.join(folder_path, str(upload_date) + "-rows.txt"))
+            os.rmdir(folder_path)
 
         current_item = self.sub_tree.focus()
         clicked_row = self.sub_tree.item(current_item)
@@ -201,7 +276,6 @@ class AuthorizeOrderTable:
             order_dataframe.insert(0, 'upload_date', upload_dates)
             orders_history = orders_history.append(order_dataframe, ignore_index=True)
 
-
             if len(file_paths) == 1:
 
                 info_box = ttk.Labelframe(self.parent_window, text='Informacion de Ordenes', padding=10)
@@ -213,6 +287,7 @@ class AuthorizeOrderTable:
                 info_box.rowconfigure(4, weight=1)
                 info_box.rowconfigure(5, weight=1)
                 info_box.rowconfigure(6, weight=1)
+                info_box.rowconfigure(8, weight=1)
 
                 info_box.columnconfigure(0, weight=1)
                 info_box.columnconfigure(1, weight=1)
@@ -221,17 +296,29 @@ class AuthorizeOrderTable:
                 aux = ttk.Label(info_box, text="").grid(row=2, column=0, sticky='w')
                 aux = ttk.Label(info_box, text=upload_date).grid(row=3, column=0, sticky='w')
                 aux = ttk.Label(info_box, text="").grid(row=4, column=0, sticky='w')
+                aux = ttk.Label(info_box, text="").grid(row=8, column=0, sticky='w')
 
-
-                settings_button = ttk.Button(info_box, text='Ver PDF', command=lambda: [open_pdf(file_path.replace("xlsx", "pdf"))])
-                settings_button.grid(column=0, row=5, pady=0)
+                pdf_button = ttk.Button(info_box, text='Ver PDF', command=lambda: [open_pdf(file_path.replace("xlsx", "pdf"))])
+                pdf_button.grid(column=0, row=5, pady=0)
 
                 label_aprobacion = ttk.Label(info_box, text="").grid(row=6, column=0, sticky='w')
 
-                settings_button = ttk.Button(info_box, text='Firmar',
-                                             command=lambda: [firm(os.path.join(authorize_order_folder, '{}_{}_{}'.format(client, order_number, reference)).replace("authorize_order", "orders_history"), upload_date, folder_path)])
-                settings_button.grid(column=0, row=7, pady=0)
+                now_time_dt = dt.datetime.now()
+                now_time = now_time_dt.strftime('%d-%m-%Y_%Hh-%Mm')
 
+                firm_button = ttk.Button(info_box, text='Firmar',
+                                             command=lambda: [firm(os.path.join(authorize_order_folder, '{}_{}_{}'.format(client, order_number, reference)).replace("authorize_order", "orders_history"),
+                                                                   now_time, folder_path, client, order_number, orders_history['reference'][0])])
+                firm_button.grid(column=0, row=7, pady=0)
+
+                reject_button = ttk.Button(info_box, text='Rechazar',
+                                         command=lambda: [reject(os.path.join(authorize_order_folder,
+                                                                            '{}_{}_{}'.format(client, order_number,
+                                                                                              reference)).replace(
+                                             "authorize_order", "orders_history"),
+                                                               now_time, folder_path, client, order_number,
+                                                               orders_history['reference'][0])])
+                reject_button.grid(column=0, row=9, pady=0)
 
         for index in orders_history.index:
             ship_out_date_raw = orders_history['ship_out_date'][index].split(' ')[0]
@@ -258,8 +345,8 @@ class AuthorizeOrderTable:
         self.history_tree_frame = ttk.Frame(self.parent_window, height=190, width=200)
         self.history_tree_frame.rowconfigure(0, weight=1)
         self.history_tree_frame.columnconfigure(0, weight=1)
-        headers = ['Fecha de Pedido', 'Numero de Orden', 'Cliente', 'Codigo SAP', 'Referencia',
-                   'Cantidad', 'Fecha Reparto', 'Fecha de llegada']
+        headers = ['Numero de Orden', 'Cliente', 'Codigo SAP', 'Referencia',
+                   'Cantidad', 'Fecha Reparto', 'Fecha de llegada', "Periodo congelado", "Accion"]
         self.history_tree = ttk.Treeview(self.history_tree_frame, columns=headers, show='headings')
         col_n = 0
         for value in headers:
@@ -278,7 +365,6 @@ class AuthorizeOrderTable:
             i = i + 1
 
         for index in orders_history.index:
-            upload_date = orders_history['upload_date'][index]
             order_number = orders_history['order_number'][index]
             client = orders_history['client'][index]
             sap_code = orders_history['sap_code'][index]
@@ -286,8 +372,10 @@ class AuthorizeOrderTable:
             quantity = orders_history['quantity'][index]
             ship_out_date = orders_history['ship_out_date'][index]
             arrival_date = orders_history['arrival_date'][index]
-            values = (upload_date, order_number, client, sap_code,
-                      reference, quantity, ship_out_date, arrival_date)
+            congelado_value = orders_history['en_periodo_congelado'][index]
+            action_value = orders_history['action'][index]
+            values = (order_number, client, sap_code,
+                      reference, quantity, ship_out_date, arrival_date, congelado_value, action_value)
             tag = tags_dict[upload_date]
             self.history_tree.insert('', tk.END, values=values, tags=(tag,))
             self.history_tree.grid(row=0, column=0, sticky='ns')
@@ -305,46 +393,6 @@ class AuthorizeOrderTable:
         self.history_tree_frame.place(rely=0.05, relx=0.37, relheight=0.92, relwidth=(1 - .56))
         self.history_tree.configure(selectmode='none')
         self.history_tree.tag_configure(tagname=1, background='lightgrey')
-
-    def on_right_sub_click(self, event):
-        def open_pdf(file_root):
-            try:
-                os.startfile(file_root)
-            except FileNotFoundError:
-                pass
-
-        current_item = self.sub_tree.identify_row(event.y)
-        self.sub_tree.selection_set(current_item)
-        clicked_row = self.sub_tree.item(current_item)
-        selection_date = clicked_row['values'][0]
-        file_root = os.path.join(self.folder_root, '{}.pdf'.format(selection_date))
-        menu = tk.Menu(self.list_frame, tearoff=0)
-        menu.tk_popup(event.x_root, event.y_root)
-        menu.grab_release()
-
-    def on_right_click(self, event):
-        pass
-
-    def delete_order(self, file_root, current_item):
-        confirm_changes = messagebox.askyesno("Warning", 'Estas seguro que deseas borrar este archivo?\n'
-                                                         'Esta accion no se puede revertir',
-                                              icon='info')
-        if confirm_changes:
-            # remover pdf primero
-            try:
-                os.remove(file_root)
-            except FileNotFoundError:
-                pass
-            # remover excel despues
-            try:
-                excel_file_root = file_root.split('.pdf')[0]+'.xlsx'
-                os.remove(excel_file_root)
-            except FileNotFoundError:
-                pass
-            self.sub_tree.delete(current_item)
-            if not os.listdir(self.folder_root):
-                os.rmdir(self.folder_root)
-                self.tree.delete(self.main_item_clicked)
 
     def filter_clicked(self):
         try:

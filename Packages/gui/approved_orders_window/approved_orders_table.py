@@ -1,28 +1,40 @@
-from Packages.constants import orders_history_folder
+from Packages.constants import appoved_order_folder
 import tkinter as tk
 from tkinter import ttk, messagebox
 import pandas as pd
 import os
 import datetime as dt
+from ...get_user_info import get_user_info
 import shutil
+from multiprocessing import Process, Queue
+from ...save_order_to_history import save_order_to_history
+from ..apply_changes_loading_window import ApplyChangesLoadingWindow
 
 
-class OrdersHistoryTable:
+
+class ApprovedOrdersTable:
     """Clase donde se crea el objeto visual para
     visualizar todas las ordenes que han sido subidas
     por cliente y nro de orden"""
 
-    def __init__(self, parent_window: tk.Frame):
+    def __init__(self, parent_window: tk.Frame, menu_bar):
         self.parent_window = parent_window
         self.client_names = []
+        self.menu_bar = menu_bar
         # Hacer lista de los cambios hechos
         self.list_frame = ttk.Frame(parent_window)
         self.list_frame.rowconfigure(0, weight=1)
         self.list_frame.columnconfigure(0, weight=1)
-        folders_names = os.listdir(orders_history_folder)
+        self.approved_order_folder_user = os.path.join(appoved_order_folder, get_user_info()[1].upper())
+
+        if not os.path.isdir(self.approved_order_folder_user):
+            os.mkdir(self.approved_order_folder_user)
+
+        folders_names = os.listdir(self.approved_order_folder_user)
+
         folders_names = sorted(folders_names,
-                               key=lambda x: os.path.getmtime(os.path.join(orders_history_folder, x)), reverse=True)
-        headers = ['Cliente', 'Numero de Orden', 'Referencia']
+                               key=lambda x: os.path.getmtime(os.path.join(self.approved_order_folder_user, x)), reverse=True)
+        headers = ['Cliente', 'Numero de Orden', 'Fecha']
         self.tree = ttk.Treeview(self.list_frame, columns=headers,
                                  show='headings')
         for value in headers:
@@ -48,7 +60,6 @@ class OrdersHistoryTable:
         self.tree.configure(xscroll=scrollbarX.set)
         scrollbarX.grid(row=1, column=0, sticky='ew')
         self.tree.bind("<Double-1>", self.value_clicked)
-        self.tree.bind("<Button-3>", self.on_right_click)
         # -----------------Filtros---------------------------------------------
         self.rows_id_back_up = self.tree.get_children()
         self.client_names.append('Ver todos')
@@ -64,7 +75,6 @@ class OrdersHistoryTable:
         self.client_filter.bind("<<ComboboxSelected>>", lambda event: self.filter_clicked())
         self.client_filter.grid(row=1, column=0, sticky='w')
         self.client_filter.set('Ver todos')
-
 
     def value_clicked(self, event):
         try:
@@ -89,14 +99,14 @@ class OrdersHistoryTable:
         self.selected_order_number = selection_order_number
         self.selected_reference = selection_reference
         folder_name = '{}_{}_{}'.format(selection_client, selection_order_number, selection_reference)
-        self.folder_root = os.path.join(orders_history_folder, folder_name)
+        self.folder_root = os.path.join(self.approved_order_folder_user, folder_name)
         all_file_names = os.listdir(self.folder_root)
         all_file_names = sorted(all_file_names,
                                 key=lambda x: os.path.getmtime(os.path.join(self.folder_root, x)), reverse=True)
         file_names = []
         # Mostrar solo los excels
         for file in all_file_names:
-            if '.pdf' not in file and '.txt' not in file:
+            if '.pdf' not in file and '.txt' not in file and '-orders' not in file and '-delete' not in file:
                 file_names.append(file)
 
         # Crear sublista
@@ -127,10 +137,8 @@ class OrdersHistoryTable:
         self.sub_tree.configure(xscroll=scrollbarX.set)
         scrollbarX.grid(row=1, column=0, sticky='ew')
         self.sub_tree.bind("<Double-1>", self.sub_value_clicked)
-        self.sub_tree.bind("<Button-3>", self.on_right_click)
         self.sub_list_frame.place(rely=0.05, relx=0.27, relheight=0.92, relwidth=.1)
         self.sub_tree.configure(selectmode='none')
-        self.sub_tree.bind("<Button-3>", self.on_right_sub_click)
         # Hacer diccionario para ver a que elementos se les ha hecho click
         self.clicked_values = {}
         for upload_date in self.upload_dates:
@@ -143,6 +151,79 @@ class OrdersHistoryTable:
                 os.startfile(file_root)
             except FileNotFoundError:
                 pass
+
+        def upload_SAP(folder_path):
+            confirm_changes = messagebox.askyesno("Warning", 'Desea subir los cambios a SAP?\n',
+                                                  icon='info')
+            if not confirm_changes:
+                return
+
+            all_file_names = os.listdir(folder_path)
+
+            excel_name = None
+            txt_name = None
+            excel_orders_name = None
+            pdf_name = None
+            excel_delete_rows_name = None
+            txt_rows_name = None
+
+            # Mostrar solo los excels
+            for file in all_file_names:
+                if '.xlsx' in file and "orders" not in file:
+                    excel_name = file
+
+                if '.xlsx' in file and "orders" in file:
+                    excel_orders_name = file
+
+                if '.xlsx' in file and "delete" in file:
+                    excel_delete_rows_name = file
+
+                if '.txt' in file and "rows" not in file:
+                    txt_name = file
+
+                if '.txt' in file and "rows" in file:
+                    txt_rows_name = file
+
+                if '.pdf' in file:
+                    pdf_name = file
+
+            if excel_name is not None and txt_name is not None and excel_orders_name is not None and pdf_name is not None and excel_delete_rows_name is not None and txt_rows_name is not None:
+                self.order_changes = pd.read_excel(os.path.join(folder_path, excel_name)).reset_index(drop=True)
+                self.orders = pd.read_excel(os.path.join(folder_path, excel_orders_name)).reset_index(drop=True)
+                self.delete_rows_log = pd.read_excel(os.path.join(folder_path, excel_delete_rows_name))
+
+                with open(os.path.join(folder_path, txt_name)) as f:
+                    self.order_exists = f.readline()
+
+                self.rows_delete = []
+
+                with open(os.path.join(folder_path, txt_rows_name)) as f:
+                    row_list = f.readline().split("+")
+                    print(row_list)
+                    for l in row_list:
+                        if l != '':
+                            self.rows_delete.append(int(l))
+
+                print("ORDER CHANGES")
+                print(self.order_changes)
+                print("ORDER EXISTS")
+                print(self.order_exists)
+                print("ORDERS")
+                print(self.orders)
+                print("DELETE LOG")
+                print(self.delete_rows_log)
+                print("ROWS DELETE")
+                print(self.rows_delete)
+
+                self.menu_bar.run_sap(self.order_changes, self.order_exists, self.orders, os.path.join(folder_path, pdf_name), self.delete_rows_log, self.rows_delete)
+
+                for file in all_file_names:
+                    os.remove(os.path.join(folder_path, file))
+
+                os.rmdir(folder_path)
+
+            else:
+                messagebox.showinfo(title='Error', message='No se encuentran los archivos necesarios para realizar la subida.')
 
         current_item = self.sub_tree.focus()
         clicked_row = self.sub_tree.item(current_item)
@@ -162,7 +243,7 @@ class OrdersHistoryTable:
         client = self.selected_client
         order_number = self.selected_order_number
         reference = self.selected_reference
-        folder_path = os.path.join(orders_history_folder, '{}_{}_{}'.format(client, order_number, reference))
+        folder_path = os.path.join(self.approved_order_folder_user, '{}_{}_{}'.format(client, order_number, reference))
         file_paths = []
         for upload_date in self.clicked_values:
             if self.clicked_values[upload_date]:
@@ -184,7 +265,6 @@ class OrdersHistoryTable:
             order_dataframe.insert(0, 'upload_date', upload_dates)
             orders_history = orders_history.append(order_dataframe, ignore_index=True)
 
-
             if len(file_paths) == 1:
 
                 info_box = ttk.Labelframe(self.parent_window, text='Informacion de Ordenes', padding=10)
@@ -196,16 +276,8 @@ class OrdersHistoryTable:
                 info_box.rowconfigure(4, weight=1)
                 info_box.rowconfigure(5, weight=1)
                 info_box.rowconfigure(6, weight=1)
-                info_box.rowconfigure(7, weight=1)
                 info_box.rowconfigure(8, weight=1)
-                info_box.rowconfigure(9, weight=1)
-                info_box.rowconfigure(10, weight=1)
-                info_box.rowconfigure(11, weight=1)
-                info_box.rowconfigure(12, weight=1)
-                info_box.rowconfigure(13, weight=1)
-                info_box.rowconfigure(14, weight=1)
-                info_box.rowconfigure(15, weight=1)
-                info_box.rowconfigure(16, weight=1)
+
                 info_box.columnconfigure(0, weight=1)
                 info_box.columnconfigure(1, weight=1)
 
@@ -213,43 +285,18 @@ class OrdersHistoryTable:
                 aux = ttk.Label(info_box, text="").grid(row=2, column=0, sticky='w')
                 aux = ttk.Label(info_box, text=upload_date).grid(row=3, column=0, sticky='w')
                 aux = ttk.Label(info_box, text="").grid(row=4, column=0, sticky='w')
+                aux = ttk.Label(info_box, text="").grid(row=8, column=0, sticky='w')
 
-                settings_button = ttk.Button(info_box, text='Ver PDF', command=lambda: [open_pdf(file_path.replace("xlsx", "pdf"))])
-                settings_button.grid(column=0, row=7, pady=0)
+                pdf_button = ttk.Button(info_box, text='Ver PDF', command=lambda: [open_pdf(file_path.replace("xlsx", "pdf"))])
+                pdf_button.grid(column=0, row=5, pady=0)
 
-                changes_info = ""
-                found = False
-
-                for file in os.listdir(folder_path):
-                    filename = os.fsdecode(file)
-
-                    if filename.endswith(".txt") and upload_date in filename:
-                        archivo = open(os.path.join(folder_path, filename), "r")
-                        file_aprob = archivo.read()
-
-                        text = file_aprob.split(" ")
-
-                        format_text = text[0] + " " + text[1] + " " + text[2] + "\n " + text[3] + "\n" + text[4] + " " + \
-                                      text[5] + "\n " + text[6]
-
-                        changes_info += str(format_text) + "\n\n"
-                        archivo.close()
-                        found = True
-
-                if not found:
-                    changes_info = "Aprobación no disponible"
-
-                label_aprobacion = ttk.Label(info_box, text=changes_info).grid(row=5, column=0, sticky='w')
                 label_aprobacion = ttk.Label(info_box, text="").grid(row=6, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=8, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=9, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=10, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=11, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=12, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=13, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=14, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=15, column=0, sticky='w')
-                label_aprobacion = ttk.Label(info_box, text="").grid(row=16, column=0, sticky='w')
+
+                now_time_dt = dt.datetime.now()
+                now_time = now_time_dt.strftime('%d-%m-%Y_%Hh-%Mm')
+
+                firm_button = ttk.Button(info_box, text='Subir a SAP', command=lambda: [upload_SAP(folder_path)])
+                firm_button.grid(column=0, row=7, pady=0)
 
         for index in orders_history.index:
             ship_out_date_raw = orders_history['ship_out_date'][index].split(' ')[0]
@@ -276,8 +323,8 @@ class OrdersHistoryTable:
         self.history_tree_frame = ttk.Frame(self.parent_window, height=190, width=200)
         self.history_tree_frame.rowconfigure(0, weight=1)
         self.history_tree_frame.columnconfigure(0, weight=1)
-        headers = ['Fecha de Pedido', 'Numero de Orden', 'Cliente', 'Codigo SAP', 'Referencia',
-                   'Cantidad', 'Fecha Reparto', 'Fecha de llegada']
+        headers = ['Numero de Orden', 'Cliente', 'Codigo SAP', 'Referencia',
+                   'Cantidad', 'Fecha Reparto', 'Fecha de llegada', "Periodo congelado", "Accion"]
         self.history_tree = ttk.Treeview(self.history_tree_frame, columns=headers, show='headings')
         col_n = 0
         for value in headers:
@@ -296,7 +343,6 @@ class OrdersHistoryTable:
             i = i + 1
 
         for index in orders_history.index:
-            upload_date = orders_history['upload_date'][index]
             order_number = orders_history['order_number'][index]
             client = orders_history['client'][index]
             sap_code = orders_history['sap_code'][index]
@@ -304,8 +350,10 @@ class OrdersHistoryTable:
             quantity = orders_history['quantity'][index]
             ship_out_date = orders_history['ship_out_date'][index]
             arrival_date = orders_history['arrival_date'][index]
-            values = (upload_date, order_number, client, sap_code,
-                      reference, quantity, ship_out_date, arrival_date)
+            congelado_value = orders_history['en_periodo_congelado'][index]
+            action_value = orders_history['action'][index]
+            values = (order_number, client, sap_code,
+                      reference, quantity, ship_out_date, arrival_date, congelado_value, action_value)
             tag = tags_dict[upload_date]
             self.history_tree.insert('', tk.END, values=values, tags=(tag,))
             self.history_tree.grid(row=0, column=0, sticky='ns')
@@ -323,48 +371,6 @@ class OrdersHistoryTable:
         self.history_tree_frame.place(rely=0.05, relx=0.37, relheight=0.92, relwidth=(1 - .56))
         self.history_tree.configure(selectmode='none')
         self.history_tree.tag_configure(tagname=1, background='lightgrey')
-
-    def on_right_sub_click(self, event):
-        def open_pdf(file_root):
-            try:
-                os.startfile(file_root)
-            except FileNotFoundError:
-                pass
-
-        current_item = self.sub_tree.identify_row(event.y)
-        self.sub_tree.selection_set(current_item)
-        clicked_row = self.sub_tree.item(current_item)
-        selection_date = clicked_row['values'][0]
-        file_root = os.path.join(self.folder_root, '{}.pdf'.format(selection_date))
-        menu = tk.Menu(self.list_frame, tearoff=0)
-        menu.add_command(label="Ver Pedido", command=lambda: [open_pdf(file_root)])
-        menu.add_command(label="Eliminar Pedido", command=lambda: [self.delete_order(file_root, current_item)])
-        menu.tk_popup(event.x_root, event.y_root)
-        menu.grab_release()
-
-    def on_right_click(self, event):
-        pass
-
-    def delete_order(self, file_root, current_item):
-        confirm_changes = messagebox.askyesno("Warning", 'Estas seguro que deseas borrar este archivo?\n'
-                                                         'Esta accion no se puede revertir',
-                                              icon='info')
-        if confirm_changes:
-            # remover pdf primero
-            try:
-                os.remove(file_root)
-            except FileNotFoundError:
-                pass
-            # remover excel despues
-            try:
-                excel_file_root = file_root.split('.pdf')[0]+'.xlsx'
-                os.remove(excel_file_root)
-            except FileNotFoundError:
-                pass
-            self.sub_tree.delete(current_item)
-            if not os.listdir(self.folder_root):
-                os.rmdir(self.folder_root)
-                self.tree.delete(self.main_item_clicked)
 
     def filter_clicked(self):
         try:
