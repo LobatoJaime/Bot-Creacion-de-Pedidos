@@ -60,7 +60,7 @@ class Gui:
         self.ask_authorization_window = None
         self.tracking_window = None
         self.approved_orders = None
-        self.active_window = 'create_order'
+        self.active_window = 'ask_authorization'
         # --------------------VARIABLES-------------------------
         self.uploaded_file_root = None
         self.orders = None
@@ -104,7 +104,7 @@ class Gui:
 
         if tipo_usuario == "A":
             # Empezar en la pantalla de crear pedido
-            self.create_order_window.show()
+            self.ask_authorization_window.show()
 
         if tipo_usuario == "B":
             # Empezar en la pantalla de crear pedido

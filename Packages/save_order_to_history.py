@@ -4,7 +4,6 @@ from .constants import orders_history_folder, tracking_history_folder
 import datetime
 import shutil
 from .authorization import authorize_order
-from .send_authorization import send_authorization_email
 from .get_user_info import get_user_info
 from .tracking import add_tracking
 

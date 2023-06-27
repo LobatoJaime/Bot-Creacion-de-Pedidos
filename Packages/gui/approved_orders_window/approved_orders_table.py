@@ -106,7 +106,7 @@ class ApprovedOrdersTable:
         file_names = []
         # Mostrar solo los excels
         for file in all_file_names:
-            if '.pdf' not in file and '.txt' not in file and '-orders' not in file and '-delete' not in file:
+            if '.pdf' not in file and '.txt' not in file and '-orders' not in file and '-delete' not in file and '-backup' not in file:
                 file_names.append(file)
 
         # Crear sublista
@@ -166,6 +166,7 @@ class ApprovedOrdersTable:
             pdf_name = None
             excel_delete_rows_name = None
             txt_rows_name = None
+            excel_backup_name = None
 
             # Mostrar solo los excels
             for file in all_file_names:
@@ -178,6 +179,9 @@ class ApprovedOrdersTable:
                 if '.xlsx' in file and "delete" in file:
                     excel_delete_rows_name = file
 
+                if '.xlsx' in file and "backup" in file:
+                    excel_backup_name = file
+
                 if '.txt' in file and "rows" not in file:
                     txt_name = file
 
@@ -187,10 +191,11 @@ class ApprovedOrdersTable:
                 if '.pdf' in file:
                     pdf_name = file
 
-            if excel_name is not None and txt_name is not None and excel_orders_name is not None and pdf_name is not None and excel_delete_rows_name is not None and txt_rows_name is not None:
+            if excel_name is not None and txt_name is not None and excel_orders_name is not None and pdf_name is not None and excel_delete_rows_name is not None and txt_rows_name is not None and excel_backup_name is not None:
                 self.order_changes = pd.read_excel(os.path.join(folder_path, excel_name)).reset_index(drop=True)
                 self.orders = pd.read_excel(os.path.join(folder_path, excel_orders_name)).reset_index(drop=True)
                 self.delete_rows_log = pd.read_excel(os.path.join(folder_path, excel_delete_rows_name))
+                self.backup_order = pd.read_excel(os.path.join(folder_path, excel_backup_name))
 
                 with open(os.path.join(folder_path, txt_name)) as f:
                     self.order_exists = f.readline()
@@ -215,7 +220,7 @@ class ApprovedOrdersTable:
                 print("ROWS DELETE")
                 print(self.rows_delete)
 
-                self.menu_bar.run_sap(self.order_changes, self.order_exists, self.orders, os.path.join(folder_path, pdf_name), self.delete_rows_log, self.rows_delete)
+                self.menu_bar.run_sap(self.order_changes, self.order_exists, self.orders, os.path.join(folder_path, pdf_name), self.delete_rows_log, self.rows_delete, self.backup_order)
 
                 for file in all_file_names:
                     os.remove(os.path.join(folder_path, file))

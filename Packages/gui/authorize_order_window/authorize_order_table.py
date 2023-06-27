@@ -106,7 +106,7 @@ class AuthorizeOrderTable:
         file_names = []
         # Mostrar solo los excels
         for file in all_file_names:
-            if '.pdf' not in file and '.txt' not in file and "orders" not in file and "delete" not in file:
+            if '.pdf' not in file and '.txt' not in file and "orders" not in file and "delete" not in file and "backup" not in file:
                 file_names.append(file)
 
         # Crear sublista
@@ -169,10 +169,11 @@ class AuthorizeOrderTable:
             px_file_name = '{}.xlsx'.format(upload_date)
             px_order_file_name = '{}-orders.xlsx'.format(upload_date)
             px_delete_row_name = '{}-delete.xlsx'.format(upload_date)
+            px_backup_name = '{}-backup.xlsx'.format(upload_date)
             txt_file_name = '{}.txt'.format(upload_date)
             txt_rows_file_name = '{}-rows.txt'.format(upload_date)
-            shutil.copy(os.path.join(folder_path, po_file_name), os.path.join(tracking_history_folder, po_file_name))
-            shutil.copy(os.path.join(folder_path, px_file_name), os.path.join(tracking_history_folder, px_file_name))
+            shutil.copy(os.path.join(folder_path, po_file_name), os.path.join(tracking_history_folder, '{}.pdf'.format(time)))
+            shutil.copy(os.path.join(folder_path, px_file_name), os.path.join(tracking_history_folder, '{}.xlsx'.format(time)))
 
             # importar archivo Excel
             df = pd.read_excel(usuarios_root)
@@ -200,12 +201,14 @@ class AuthorizeOrderTable:
             shutil.copy(os.path.join(folder_path, txt_file_name), os.path.join(approved_folder, txt_file_name))
             shutil.copy(os.path.join(folder_path, px_order_file_name), os.path.join(approved_folder, px_order_file_name))
             shutil.copy(os.path.join(folder_path, px_delete_row_name), os.path.join(approved_folder, px_delete_row_name))
+            shutil.copy(os.path.join(folder_path, px_backup_name), os.path.join(approved_folder, px_backup_name))
             shutil.copy(os.path.join(folder_path, txt_rows_file_name), os.path.join(approved_folder, txt_rows_file_name))
 
             os.remove(os.path.join(folder_path, str(upload_date) + ".pdf"))
             os.remove(os.path.join(folder_path, str(upload_date) + ".xlsx"))
             os.remove(os.path.join(folder_path, str(upload_date) + "-orders" + ".xlsx"))
             os.remove(os.path.join(folder_path, str(upload_date) + "-delete" + ".xlsx"))
+            os.remove(os.path.join(folder_path, str(upload_date) + "-backup" + ".xlsx"))
             os.remove(os.path.join(folder_path, str(upload_date) + "-rows.txt"))
             os.remove(os.path.join(folder_path, str(upload_date) + ".txt"))
             os.rmdir(folder_path)

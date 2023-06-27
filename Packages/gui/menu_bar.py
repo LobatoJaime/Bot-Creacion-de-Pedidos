@@ -64,12 +64,12 @@ class MenuBar:
 
         if tipo_usuario == "A":
 
-            main_menu_button = ttk.Button(self.frame, text='Subir Nuevo Pedido',
-                                          command=lambda: [self.new_order_pressed()])
-            main_menu_button.grid(column=0, row=0, pady=0)
+            # main_menu_button = ttk.Button(self.frame, text='Subir Nuevo Pedido',
+            #                               command=lambda: [self.new_order_pressed()])
+            # main_menu_button.grid(column=0, row=0, pady=0)
             settings_button = ttk.Button(self.frame, text='Ajustes',
                                          command=lambda: [self.settings_pressed()])
-            settings_button.grid(column=1, row=0, pady=0)
+            settings_button.grid(column=6, row=0, pady=0)
             history_button = ttk.Button(self.frame, text='Historial de Cambios',
                                         command=lambda: [self.changes_history_pressed()])
             history_button.grid(column=2, row=0, pady=0)
@@ -78,17 +78,17 @@ class MenuBar:
             orders_history_button.grid(column=3, row=0, pady=0)
             installation_button = ttk.Button(self.frame, text='Guia de instalacion',
                                              command=lambda: [self.installation_guide_pressed()])
-            installation_button.grid(column=4, row=0, pady=0)
+            installation_button.grid(column=5, row=0, pady=0)
             ask_auth_button = ttk.Button(self.frame, text='Solicitar',
                                              command=lambda: [self.ask_authorization_pressed()])
-            ask_auth_button.grid(column=5, row=0, pady=0)
+            ask_auth_button.grid(column=0, row=0, pady=0)
             tracking_button = ttk.Button(self.frame, text='Seguimiento',
                                              command=lambda: [self.tracking_history_pressed()])
-            tracking_button.grid(column=6, row=0, pady=0)
+            tracking_button.grid(column=4, row=0, pady=0)
 
             tracking_button = ttk.Button(self.frame, text='Aprobados',
                                          command=lambda: [self.approved_orders_pressed()])
-            tracking_button.grid(column=7, row=0, pady=0)
+            tracking_button.grid(column=1, row=0, pady=0)
 
             self.next_button = ttk.Button(self.frame, text='Siguiente paso', style='success.TButton',
                                           command=lambda: [self.import_important_vars(),
@@ -461,6 +461,7 @@ class MenuBar:
                     archivo.close()
 
                 self.order_changes.to_excel(os.path.join(auth_folder, str(now_time) + ".xlsx"), index=False)
+                self.backup_order_changes.to_excel(os.path.join(auth_folder, str(now_time) + "-backup" + ".xlsx"), index=False)
                 self.orders.to_excel(os.path.join(auth_folder, str(now_time) + "-orders" + ".xlsx"), index=False)
                 self.deleted_rows_log.to_excel(os.path.join(auth_folder, str(now_time) + "-delete" + ".xlsx"), index=False)
                 self.order_changes.to_excel(os.path.join(tracking_history_folder, str(now_time) + ".xlsx"), index=False)
@@ -495,10 +496,10 @@ class MenuBar:
             process_complete_authorization_window = ProcessCompleteAuthorizationWindow(self.gui.root, self.gui)
             process_complete_authorization_window.show()
 
-    def run_sap(self, order_ch, order_ex, order, pdf_file, delete_rows_log, rows_delete):
+    def run_sap(self, order_ch, order_ex, order, pdf_file, delete_rows_log, rows_delete, backup_order):
         """Function only runs sap changes"""
         self.deleted_rows_log = delete_rows_log
-        self.backup_order_changes = order_ch
+        self.backup_order_changes = backup_order
         self.rows_to_delete = rows_delete
         self.error_queue = Queue()
         thread = Process(target=run_in_bg_sap_changes, args=(order_ch, order_ex,
