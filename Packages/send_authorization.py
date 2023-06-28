@@ -1,6 +1,6 @@
 import win32com.client
 import os
-from Packages.constants import authorize_order_folder, usuarios_root
+from Packages.constants import authorize_order_folder, usuarios_root, resources_folder
 import pandas as pd
 import subprocess
 
@@ -41,12 +41,9 @@ def send_authorization_email(user: list, client: str, order_number: str, referen
         newMail.SentOnBehalfOfName = 'JDISA_ORDERS@JohnDeere.com'
         newMail.Subject = 'BOT - Solucitud de Aprobación de Pedido'
 
-        body = 'Solicitud para cliente: ' + str(client) + \
-        ' y numero de pedido: ' + str(order_number) + '.\n\n' + \
-        'Solucitud realizada por: ' + str(user[0]) + \
-        ' y usuario ' + str(user[1]) + '.\n\n\nLink al ejecutable: ' + '\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos' + '\n\n\n'
+        html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + ".</a><br/><br/><a>Solicitud realizada por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos\AutomatizacionSAP_PRUEBA.exe'>Acceso APP</a>"
 
-        newMail.Body = body
+        newMail.HTMLBody = html
 
         cc = None
 
@@ -77,12 +74,9 @@ def send_notification(user: list, client: str, order_number: str, reference: str
         newMail.SentOnBehalfOfName = aprobador_email
         newMail.Subject = 'BOT - Solucitud Aprobada'
 
-        body = 'Solicitud para cliente: ' + str(client) + \
-               ', numero de pedido: ' + str(order_number) + ' y referencia: ' + str(reference) +'.\n\n' + \
-               'APROBADA por: ' + str(user[0]) + \
-               ' y usuario ' + str(user[1]) + '.\n\n\nLink al ejecutable: ' + '\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos' + '\n\n\n'
+        html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + " y referencia: " + str(reference) + ".</a><br/><br/><a>APROBADA por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos\AutomatizacionSAP_PRUEBA.exe'>Acceso APP</a>"
 
-        newMail.Body = body
+        newMail.HTMLBody = html
 
         cc = None
 
@@ -112,19 +106,16 @@ def send_reject(user: list, client: str, order_number: str, reference: str):
         newMail.SentOnBehalfOfName = aprobador_email
         newMail.Subject = 'BOT - Solucitud Rechazada'
 
-        body = 'Solicitud para cliente: ' + str(client) + \
-               ', numero de pedido: ' + str(order_number) + ' y referencia: ' + str(reference) +'.\n\n' + \
-               'RECHAZADA por: ' + str(user[0]) + \
-               ' y usuario ' + str(user[1]) + '.\n\n\nLink al ejecutable: ' + '\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos' + '\n\n\n'
+        html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + " y referencia: " + str(reference) + ".</a><br/><br/><a>RECHAZADA por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos\AutomatizacionSAP_PRUEBA.exe'>Acceso APP</a>"
 
-        newMail.Body = body
+        newMail.HTMLBody = html
 
-        cc = None
+    cc = None
 
-        newMail.To = "; ".join([usuario_email])
+    newMail.To = "; ".join([usuario_email])
 
-        newMail.Sensitivity = 2
-        if cc is not None:
-            newMail.CC = "; ".join(cc)
+    newMail.Sensitivity = 2
+    if cc is not None:
+        newMail.CC = "; ".join(cc)
 
-        newMail.Send()
+    newMail.Send()
