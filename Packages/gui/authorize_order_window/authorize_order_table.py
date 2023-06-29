@@ -231,6 +231,22 @@ class AuthorizeOrderTable:
 
             send_reject(user=get_user_info(), client=client, order_number=order_number, reference=reference)
 
+            po_file_name = '{}.pdf'.format(upload_date)
+            px_file_name = '{}.xlsx'.format(upload_date)
+
+            shutil.copy(os.path.join(folder_path, po_file_name), os.path.join(tracking_history_folder, '{}.pdf'.format(time)))
+            shutil.copy(os.path.join(folder_path, px_file_name), os.path.join(tracking_history_folder, '{}.xlsx'.format(time)))
+
+            add_tracking(id=time,
+                         order='{}_{}_{}'.format(self.selected_client,
+                                                 self.selected_order_number,
+                                                 reference),
+                         state="Rechazado",
+                         author='{}/{}'.format(get_user_info()[0], get_user_info()[1]),
+                         date=time,
+                         orderpdf=os.path.join(tracking_history_folder, po_file_name),
+                         comparisonexcel=os.path.join(tracking_history_folder, px_file_name))
+
             os.remove(os.path.join(folder_path, str(upload_date) + ".pdf"))
             os.remove(os.path.join(folder_path, str(upload_date) + ".xlsx"))
             os.remove(os.path.join(folder_path, str(upload_date) + "-orders" + ".xlsx"))
