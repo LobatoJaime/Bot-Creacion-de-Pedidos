@@ -6,21 +6,15 @@ import subprocess
 
 
 
-def send_authorization_email(user: list, client: str, order_number: str, reference: str):
+def send_authorization_email(user: list, client: str, order_number: str, reference: str, usuario_aprobador: str, email_aprobador: str):
     """Script que envia un correo electronico a traves de outlook y crea una carpeta en autorizaciones"""
 
     # importar archivo Excel
     df = pd.read_excel(usuarios_root)
 
-    aprobador_folder = None
-    aprobador_email = None
-    receivers = []
-
-    for idx, row in df.iterrows():
-        if row['Usuario'].upper() == user[1].upper():
-            aprobador_folder = row['Usuario Aprobador'].upper()
-            aprobador_email = row['Email Aprobador'].upper()
-            receivers.append(row["Email Aprobador"])
+    aprobador_folder = usuario_aprobador
+    aprobador_email = email_aprobador
+    receivers = [aprobador_email]
 
     sub_folder_name = '{}_{}_{}'.format(client, order_number, reference)
 
@@ -67,6 +61,11 @@ def send_notification(user: list, client: str, order_number: str, reference: str
             usuario_email = row['Email'].upper()
             aprobador_email = row['Email Aprobador'].upper()
 
+    for idx, row in df.iterrows():
+        if row['Usuario Aprobador 2'].upper() == user[1].upper():
+            usuario_email = row['Email'].upper()
+            aprobador_email = row['Email Aprobador 2'].upper()
+
     if "@" in usuario_email:
         olMailItem = 0x0
         obj = win32com.client.Dispatch("Outlook.Application")
@@ -98,6 +97,11 @@ def send_reject(user: list, client: str, order_number: str, reference: str):
         if row['Usuario Aprobador'].upper() == user[1].upper():
             usuario_email = row['Email'].upper()
             aprobador_email = row['Email Aprobador'].upper()
+
+    for idx, row in df.iterrows():
+        if row['Usuario Aprobador 2'].upper() == user[1].upper():
+            usuario_email = row['Email'].upper()
+            aprobador_email = row['Email Aprobador 2'].upper()
 
     if "@" in usuario_email:
         olMailItem = 0x0

@@ -26,7 +26,6 @@ class AuthorizeOrderTable:
         self.list_frame.columnconfigure(0, weight=1)
         self.authorize_order_folder_user = os.path.join(authorize_order_folder, get_user_info()[1].upper())
 
-
         if not os.path.isdir(self.authorize_order_folder_user):
             os.mkdir(self.authorize_order_folder_user)
 
@@ -182,6 +181,9 @@ class AuthorizeOrderTable:
 
             for idx, row in df.iterrows():
                 if row['Usuario Aprobador'].upper() == get_user_info()[1].upper():
+                    sap_user = row['Usuario'].upper()
+
+                if row['Usuario Aprobador 2'].upper() == get_user_info()[1].upper():
                     sap_user = row['Usuario'].upper()
 
             approved_folder = os.path.join(appoved_order_folder, sap_user)

@@ -62,6 +62,10 @@ class MenuBar:
                 tipo_usuario = "B"
                 user = row['Usuario'].upper()
 
+            if row['Usuario Aprobador 2'].upper() == get_user_info()[1].upper():
+                tipo_usuario = "B"
+                user = row['Usuario'].upper()
+
         if tipo_usuario == "A":
 
             # main_menu_button = ttk.Button(self.frame, text='Subir Nuevo Pedido',
@@ -411,10 +415,21 @@ class MenuBar:
             return
 
         if self.gui.active_window == 'edit_authorization_order_2':
-            confirm_changes = messagebox.askyesno("Warning", 'Estas seguro que deseas continuar?\n'
-                                                             'Se enviará una petición de aprobación al gerente ',
-                                                  icon='info')
-            if confirm_changes:
+
+            email1 = ""
+            user1 = ""
+
+            # importar archivo Excel
+            df = pd.read_excel(usuarios_root)
+
+            for idx, row in df.iterrows():
+                if row['Usuario'].upper() == get_user_info()[1].upper():
+                    email1 = row["Email Aprobador"]
+                    user1 = row["Usuario Aprobador"]
+
+            gerente1 = messagebox.askyesno("Warning", 'Enviar aprobacion a \n' + str(email1), icon='info')
+
+            if gerente1:
                 self.rows_to_delete: list = self.gui.edit_order_window.edit_order_table.rows_to_delete
                 self.deleted_rows_log: pd.DataFrame = self.gui.edit_order_window.edit_order_table.deleted_rows_log
                 self.backup_order_changes = self.order_changes
@@ -424,16 +439,7 @@ class MenuBar:
                 now_time_dt = datetime.datetime.now()
                 now_time = now_time_dt.strftime('%d-%m-%Y_%Hh-%Mm')
 
-                user = ""
-
-                # importar archivo Excel
-                df = pd.read_excel(usuarios_root)
-
-                for idx, row in df.iterrows():
-                    if row['Usuario'].upper() == get_user_info()[1].upper():
-                        user = row["Usuario Aprobador"]
-
-                path_user = os.path.join(authorize_order_folder, user.upper())
+                path_user = os.path.join(authorize_order_folder, user1.upper())
 
                 if not os.path.isdir(path_user):
                     os.mkdir(path_user)
@@ -477,7 +483,9 @@ class MenuBar:
                 send_authorization_email(user=get_user_info(),
                                          client=self.order_changes['client'][self.order_changes.index[0]],
                                          order_number=self.order_changes['order_number'][self.order_changes.index[0]],
-                                         reference=self.order_changes['reference'][self.order_changes.index[0]])
+                                         reference=self.order_changes['reference'][self.order_changes.index[0]],
+                                         usuario_aprobador=str(user1),
+                                         email_aprobador=str(email1))
 
                 add_tracking(id=now_time,
                              order='{}_{}_{}'.format(self.order_changes['client'][self.order_changes.index[0]],
@@ -490,6 +498,95 @@ class MenuBar:
                              comparisonexcel=os.path.join(tracking_history_folder, str(now_time) + ".xlsx"))
 
                 self.gui.active_window = 'process_authorization_complete'
+
+            else:
+                email2 = ""
+                user2 = ""
+
+                # importar archivo Excel
+                df = pd.read_excel(usuarios_root)
+
+                for idx, row in df.iterrows():
+                    if row['Usuario'].upper() == get_user_info()[1].upper():
+                        email2 = row["Email Aprobador 2"]
+                        user2 = row["Usuario Aprobador 2"]
+
+                gerente2 = messagebox.askyesno("Warning", 'Enviar aprobacion a \n' + str(email2), icon='info')
+
+                if gerente2:
+                    self.rows_to_delete: list = self.gui.edit_order_window.edit_order_table.rows_to_delete
+                    self.deleted_rows_log: pd.DataFrame = self.gui.edit_order_window.edit_order_table.deleted_rows_log
+                    self.backup_order_changes = self.order_changes
+                    self.order_changes = edit_changes_table(self.order_changes, self.rows_to_delete)
+                    print(self.order_changes.to_string())
+
+                    now_time_dt = datetime.datetime.now()
+                    now_time = now_time_dt.strftime('%d-%m-%Y_%Hh-%Mm')
+
+                    path_user = os.path.join(authorize_order_folder, user2.upper())
+
+                    if not os.path.isdir(path_user):
+                        os.mkdir(path_user)
+
+                    sub_folder_name = '{}_{}_{}'.format(self.order_changes['client'][self.order_changes.index[0]],
+                                                        self.order_changes['order_number'][self.order_changes.index[0]],
+                                                        self.order_changes['reference'][self.order_changes.index[0]])
+
+                    auth_folder = os.path.join(path_user, sub_folder_name)
+
+                    if not os.path.isdir(auth_folder):
+                        os.mkdir(auth_folder)
+
+                    if len(self.rows_to_delete) > 0:
+                        nombre_archivo_rows = os.path.join(auth_folder, str(now_time) + "-rows.txt")
+                        with open(nombre_archivo_rows, "w") as archivo:
+                            for r in self.rows_to_delete:
+                                archivo.write(str(r) + "+")
+                        archivo.close()
+
+                    else:
+                        nombre_archivo_rows = os.path.join(auth_folder, str(now_time) + "-rows.txt")
+                        with open(nombre_archivo_rows, "w") as archivo:
+                            archivo.write("+")
+                        archivo.close()
+
+                    self.order_changes.to_excel(os.path.join(auth_folder, str(now_time) + ".xlsx"), index=False)
+                    self.backup_order_changes.to_excel(os.path.join(auth_folder, str(now_time) + "-backup" + ".xlsx"),
+                                                       index=False)
+                    self.orders.to_excel(os.path.join(auth_folder, str(now_time) + "-orders" + ".xlsx"), index=False)
+                    self.deleted_rows_log.to_excel(os.path.join(auth_folder, str(now_time) + "-delete" + ".xlsx"),
+                                                   index=False)
+                    self.order_changes.to_excel(os.path.join(tracking_history_folder, str(now_time) + ".xlsx"),
+                                                index=False)
+                    po_file_name = '{}.pdf'.format(now_time)
+                    shutil.copy(self.uploaded_file_root, os.path.join(auth_folder, po_file_name))
+                    shutil.copy(self.uploaded_file_root, os.path.join(tracking_history_folder, po_file_name))
+
+                    nombre_archivo = os.path.join(auth_folder, str(now_time) + ".txt")
+                    with open(nombre_archivo, "w") as archivo:
+                        archivo.write(str(self.order_exists))
+                    archivo.close()
+
+                    send_authorization_email(user=get_user_info(),
+                                             client=self.order_changes['client'][self.order_changes.index[0]],
+                                             order_number=self.order_changes['order_number'][
+                                                 self.order_changes.index[0]],
+                                             reference=self.order_changes['reference'][self.order_changes.index[0]],
+                                             usuario_aprobador=str(user2),
+                                             email_aprobador=str(email2))
+
+                    add_tracking(id=now_time,
+                                 order='{}_{}_{}'.format(self.order_changes['client'][self.order_changes.index[0]],
+                                                         self.order_changes['order_number'][
+                                                             self.order_changes.index[0]],
+                                                         self.order_changes['reference'][self.order_changes.index[0]]),
+                                 state="Solicitud",
+                                 author='{}/{}'.format(get_user_info()[0], get_user_info()[1]),
+                                 date=now_time,
+                                 orderpdf=os.path.join(tracking_history_folder, po_file_name),
+                                 comparisonexcel=os.path.join(tracking_history_folder, str(now_time) + ".xlsx"))
+
+                    self.gui.active_window = 'process_authorization_complete'
 
         if self.gui.active_window == 'process_authorization_complete':
             from .process_complete_window.process_complete_authorization_window import ProcessCompleteAuthorizationWindow

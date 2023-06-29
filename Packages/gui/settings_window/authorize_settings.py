@@ -45,16 +45,26 @@ class AuthorizeSettings:
         self.user_auth_entry = ttk.Entry(add_label_frame)
         self.user_auth_entry.grid(row=4, column=1, padx=4, pady=4)
 
+        email_auth_2 = ttk.Label(add_label_frame, text='Email Aprobador 2')
+        email_auth_2.grid(row=5, column=0, padx=4, pady=4)
+        self.email_auth_entry_2 = ttk.Entry(add_label_frame)
+        self.email_auth_entry_2.grid(row=5, column=1, padx=4, pady=4)
+
+        user_auth_2 = ttk.Label(add_label_frame, text='Usuario Aprobador 2')
+        user_auth_2.grid(row=6, column=0, padx=4, pady=4)
+        self.user_auth_entry_2 = ttk.Entry(add_label_frame)
+        self.user_auth_entry_2.grid(row=6, column=1, padx=4, pady=4)
+
         accept_button = ttk.Button(add_label_frame, text='Agregar Aprobador', command=lambda: self.add_client_clicked())
-        accept_button.grid(row=5, column=0, columnspan=2, padx=4, pady=4)
+        accept_button.grid(row=7, column=0, columnspan=2, padx=4, pady=4)
         # Boton de eliminar cliente
         del_label_frame = ttk.Labelframe(self.widget_frame, text='Eliminar Usuario')
-        del_label_frame.place(relx=.75, rely=0.30)
+        del_label_frame.place(relx=.75, rely=0.40)
         name2 = ttk.Label(del_label_frame, text='Nombre')
         name2.grid(row=0, column=0, padx=4, pady=4)
         user_list = self.users_df['Nombre'].to_list()
         self.name_box = ttk.Combobox(del_label_frame, values=user_list, state='readonly')
-        self.name_box.set('Selecciona un cliente')
+        self.name_box.set('Selecciona un usuario')
         self.name_box.grid(row=0, column=1, padx=4, pady=4)
         self.name_box.bind("<<ComboboxSelected>>", lambda event: [self.name_box.selection_clear()])
         delete_button = ttk.Button(del_label_frame, text='Eliminar Usuario', style='danger.TButton',
@@ -73,7 +83,7 @@ class AuthorizeSettings:
             messagebox.showwarning(title='Error', message='Ya existe un usuario con ese usuario')
             return
 
-        self.users_df.loc[len(self.users_df.index)] = [name, self.user_entry.get(), self.email_entry.get(), self.email_auth_entry.get(), self.user_auth_entry.get()]
+        self.users_df.loc[len(self.users_df.index)] = [name, self.user_entry.get(), self.email_entry.get(), self.email_auth_entry.get(), self.user_auth_entry.get(), self.email_auth_entry_2.get(), self.user_auth_entry_2.get()]
         self.users_df = self.users_df.sort_values(by='Nombre')
         self.users_df.to_excel(usuarios_root, index=False)
         self.users_table.frame.destroy()
@@ -122,7 +132,9 @@ class UsersTable:
             email = users_table['Email'][index]
             email_auth = users_table['Email Aprobador'][index]
             user_auth = users_table['Usuario Aprobador'][index]
-            self.tree.insert('', tk.END, values=(user_name, user, email, email_auth, user_auth))
+            email_auth_2 = users_table['Email Aprobador 2'][index]
+            user_auth_2 = users_table['Usuario Aprobador 2'][index]
+            self.tree.insert('', tk.END, values=(user_name, user, email, email_auth, user_auth, email_auth_2, user_auth_2))
         self.tree.grid(row=0, column=0, sticky='nsew')
         # add a scrollbar
         scrollbar = ttk.Scrollbar(self.frame, orient=tk.VERTICAL, command=self.tree.yview)

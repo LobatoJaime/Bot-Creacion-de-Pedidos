@@ -102,6 +102,9 @@ class Gui:
             if row['Usuario Aprobador'].upper() == os.getlogin().upper():
                 tipo_usuario = "B"
 
+            if row['Usuario Aprobador 2'].upper() == os.getlogin().upper():
+                tipo_usuario = "B"
+
         if tipo_usuario == "A":
             # Empezar en la pantalla de crear pedido
             self.ask_authorization_window.show()
