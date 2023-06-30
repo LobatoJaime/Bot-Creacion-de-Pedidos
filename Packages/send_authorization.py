@@ -15,6 +15,7 @@ def send_authorization_email(user: list, client: str, order_number: str, referen
     aprobador_folder = usuario_aprobador
     aprobador_email = email_aprobador
     receivers = [aprobador_email]
+    
     usuario_email = ""
 
     for idx, row in df.iterrows():
