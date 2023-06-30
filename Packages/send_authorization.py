@@ -15,6 +15,11 @@ def send_authorization_email(user: list, client: str, order_number: str, referen
     aprobador_folder = usuario_aprobador
     aprobador_email = email_aprobador
     receivers = [aprobador_email]
+    usuario_email = ""
+
+    for idx, row in df.iterrows():
+        if row['Usuario'].upper() == user[1].upper():
+            usuario_email = row['Email'].upper()
 
     sub_folder_name = '{}_{}_{}'.format(client, order_number, reference)
 
@@ -32,7 +37,7 @@ def send_authorization_email(user: list, client: str, order_number: str, referen
         olMailItem = 0x0
         obj = win32com.client.Dispatch("Outlook.Application")
         newMail = obj.CreateItem(olMailItem)
-        newMail.SentOnBehalfOfName = 'JDISA_ORDERS@JohnDeere.com'
+        newMail.SentOnBehalfOfName = usuario_email
         newMail.Subject = 'BOT - Solucitud de Aprobación de Pedido'
 
         html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + ".</a><br/><br/><a>Solicitud realizada por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos\AutomatizacionSAP_PRUEBA.exe'>Acceso APP</a>"
