@@ -34,7 +34,7 @@ class ApprovedOrdersTable:
 
         folders_names = sorted(folders_names,
                                key=lambda x: os.path.getmtime(os.path.join(self.approved_order_folder_user, x)), reverse=True)
-        headers = ['Cliente', 'Numero de Orden', 'Fecha']
+        headers = ['Cliente', 'Numero de Orden', 'Referencia']
         self.tree = ttk.Treeview(self.list_frame, columns=headers,
                                  show='headings')
         for value in headers:
@@ -152,7 +152,7 @@ class ApprovedOrdersTable:
             except FileNotFoundError:
                 pass
 
-        def upload_SAP(folder_path):
+        def upload_SAP(folder_path, client):
             confirm_changes = messagebox.askyesno("Warning", 'Desea subir los cambios a SAP?\n',
                                                   icon='info')
             if not confirm_changes:
@@ -220,7 +220,7 @@ class ApprovedOrdersTable:
                 print("ROWS DELETE")
                 print(self.rows_delete)
 
-                self.menu_bar.run_sap(self.order_changes, self.order_exists, self.orders, os.path.join(folder_path, pdf_name), self.delete_rows_log, self.rows_delete, self.backup_order)
+                self.menu_bar.run_sap(self.order_changes, self.order_exists, self.orders, os.path.join(folder_path, pdf_name), self.delete_rows_log, self.rows_delete, self.backup_order, client)
 
                 for file in all_file_names:
                     os.remove(os.path.join(folder_path, file))
@@ -300,7 +300,7 @@ class ApprovedOrdersTable:
                 now_time_dt = dt.datetime.now()
                 now_time = now_time_dt.strftime('%d-%m-%Y_%Hh-%Mm')
 
-                firm_button = ttk.Button(info_box, text='Subir a SAP', command=lambda: [upload_SAP(folder_path)])
+                firm_button = ttk.Button(info_box, text='Subir a SAP', command=lambda: [upload_SAP(folder_path, client)])
                 firm_button.grid(column=0, row=7, pady=0)
 
         for index in orders_history.index:

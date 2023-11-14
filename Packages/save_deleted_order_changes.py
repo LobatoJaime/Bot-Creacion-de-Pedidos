@@ -25,7 +25,8 @@ def save_deleted_order_changes_approved(order_changes: pd.DataFrame, indexes_to_
     if not deleted_rows_log.empty:
         for index in deleted_order_changes.index:
             print("INDEX", index)
-            row = deleted_rows_log.loc[index]
+            # row = deleted_rows_log.loc[index]
+            row = deleted_rows_log.loc[deleted_rows_log['rows_to_delete'] == str(index)]
             print("ROW", row)
             message = row['message']
             file_root = row['file_root']

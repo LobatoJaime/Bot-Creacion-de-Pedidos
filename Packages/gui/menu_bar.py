@@ -6,7 +6,6 @@ from ttkbootstrap import Style
 import pandas as pd
 import numpy as np
 from multiprocessing import Process, Queue, freeze_support
-from tabulate import tabulate
 import datetime
 
 
@@ -31,7 +30,7 @@ from ..save_order_to_history import save_order_to_history
 from ..script_download_new_planes_entrega_from_sap import script_download_new_planes_entrega_from_sap
 from ..validate_data.validate_data import validate_data
 from ..create_comparison_table_excel import create_comparison_table_excel, create_comparison_table_excel_approved
-from ..find_newest_dir import find_newest_dir
+from ..find_newest_dir import find_newest_dir, find_newest_dir_approved
 from ..constants import changes_history_folder, usuarios_root, authorize_order_folder, tracking_history_folder
 from ..get_user_info import get_user_info
 from ..send_authorization import send_authorization_email
@@ -593,7 +592,7 @@ class MenuBar:
             process_complete_authorization_window = ProcessCompleteAuthorizationWindow(self.gui.root, self.gui)
             process_complete_authorization_window.show()
 
-    def run_sap(self, order_ch, order_ex, order, pdf_file, delete_rows_log, rows_delete, backup_order):
+    def run_sap(self, order_ch, order_ex, order, pdf_file, delete_rows_log, rows_delete, backup_order, client_name):
         """Function only runs sap changes"""
         self.deleted_rows_log = delete_rows_log
         self.backup_order_changes = backup_order
@@ -634,7 +633,7 @@ class MenuBar:
         self.gui.root.focus_force()
         save_deleted_order_changes_approved(self.backup_order_changes, self.rows_to_delete,
                                    self.deleted_rows_log)
-        folder = find_newest_dir(changes_history_folder)
+        folder = find_newest_dir_approved(changes_history_folder, client_name)
         create_comparison_table_excel_approved(folder_root=folder)
         from .process_complete_window.process_complete_window import ProcessCompleteWindow
         process_complete_window = ProcessCompleteWindow(self.gui.root, self.gui)

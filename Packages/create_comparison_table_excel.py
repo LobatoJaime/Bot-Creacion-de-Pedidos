@@ -213,6 +213,7 @@ def create_comparison_table_excel_approved(folder_root: str):
     messages = []
     file_roots = []
     prices = []
+    price = 0
 
     for index in planes_entrega_new.index:
         new_row = planes_entrega_new.iloc[index]
@@ -253,7 +254,6 @@ def create_comparison_table_excel_approved(folder_root: str):
         filtered_row = planes_entrega_new.loc[
             (planes_entrega_new['Referencia'] == reference) &
             (planes_entrega_new['Fecha reparto'] == ship_out_date)]
-
 
 
         if filtered_row.empty:

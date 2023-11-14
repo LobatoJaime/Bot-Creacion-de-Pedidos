@@ -15,3 +15,18 @@ def find_newest_dir(directory: str) -> str:
     newest_dir = os.path.join(directory, lister[-1][0])
     return newest_dir
 
+
+def find_newest_dir_approved(directory: str, client) -> str:
+    """Encuentra la carpeta mas reciente en un directorio"""
+    os.chdir(directory)
+    dirs = {}
+    for dir in glob.glob('*'):
+        if os.path.isdir(dir) and client in dir:
+            dirs[dir] = os.path.getctime(dir)
+
+    print(dirs)
+
+    lister = sorted(dirs.items(), key=operator.itemgetter(1))
+    newest_dir = os.path.join(directory, lister[-1][0])
+    return newest_dir
+

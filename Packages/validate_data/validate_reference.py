@@ -10,7 +10,7 @@ def validate_ref(reference: str) -> bool:
     #                             'SERVER=Fgetcesql2\inst2;'
     #                             'DATABASE=Blade_JD;'
     #                             'Trusted_Connection=yes;')
-    connection = pymssql.connect(server='Fgetcesql2\inst2', database='Blade_JD')
+    connection = pymssql.connect(server='Fgetcesql16\inst1', database='Blade_JD')
     sql_query = pd.read_sql('SELECT Code FROM Reference', connection)
     df = pd.DataFrame(sql_query)
     df.rename(columns={'Code': 'reference'}, inplace=True)
