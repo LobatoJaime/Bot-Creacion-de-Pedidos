@@ -1,4 +1,5 @@
 # import pyodbc
+from sqlalchemy import create_engine
 import pandas as pd
 import pymssql
 
@@ -10,8 +11,14 @@ def validate_ref(reference: str) -> bool:
     #                             'SERVER=Fgetcesql2\inst2;'
     #                             'DATABASE=Blade_JD;'
     #                             'Trusted_Connection=yes;')
-    connection = pymssql.connect(server='Fgetcesql16\inst1', database='Blade_JD')
-    sql_query = pd.read_sql('SELECT Code FROM Reference', connection)
+    
+    #connection = pymssql.connect(server='Fgetcesql16\inst1', database='Blade_JD')
+    #sql_query = pd.read_sql('SELECT Code FROM Reference', connection)
+    connection = pymssql.connect(server='Fgetcesql16\\inst1', database='Blade_JD')
+    engine = create_engine('mssql+pymssql://', creator=lambda: connection)
+    sql_query = pd.read_sql('SELECT Code FROM Reference', engine)
+    connection.close()
+
     df = pd.DataFrame(sql_query)
     df.rename(columns={'Code': 'reference'}, inplace=True)
     ref_exists = False

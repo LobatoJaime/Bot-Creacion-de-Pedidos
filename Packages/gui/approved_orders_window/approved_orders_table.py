@@ -268,7 +268,7 @@ class ApprovedOrdersTable:
             for i in range(order_dataframe.shape[0]):
                 upload_dates.append(upload_date)
             order_dataframe.insert(0, 'upload_date', upload_dates)
-            orders_history = orders_history.append(order_dataframe, ignore_index=True)
+            orders_history = orders_history._append(order_dataframe, ignore_index=True)
 
             if len(file_paths) == 1:
 

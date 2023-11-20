@@ -694,7 +694,7 @@ def check_sap_database_in_bg(orders: pd.DataFrame, queue: Queue):
 
 
 def run_in_bg_sap_changes(order_changes: pd.DataFrame, order_exists: str, error_queue: Queue):
-    """Funcion que se va a correr en el un procesador separado para que
+    """Funcion que se va a correr en un procesador separado para que
         la interfaz no se congele mientras se corre el script para aplicar los cambios
         necesarios"""
     try:

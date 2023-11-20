@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from ttkbootstrap import Style
 import pandas as pd
+#pd.options.mode.chained_assignment = None
 import ctypes
 import importlib.resources
 from PIL import ImageTk, ImageDraw, ImageFont
@@ -48,7 +49,7 @@ class App:
         up_to_date = check_latest_version()
         if not up_to_date:
             self.gui.close_app()
-        while self.gui.app_running:  # Loop principal de la applicacion
+        while self.gui.app_running:  # Loop principal de la aplicacion
             self.gui.update()
             if self.gui.error_found:  # Error inesperado en la aplicacion
                 self.gui.close_app()

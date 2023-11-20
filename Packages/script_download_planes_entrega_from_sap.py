@@ -2,8 +2,8 @@ from .connect_to_sap import connect_to_sap
 from .close_excel import close_excel
 from .constants import planes_entrega_folder, resources_folder
 from time import sleep
+import time
 import os
-
 
 def download_planes_entrega_from_sap(order_number: str):
     """Funcion donde se ejecuta el script para descargar
@@ -44,8 +44,13 @@ def download_planes_entrega_from_sap(order_number: str):
         "wnd[1]/usr/ssubD0500_SUBSCREEN:SAPLSLVC_DIALOG:0501/cntlG51_CONTAINER/shellcont/shell").clickCurrentCell()
     session.findById("wnd[0]/usr/cntlCUSTOM_CONTROL_100/shellcont/shell").pressToolbarContextButton("&MB_EXPORT")
     session.findById("wnd[0]/usr/cntlCUSTOM_CONTROL_100/shellcont/shell").selectContextMenuItem("&XXL")
-    session.findById(
-        "wnd[1]/usr/ctxtDY_PATH").text = resources_folder
+    for i in range(2):
+        try:
+            session.findById(
+                "wnd[1]/usr/ctxtDY_PATH").text = resources_folder
+            break
+        except:
+            time.sleep(10)
     session.findById("wnd[1]/usr/ctxtDY_FILENAME").text = "planes_entrega.xlsx"
     session.findById("wnd[1]/usr/ctxtDY_FILENAME").caretPosition = 19
     session.findById("wnd[1]/tbar[0]/btn[11]").press()

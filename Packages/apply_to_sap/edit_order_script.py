@@ -4,6 +4,19 @@ from time import sleep
 def add_order_script(session: object, plan_entrega: str, ship_out_date: str, quantity: str):
     """Funcion en donde se ejecuta el script .vbs para agregar un pedido a
     un plan de entrega existente"""
+
+    def simulate_enter():
+        for i in range(2):
+            try:
+                # Probar primero enter a un pop-up
+                session.findById("wnd[1]").sendVKey(0)
+            except Exception as e1:
+                try:
+                    # Probar despues enter a pantalla principal
+                    session.findById("wnd[0]").sendVKey(0)
+                except Exception as e2:
+                    pass
+
     sleep(1)
     print('Subiendo orden--> ship_out_date:{}'.format(ship_out_date))
     session.findById('wnd[0]').maximize()
@@ -12,8 +25,13 @@ def add_order_script(session: object, plan_entrega: str, ship_out_date: str, qua
     session.findById('wnd[0]/usr/ctxtVBAK-VBELN').text = plan_entrega
     session.findById('wnd[0]/usr/ctxtVBAK-VBELN').caretPosition = 10
     session.findById('wnd[0]').sendVKey(0)
-    session.findById(
-        "wnd[0]/usr/tabsTAXI_TABSTRIP_OVERVIEW/tabpT\\02/ssubSUBSCREEN_BODY:SAPMV45A:4419/subSUBSCREEN_TC:SAPMV45A:4916/subSUBSCREEN_BUTTONS:SAPMV45A:4051/btnBT_PLEI").press()
+    for i in range(2):
+        try:
+            session.findById(
+                "wnd[0]/usr/tabsTAXI_TABSTRIP_OVERVIEW/tabpT\\02/ssubSUBSCREEN_BODY:SAPMV45A:4419/subSUBSCREEN_TC:SAPMV45A:4916/subSUBSCREEN_BUTTONS:SAPMV45A:4051/btnBT_PLEI").press()
+            break
+        except:
+            simulate_enter()
     session.findById("wnd[0]/usr/tabsTAXI_TABSTRIP_ITEM/tabpT\\06/ssubSUBSCREEN_BODY:SAPMV45A:4602/btnBT_EIAN").press()
     # cambiar visualizacion ---------------------------
     session.findById("wnd[0]").maximize()

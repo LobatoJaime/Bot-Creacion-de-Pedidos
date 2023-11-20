@@ -5,9 +5,9 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['\\fcefactory1\\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\\BotCreacionDePedidos'],
+             pathex=['C:\Users\IYX8A9R\Documents\Bot-Creacion-de-Pedidos\venv'],
              binaries=[],
-             datas=[('C:\\Users\KAZWHIG\\Documents\\GitHub\\Bot-Creacion-de-Pedidos\\venv\\Lib\\site-packages\\ttkbootstrap', 'ttkbootstrap'),],
+             datas=[('C:\Users\IYX8A9R\Documents\Bot-Creacion-de-Pedidos\venv', 'ttkbootstrap'),],
              hiddenimports=['ttkbootstrap', 'importlib.resources', 'PIL.ImageFont', 'tkinter.font', 'openpyxl', 'pymssql'],
              hookspath=[],
              hooksconfig={},

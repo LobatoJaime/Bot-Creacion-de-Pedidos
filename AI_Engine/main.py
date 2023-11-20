@@ -1094,7 +1094,8 @@ def main(proveedor: str, pedidos_path: str,
         # endregion
 
         # Concateno el dataframe del archivo al dataframe total
-        df_total = pd.concat([df_total, df], ignore_index=True)
+        # df_total = pd.concat([df_total, df], ignore_index=True)
+        df_total = pd.concat([df_total.astype(df.dtypes), df.astype(df_total.dtypes)], ignore_index=True)
         n_files = n_files + 1
     # endregion
 

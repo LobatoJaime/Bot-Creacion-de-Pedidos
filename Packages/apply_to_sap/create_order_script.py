@@ -39,8 +39,7 @@ def create_order_script(session: object, order_number: str, ship_out_date: str, 
     session.findById("wnd[0]/usr/ctxtVBAK-SPART").caretPosition = 2
     session.findById("wnd[0]").sendVKey(0)
     session.findById("wnd[0]/usr/subSUBSCREEN_HEADER:SAPMV45A:4021/txtVBKD-BSTKD").text = order_number
-    session.findById(
-        "wnd[0]/usr/subSUBSCREEN_HEADER:SAPMV45A:4021/subPART-SUB:SAPMV45A:4701/ctxtKUAGV-KUNNR").text = sap_code
+    session.findById("wnd[0]/usr/subSUBSCREEN_HEADER:SAPMV45A:4021/subPART-SUB:SAPMV45A:4701/ctxtKUAGV-KUNNR").text = sap_code
     session.findById("wnd[0]/usr/subSUBSCREEN_HEADER:SAPMV45A:4021/txtVBKD-BSTKD").setFocus()
     session.findById("wnd[0]/usr/subSUBSCREEN_HEADER:SAPMV45A:4021/txtVBKD-BSTKD").caretPosition = 7
     session.findById("wnd[0]").sendVKey(0)

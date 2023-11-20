@@ -5,7 +5,7 @@ from Packages.constants import downloads_folder
 
 
 def get_latest_email(days_before: int):
-    """Funcion que obtiene todos los correos recividos en el rango
+    """Funcion que obtiene todos los correos recibidos en el rango
     de tiempo indicado"""
     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
     yyyy = dt.date.today().year
