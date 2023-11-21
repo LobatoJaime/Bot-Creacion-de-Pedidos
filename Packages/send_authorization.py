@@ -41,7 +41,7 @@ def send_authorization_email(user: list, client: str, order_number: str, referen
         newMail.SentOnBehalfOfName = usuario_email
         newMail.Subject = 'BOT - Solucitud de Aprobación de Pedido'
 
-        html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + ".</a><br/><br/><a>Solicitud realizada por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos\AutomatizacionSAP_PRUEBA.exe'>Acceso APP</a>"
+        html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + ".</a><br/><br/><a>Solicitud realizada por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\\PROGRAMAS_DE_PRODUCCION\\\\6.Planificacion\\BotCreacionDePedidos\\AutomatizacionSAP_latest_release.exe'>Acceso APP</a>"
 
         newMail.HTMLBody = html
 
@@ -79,7 +79,7 @@ def send_notification(user: list, client: str, order_number: str, reference: str
         newMail.SentOnBehalfOfName = aprobador_email
         newMail.Subject = 'BOT - Solucitud Aprobada'
 
-        html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + " y referencia: " + str(reference) + ".</a><br/><br/><a>APROBADA por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos\AutomatizacionSAP_PRUEBA.exe'>Acceso APP</a>"
+        html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + " y referencia: " + str(reference) + ".</a><br/><br/><a>APROBADA por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\\PROGRAMAS_DE_PRODUCCION\\\\6.Planificacion\\BotCreacionDePedidos\\AutomatizacionSAP_latest_release.exe'>Acceso APP</a>"
 
         newMail.HTMLBody = html
 
@@ -116,7 +116,7 @@ def send_reject(user: list, client: str, order_number: str, reference: str):
         newMail.SentOnBehalfOfName = aprobador_email
         newMail.Subject = 'BOT - Solucitud Rechazada'
 
-        html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + " y referencia: " + str(reference) + ".</a><br/><br/><a>RECHAZADA por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\PROGRAMAS_DE_PRODUCCION\\6.Planificacion\BotCreacionDePedidos\AutomatizacionSAP_PRUEBA.exe'>Acceso APP</a>"
+        html = "<a>Solicitud para cliente: " + str(client) + " y numero de pedido: " + str(order_number) + " y referencia: " + str(reference) + ".</a><br/><br/><a>RECHAZADA por: " + str(user[0]) + " y usuario: " + str(user[1]) + ".</a><br/><br/><a href='\\\\fcefactory1\\PROGRAMAS_DE_PRODUCCION\\\\6.Planificacion\\BotCreacionDePedidos\\AutomatizacionSAP_latest_release.exe'>Acceso APP</a>"
 
         newMail.HTMLBody = html
 
