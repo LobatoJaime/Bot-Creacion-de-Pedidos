@@ -436,19 +436,31 @@ class AskAuthorizationTable:
             self.entries.append(row)
         self.latest_index = 1
 
-        # Insertar filas vacias
-        for index in orders.index:
-            if index > 0:
-                self.add_row()
 
+        if (orders['client'] == "70017278").any():
+        # Insertar filas vacias
+            for index in orders.index:
+                if index > 1:
+                    self.add_row()
         # Escribir el texto dentro de las filas
-        index = 0
-        for row in self.entries:
-            for col in range(len(row)):
-                if col not in [1, 6]:
-                    text = str(orders[orders.columns[col]][index])
-                    self.entries[index][col].insert(0, text)
-            index = index + 1
+            index = 0
+            for row in self.entries:
+                for col in range(len(row)):
+                    if col not in [1, 6]:
+                        text = str(orders[orders.columns[col]][index+1])
+                        self.entries[index][col].insert(1, text)
+                index = index + 1
+        else:
+            for index in orders.index:
+                if index > 0:
+                    self.add_row()
+            index = 0
+            for row in self.entries:
+                for col in range(len(row)):
+                    if col not in [1, 6]:
+                        text = str(orders[orders.columns[col]][index])
+                        self.entries[index][col].insert(0, text)
+                index = index + 1
 
     def add_check_box(self):
         checkvar = tk.IntVar()

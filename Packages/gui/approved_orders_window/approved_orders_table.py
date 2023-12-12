@@ -145,7 +145,6 @@ class ApprovedOrdersTable:
             self.clicked_values[upload_date] = False
 
     def sub_value_clicked(self, event):
-
         def open_pdf(file_root):
             try:
                 os.startfile(file_root)

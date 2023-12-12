@@ -402,6 +402,7 @@ class CreateOrderTable:
             self.clear_table()
             return
         print(orders.to_string())
+        print("hellooo")
         self.write_df_to_table(orders)
         # Guardar la direction del archivo en el Label de la interfaz
         file_uploaded_text.configure(text=path)
@@ -436,19 +437,33 @@ class CreateOrderTable:
             self.entries.append(row)
         self.latest_index = 1
 
+        if (orders['client'] == "70017278").any():
         # Insertar filas vacias
-        for index in orders.index:
-            if index > 0:
-                self.add_row()
-
+            for index in orders.index:
+                if index > 1:
+                    self.add_row()
         # Escribir el texto dentro de las filas
-        index = 0
-        for row in self.entries:
-            for col in range(len(row)):
-                if col not in [1, 6]:
-                    text = str(orders[orders.columns[col]][index])
-                    self.entries[index][col].insert(0, text)
-            index = index + 1
+            index = 0
+            for row in self.entries:
+                for col in range(len(row)):
+                    if col not in [1, 6]:
+                        text = str(orders[orders.columns[col]][index+1])
+                        self.entries[index][col].insert(1, text)
+                index = index + 1
+        else:
+            # Insertar filas vacias
+            for index in orders.index:
+                if index > 0:
+                    self.add_row()
+
+            # Escribir el texto dentro de las filas
+            index = 0
+            for row in self.entries:
+                for col in range(len(row)):
+                    if col not in [1, 6]:
+                        text = str(orders[orders.columns[col]][index])
+                        self.entries[index][col].insert(0, text)
+                index = index + 1
 
     def add_check_box(self):
         checkvar = tk.IntVar()
