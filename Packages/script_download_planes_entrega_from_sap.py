@@ -1,3 +1,5 @@
+import shutil
+
 from .connect_to_sap import connect_to_sap
 from .close_excel import close_excel
 from .constants import planes_entrega_folder, resources_folder
@@ -56,5 +58,14 @@ def download_planes_entrega_from_sap(order_number: str):
     session.findById("wnd[1]/tbar[0]/btn[11]").press()
     sleep(10)
     close_excel('planes_entrega.xlsx')
+    copy_original_planes_entrega(order_number)
 
+
+def copy_original_planes_entrega(order_number: str):
+    """Function to copy the original planes_entrega.xlsx file"""
+    original_file_path = os.path.join(resources_folder, 'planes_entrega.xlsx')
+    copy_folder_path = os.path.join(resources_folder, 'planes_entrega')
+    os.makedirs(copy_folder_path, exist_ok=True)
+    copied_filename = "planes_entrega_{}.xlsx".format(order_number)
+    shutil.copy(original_file_path, os.path.join(copy_folder_path, copied_filename))
 

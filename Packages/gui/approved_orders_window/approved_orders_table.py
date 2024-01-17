@@ -256,8 +256,8 @@ class ApprovedOrdersTable:
         orders_history = pd.DataFrame(columns=['upload_date', 'order_number', 'client', 'reference', 'sap_code',
                                                'quantity', 'ship_out_date', 'arrival_date', 'confidence'])
         all_upload_dates = []
-        for file_path in file_paths:
 
+        for file_path in file_paths:
             upload_date = file_path.split('\\', )[-1].split('.')[0]
             client_folder = file_path.split('\\', )[-2]
             all_upload_dates.append(upload_date)

@@ -1,4 +1,5 @@
 import datetime
+import os
 import tkinter as tk
 from tkinter import ttk
 from ttkbootstrap import Style
@@ -7,7 +8,7 @@ import numpy as np
 from tkinter import filedialog, messagebox
 import datetime as dt
 from AI_Engine.main import main
-from ...constants import downloads_folder, codigo_sap_clientes_root
+from ...constants import downloads_folder, codigo_sap_clientes_root, planes_entrega_folder
 import numpy as np
 from ..scrollable_frame import ScrollFrame
 from .scan_pdf_loading_pop_up import LoadingPopUp
@@ -402,9 +403,24 @@ class AskAuthorizationTable:
             self.clear_table()
             return
         print(orders.to_string())
+
+        if self.check_orderIsNew(orders.at[1, 'order_number']):
+            messagebox.showerror(title='Error', message='Ya hay un pedido con ese número escaneado.\n'
+                                                        'Una vez completado el proceso podrá escanear el siguiente pedido\n')
+            self.clear_table()
+            return
+
         self.write_df_to_table(orders)
         # Guardar la direction del archivo en el Label de la interfaz
         file_uploaded_text.configure(text=path)
+
+    def check_orderIsNew(self, orderN: str):
+        filename = "planes_entrega_{}.xlsx".format(orderN)
+        file_path = os.path.join(planes_entrega_folder, filename)
+        if os.path.exists(file_path):
+            return True
+        else:
+            return False
 
     def write_df_to_table(self, orders: pd.DataFrame):
         """Agarra el dataframe de orders y lo inserta en la tabla
