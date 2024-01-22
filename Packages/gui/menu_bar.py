@@ -31,7 +31,8 @@ from ..script_download_new_planes_entrega_from_sap import script_download_new_pl
 from ..validate_data.validate_data import validate_data
 from ..create_comparison_table_excel import create_comparison_table_excel, create_comparison_table_excel_approved
 from ..find_newest_dir import find_newest_dir, find_newest_dir_approved
-from ..constants import changes_history_folder, usuarios_root, authorize_order_folder, tracking_history_folder
+from ..constants import changes_history_folder, usuarios_root, authorize_order_folder, tracking_history_folder, \
+    resources_folder, planes_entrega_folder
 from ..get_user_info import get_user_info
 from ..send_authorization import send_authorization_email
 from ..tracking import add_tracking
@@ -428,6 +429,9 @@ class MenuBar:
 
             gerente1 = messagebox.askyesno("Warning", 'Enviar aprobacion a \n' + str(email1), icon='info')
 
+            order_number = self.order_changes['order_number'][self.order_changes.index[0]]
+            print(order_number)
+
             if gerente1:
                 self.rows_to_delete: list = self.gui.edit_order_window.edit_order_table.rows_to_delete
                 self.deleted_rows_log: pd.DataFrame = self.gui.edit_order_window.edit_order_table.deleted_rows_log
@@ -586,6 +590,12 @@ class MenuBar:
                                  comparisonexcel=os.path.join(tracking_history_folder, str(now_time) + ".xlsx"))
 
                     self.gui.active_window = 'process_authorization_complete'
+
+            original_file_path = os.path.join(planes_entrega_folder, "planes_entrega_{}.xlsx".format(order_number))
+            copy_folder_path = os.path.join(resources_folder, 'planes_entrega_approve')
+            os.makedirs(copy_folder_path, exist_ok=True)
+            copied_filename = "planes_entrega_{}.xlsx".format(order_number)
+            shutil.copy(original_file_path, os.path.join(copy_folder_path, copied_filename))
 
         if self.gui.active_window == 'process_authorization_complete':
             from .process_complete_window.process_complete_authorization_window import ProcessCompleteAuthorizationWindow

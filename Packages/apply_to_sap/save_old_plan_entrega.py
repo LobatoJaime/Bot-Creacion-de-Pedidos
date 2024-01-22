@@ -1,5 +1,5 @@
 import datetime
-from ..constants import changes_history_folder, resources_folder, planes_entrega_folder
+from ..constants import changes_history_folder, resources_folder, planes_entrega_folder, planes_entrega_approve_folder
 import os
 import shutil
 
@@ -16,6 +16,8 @@ def save_old_plan_entrega(order_number: str, client: str):
     old_file_root = os.path.join(planes_entrega_folder, filename)
     shutil.copy(old_file_root, os.path.join(save_folder_root, 'old_planes_entrega.xlsx'))
     os.remove(os.path.join(planes_entrega_folder, filename))
+    os.remove(os.path.join(planes_entrega_approve_folder, filename))
+
 
 
 

@@ -8,7 +8,8 @@ import numpy as np
 from tkinter import filedialog, messagebox
 import datetime as dt
 from AI_Engine.main import main
-from ...constants import downloads_folder, codigo_sap_clientes_root, planes_entrega_folder
+from ...constants import downloads_folder, codigo_sap_clientes_root, planes_entrega_folder, \
+    planes_entrega_approve_folder
 import numpy as np
 from ..scrollable_frame import ScrollFrame
 from .scan_pdf_loading_pop_up import LoadingPopUp
@@ -416,7 +417,7 @@ class AskAuthorizationTable:
 
     def check_orderIsNew(self, orderN: str):
         filename = "planes_entrega_{}.xlsx".format(orderN)
-        file_path = os.path.join(planes_entrega_folder, filename)
+        file_path = os.path.join(planes_entrega_approve_folder, filename)
         if os.path.exists(file_path):
             return True
         else:
