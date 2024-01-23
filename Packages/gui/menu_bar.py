@@ -32,7 +32,7 @@ from ..validate_data.validate_data import validate_data
 from ..create_comparison_table_excel import create_comparison_table_excel, create_comparison_table_excel_approved
 from ..find_newest_dir import find_newest_dir, find_newest_dir_approved
 from ..constants import changes_history_folder, usuarios_root, authorize_order_folder, tracking_history_folder, \
-    resources_folder, planes_entrega_folder
+    resources_folder, planes_entrega_folder, approved_order_folder, planes_entrega_approve_folder
 from ..get_user_info import get_user_info
 from ..send_authorization import send_authorization_email
 from ..tracking import add_tracking
@@ -639,6 +639,20 @@ class MenuBar:
                 shutil.rmtree(find_newest_dir(changes_history_folder))
             return
         self.gui.active_window = 'process_complete'
+
+        order_num = order['order_number'][order.index[0]]
+        reference = order['reference'][order.index[0]]
+        self.approved_order_folder_user = os.path.join(approved_order_folder, get_user_info()[1].upper())
+        folder_path = os.path.join(self.approved_order_folder_user, '{}_{}_{}'.format(client_name, order_num, reference))
+        all_file_names = os.listdir(folder_path)
+
+        # AQUIIIIIIII
+        filename = "planes_entrega_{}.xlsx".format(order_num)
+        os.remove(os.path.join(planes_entrega_approve_folder, filename))
+        os.remove(os.path.join(planes_entrega_folder, filename))
+        for file in all_file_names:
+            os.remove(os.path.join(folder_path, file))
+        os.rmdir(folder_path)
 
         self.gui.root.focus_force()
         save_deleted_order_changes_approved(self.backup_order_changes, self.rows_to_delete,

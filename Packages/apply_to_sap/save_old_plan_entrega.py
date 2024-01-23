@@ -15,8 +15,7 @@ def save_old_plan_entrega(order_number: str, client: str):
     filename = "planes_entrega_{}.xlsx".format(order_number)
     old_file_root = os.path.join(planes_entrega_folder, filename)
     shutil.copy(old_file_root, os.path.join(save_folder_root, 'old_planes_entrega.xlsx'))
-    os.remove(os.path.join(planes_entrega_folder, filename))
-    os.remove(os.path.join(planes_entrega_approve_folder, filename))
+
 
 
 

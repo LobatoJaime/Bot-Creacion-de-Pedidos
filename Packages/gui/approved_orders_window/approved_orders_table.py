@@ -1,4 +1,4 @@
-from Packages.constants import appoved_order_folder
+from Packages.constants import approved_order_folder
 import tkinter as tk
 from tkinter import ttk, messagebox
 import pandas as pd
@@ -25,7 +25,7 @@ class ApprovedOrdersTable:
         self.list_frame = ttk.Frame(parent_window)
         self.list_frame.rowconfigure(0, weight=1)
         self.list_frame.columnconfigure(0, weight=1)
-        self.approved_order_folder_user = os.path.join(appoved_order_folder, get_user_info()[1].upper())
+        self.approved_order_folder_user = os.path.join(approved_order_folder, get_user_info()[1].upper())
 
         if not os.path.isdir(self.approved_order_folder_user):
             os.mkdir(self.approved_order_folder_user)
@@ -220,11 +220,6 @@ class ApprovedOrdersTable:
                 print(self.rows_delete)
 
                 self.menu_bar.run_sap(self.order_changes, self.order_exists, self.orders, os.path.join(folder_path, pdf_name), self.delete_rows_log, self.rows_delete, self.backup_order, client)
-
-                for file in all_file_names:
-                    os.remove(os.path.join(folder_path, file))
-
-                os.rmdir(folder_path)
 
             else:
                 messagebox.showinfo(title='Error', message='No se encuentran los archivos necesarios para realizar la subida.')

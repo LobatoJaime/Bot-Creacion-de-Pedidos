@@ -1,4 +1,4 @@
-from Packages.constants import authorize_order_folder, tracking_history_folder, appoved_order_folder, usuarios_root
+from Packages.constants import authorize_order_folder, tracking_history_folder, approved_order_folder, usuarios_root
 import tkinter as tk
 from tkinter import ttk, messagebox
 import pandas as pd
@@ -186,7 +186,7 @@ class AuthorizeOrderTable:
                 if row['Usuario Aprobador 2'].upper() == get_user_info()[1].upper():
                     sap_user = row['Usuario'].upper()
 
-            approved_folder = os.path.join(appoved_order_folder, sap_user)
+            approved_folder = os.path.join(approved_order_folder, sap_user)
 
             if not os.path.isdir(approved_folder):
                 os.mkdir(approved_folder)
