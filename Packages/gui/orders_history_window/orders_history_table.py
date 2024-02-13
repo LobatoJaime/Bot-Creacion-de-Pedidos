@@ -297,7 +297,7 @@ class OrdersHistoryTable:
 
         for index in orders_history.index:
             upload_date = orders_history['upload_date'][index]
-            order_number = orders_history['order_number'][index]
+            order_number = str(orders_history['order_number'][index])
             client = orders_history['client'][index]
             sap_code = orders_history['sap_code'][index]
             reference = orders_history['reference'][index]

@@ -191,8 +191,8 @@ class ApprovedOrdersTable:
                     pdf_name = file
 
             if excel_name is not None and txt_name is not None and excel_orders_name is not None and pdf_name is not None and excel_delete_rows_name is not None and txt_rows_name is not None and excel_backup_name is not None:
-                self.order_changes = pd.read_excel(os.path.join(folder_path, excel_name)).reset_index(drop=True)
-                self.orders = pd.read_excel(os.path.join(folder_path, excel_orders_name)).reset_index(drop=True)
+                self.order_changes = pd.read_excel(os.path.join(folder_path, excel_name), dtype={'order_number': str}).reset_index(drop=True)
+                self.orders = pd.read_excel(os.path.join(folder_path, excel_orders_name), dtype={'order_number': str}).reset_index(drop=True)
                 self.delete_rows_log = pd.read_excel(os.path.join(folder_path, excel_delete_rows_name))
                 self.backup_order = pd.read_excel(os.path.join(folder_path, excel_backup_name))
 
@@ -342,7 +342,7 @@ class ApprovedOrdersTable:
             i = i + 1
 
         for index in orders_history.index:
-            order_number = orders_history['order_number'][index]
+            order_number = str(orders_history['order_number'][index])
             client = orders_history['client'][index]
             sap_code = orders_history['sap_code'][index]
             reference = orders_history['reference'][index]

@@ -429,7 +429,7 @@ class MenuBar:
 
             gerente1 = messagebox.askyesno("Warning", 'Enviar aprobacion a \n' + str(email1), icon='info')
 
-            order_number = self.order_changes['order_number'][self.order_changes.index[0]]
+            order_number = str(self.order_changes['order_number'][self.order_changes.index[0]])
             print(order_number)
 
             if gerente1:
@@ -485,7 +485,7 @@ class MenuBar:
 
                 send_authorization_email(user=get_user_info(),
                                          client=self.order_changes['client'][self.order_changes.index[0]],
-                                         order_number=self.order_changes['order_number'][self.order_changes.index[0]],
+                                         order_number=str(self.order_changes['order_number'][self.order_changes.index[0]]),
                                          reference=self.order_changes['reference'][self.order_changes.index[0]],
                                          usuario_aprobador=str(user1),
                                          email_aprobador=str(email1))
@@ -572,8 +572,8 @@ class MenuBar:
 
                     send_authorization_email(user=get_user_info(),
                                              client=self.order_changes['client'][self.order_changes.index[0]],
-                                             order_number=self.order_changes['order_number'][
-                                                 self.order_changes.index[0]],
+                                             order_number=str(self.order_changes['order_number'][
+                                                 self.order_changes.index[0]]),
                                              reference=self.order_changes['reference'][self.order_changes.index[0]],
                                              usuario_aprobador=str(user2),
                                              email_aprobador=str(email2))
@@ -640,8 +640,8 @@ class MenuBar:
             return
         self.gui.active_window = 'process_complete'
 
-        order_num = order['order_number'][order.index[0]]
-        reference = order['reference'][order.index[0]]
+        order_num = str(order['order_number'][order.index[0]])
+        reference = str(order['reference'][order.index[0]])
         self.approved_order_folder_user = os.path.join(approved_order_folder, get_user_info()[1].upper())
         folder_path = os.path.join(self.approved_order_folder_user, '{}_{}_{}'.format(client_name, order_num, reference))
         all_file_names = os.listdir(folder_path)

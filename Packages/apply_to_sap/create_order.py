@@ -17,7 +17,7 @@ from ..get_user_info import get_user_info
 def create_order(order_changes: pd.DataFrame, references_to_create=None):
     """Funcion en la cual se realiza la conexion a SAP y donde se crea el pedido"""
     # Copiar planes de entrega al historial antes de descargar el nuevo
-    order_number = order_changes['order_number'][order_changes.index[0]]
+    order_number = str(order_changes['order_number'][order_changes.index[0]])
     client = order_changes['client'][order_changes.index[0]]
     # now_time_dt = datetime.datetime.now()
     # now_time = now_time_dt.strftime('%d-%m-%Y_%Hh-%Mm')

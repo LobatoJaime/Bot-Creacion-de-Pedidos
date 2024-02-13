@@ -16,7 +16,7 @@ import traceback
 def edit_existing_order(order_changes: pd.DataFrame):
     """Funcion en la cual se realiza la conexion a SAP y donde se edita los pedidos
     existentes, se toma en cuenta el periodo congelado para crear pedidos"""
-    order_number = order_changes['order_number'][order_changes.index[0]]
+    order_number = str(order_changes.at[0, 'order_number'])
     client = order_changes['client'][order_changes.index[0]]
     # now_time_dt = datetime.datetime.now()
     # now_time = now_time_dt.strftime('%d-%m-%Y_%Hh-%Mm')

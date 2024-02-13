@@ -14,7 +14,7 @@ def save_order_to_history(orders: pd.DataFrame, uploaded_file_root: str):
     now_time_dt = datetime.datetime.now()
     now_time = now_time_dt.strftime('%d-%m-%Y_%Hh-%Mm')
     client = orders['client'][orders.index[0]]
-    order_number = orders['order_number'][orders.index[0]]
+    order_number = str(orders['order_number'][orders.index[0]])
     reference = orders['reference'][orders.index[0]]
     excel_file_name = '{}.xlsx'.format(now_time)
     sub_folder_name = '{}_{}_{}'.format(client, order_number, reference)

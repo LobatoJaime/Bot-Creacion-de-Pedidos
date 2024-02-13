@@ -224,7 +224,7 @@ class CreateOrderTable:
     def save_table(self):
         from ...constants import exports_folder
         self.read_table()
-        order_number = self.orders['order_number'][self.orders.index[0]]
+        order_number = str(self.orders['order_number'][self.orders.index[0]])
         today_date = dt.datetime.now().strftime('%d.%m.%y_%H.%M')
         if str(order_number) != str(np.nan):
             default_name = '{}_{}'.format(order_number, today_date)
