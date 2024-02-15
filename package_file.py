@@ -40,8 +40,8 @@ def package_file(version: str, dist_folder: str):
 
     # Cambiar el nombre
     dist_folder = dist_folder  # Carpeta donde esta el distribuible
-    file_path = os.path.join(dist_folder, 'AutomatizacionSAP latest_release.exe')
-    new_path = os.path.join(dist_folder, 'AutomatizacionSAP {}.exe'.format(version))
+    file_path = os.path.join(dist_folder, 'AutomatizacionSAP_latest_release.exe')
+    new_path = os.path.join(dist_folder, 'AutomatizacionSAP_{}.exe'.format(version))
     os.rename(file_path, new_path)
 
     # Mover el archivo existente a la versiones anteriores
