@@ -25,9 +25,7 @@ def check_latest_version() -> bool:
     with open(config_path, 'r') as config_file:
         config = json.load(config_file)
     github_token = config.get('GITHUB_TOKEN')
-    print(github_token)
     last_ver = get_latest_release(github_repo_adress, github_token)
-    print(last_ver)
     if compare_versions(str(last_ver), actual_version):
         msg = messagebox.askyesno('Versión no compatible',
                                   'Hay una nueva versión disponible. '
