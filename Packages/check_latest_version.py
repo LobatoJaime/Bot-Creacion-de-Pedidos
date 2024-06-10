@@ -1,7 +1,7 @@
 import lastversion
 import webbrowser
 from Packages.constants import (github_repo_adress, actual_version, download_latest_ver_folder,
-                                token_github1, token_github2)
+                                token_github)
 from tkinter import messagebox
 import requests
 
@@ -21,8 +21,7 @@ def check_latest_version() -> bool:
         release_info = response.json()
         return release_info['tag_name']
 
-    last_ver = get_latest_release(github_repo_adress, token_github1+token_github2)
-    print(last_ver)
+    last_ver = get_latest_release(github_repo_adress, token_github)
     if compare_versions(str(last_ver), actual_version):
         msg = messagebox.askyesno('Versión no compatible',
                                   'Hay una nueva versión disponible. '
