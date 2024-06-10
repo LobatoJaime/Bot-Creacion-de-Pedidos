@@ -29,8 +29,9 @@ tracking_history_folder = os.path.join(resources_folder, 'tracking_history')
 approved_order_folder = os.path.join(resources_folder, "approved_orders")
 downloads_folder = os.path.join(os.getenv('USERPROFILE'), 'Downloads')
 images_folder = os.path.join(resources_folder, 'images')
-github_repo_adress = 'https://github.com/JuanDelPinoJD/Bot-Creacion-de-Pedidos'
-actual_version = 'v8.0.0'
+github_repo_adress = 'JuanDelPinoJD/Bot-Creacion-de-Pedidos'
+token_github = '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'
+actual_version = 'v9.0.0'
 # Obtener clientes que estan soportados por la AI
 ai_online_path = r"\\fcefactory1\PROGRAMAS_DE_PRODUCCION\6.Planificacion\BotCreacionDePedidos\ProjectFiles\Resources\AI_files"
 ai_config_path = os.path.join(ai_online_path, 'Config')
