@@ -54,6 +54,6 @@ def script_download_new_planes_entrega_from_sap(order_number: str):
         "wnd[1]/usr/ctxtDY_PATH").text = save_folder_root
     session.findById("wnd[1]/usr/ctxtDY_FILENAME").text = "new_planes_entrega.xlsx"
     session.findById("wnd[1]/usr/ctxtDY_FILENAME").caretPosition = 19
-    session.findById("wnd[1]/tbar[0]/btn[11]").press()
+    session.findById("wnd[1]/tbar[0]/btn[20]").press()
     sleep(10)
     close_excel('new_planes_entrega.xlsx')
