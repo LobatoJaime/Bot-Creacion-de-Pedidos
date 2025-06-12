@@ -13,8 +13,8 @@ import ctypes
 import importlib.resources
 from PIL import ImageTk, ImageDraw, ImageFont
 import ttkbootstrap
-import ttkbootstrap.widgets.calendar
-from ttkbootstrap.widgets.calendar import DateEntry
+import ttkbootstrap.widgets
+from ttkbootstrap.widgets import DateEntry
 import pymssql
 # --------------------------------------------------------------
 from Packages.apply_to_sap.check_order_exists import check_order_exists
