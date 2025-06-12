@@ -6,7 +6,7 @@ import os
 import shutil
 import numpy as np
 from Packages.gui.changes_history_window.show_delete_info_pop_up import ShowDeleteInfoPopUp
-from ttkbootstrap.widgets.calendar import DateEntry
+from ttkbootstrap.widgets import DateEntry
 # from ttkbootstrap.calendar import DateEntry
 import datetime as dt
 
