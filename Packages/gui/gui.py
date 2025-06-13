@@ -29,7 +29,7 @@ class Gui:
         self.root.title('Automatizacion Subida de Pedidos SAP')
         self.root.iconbitmap(os.path.join(resources_folder, 'application.ico'))
         self.root.protocol("WM_DELETE_WINDOW", self.close_app)
-        style = Style(theme='flatly', master=self.root)
+        style = Style(theme='flatly')
         # ---------INVENTANDO--------
         # font_size = 10
         # widget_names = ('TButton', 'TLabel', 'TCheckbutton', 'TCombobox', 'TEntry', 'TLabelFrame', 'TMenubutton',
