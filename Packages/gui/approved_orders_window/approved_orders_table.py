@@ -50,7 +50,7 @@ class ApprovedOrdersTable:
             order_number = folder_splitted[1]
             reference = folder_splitted[2]
             self.order_numbers.append(order_number)
-            self.tree.insert('', tk.END, values=(client_name, order_number, reference))
+            self.tree.insert('', 'end', values=(client_name, order_number, reference))
         self.tree.grid(row=0, column=0, sticky='nsew')
         # add a scrollbar
         scrollbar = ttk.Scrollbar(self.list_frame, orient=tk.VERTICAL, command=self.tree.yview)
