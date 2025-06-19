@@ -249,9 +249,10 @@ class CreateOrderTable:
         try:
             data = pd.read_excel(file_root, dtype=str)
             orders = pd.DataFrame(data, dtype=str)
+            self.write_df_to_table(orders)
         except FileNotFoundError:
             return
-        self.write_df_to_table(orders)
+        
 
     def clear_table(self):
         # Borrar tabla existente
