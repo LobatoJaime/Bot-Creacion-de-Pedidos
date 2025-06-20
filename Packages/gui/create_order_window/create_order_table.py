@@ -393,7 +393,7 @@ class CreateOrderTable:
         process.start()
         popup = LoadingPopUp(self.parent_window.master, self.queue, self.gui, process)
         result = self.queue.get()
-        orders = result
+        orders = pd.DataFrame(result, dtype=str) 
         if isinstance(orders, bool) and not orders:  # En caso de escaneado manualmente cancelado
             return
         # orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
