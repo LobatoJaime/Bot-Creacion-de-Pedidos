@@ -388,33 +388,38 @@ class CreateOrderTable:
         if path == '':
             return
         self.queue = Queue()
-        process = Process(target=run_ai_in_bg,
+        self.process = Process(target=run_ai_in_bg,
                           args=(client_name, path, self.queue, poppler_path, tesseract_exe_path), daemon=True)
-        process.start()
-        popup = LoadingPopUp(self.parent_window.master, self.queue, self.gui, process)
-        result = self.queue.get()
-        orders = pd.DataFrame(result, dtype=str) 
-        if isinstance(orders, bool) and not orders:  # En caso de escaneado manualmente cancelado
-            return
-        # orders: pd.DataFrame = main(proveedor=client_name, path_archivos=path, is_img_shown=False)
-        if orders is None or orders.empty:
-            messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
-                                                        'Posibles errores:\n'
-                                                        '- Comprueba que hayas seleccionado el cliente correcto\n'
-                                                        '- La I.A no esta entrenada para este pedido')
-            self.clear_table()
-            return
-        print(orders.to_string())
+        self.process.start()
+        self.popup = LoadingPopUp(self.parent_window.master, self.queue, self.gui, process)
+        def check_queue():
+            if not self.queue.empty():
+                result = self.queue.get()
+                self.loading_popup.destroy()
+                orders = pd.DataFrame(result, dtype=str)
+                if isinstance(orders, bool) and not orders:
+                    return
+                if orders is None or orders.empty:
+                    messagebox.showerror(title='Error', message='Hubo un error al escanear el archivo.\n'
+                                                                'Posibles errores:\n'
+                                                                '- Comprueba que hayas seleccionado el cliente correcto\n'
+                                                                '- La I.A no esta entrenada para este pedido')
+                    self.clear_table()
+                    return
+                print(orders.to_string())
+                self.write_df_to_table(orders)
+                file_uploaded_text.configure(text=path)
+                if self.check_orderIsNew(orders.at[1, 'order_number']):
+                    messagebox.showerror(title='Error', message='Ya hay un pedido con ese número escaneado.\n'
+                                                                'Una vez completado el proceso podrá escanear el siguiente pedido\n')
+                    self.clear_table()
+                    return
+            else:
+                self.parent_window.master.after(200, check_queue)  # Vuelve a comprobar en 200 ms
 
-        if self.check_orderIsNew(orders.at[1, 'order_number']):
-            messagebox.showerror(title='Error', message='Ya hay un pedido con ese número escaneado.\n'
-                                                        'Una vez completado el proceso podrá escanear el siguiente pedido\n')
-            self.clear_table()
-            return
+        check_queue()
+        
 
-        self.write_df_to_table(orders)
-        # Guardar la direction del archivo en el Label de la interfaz
-        file_uploaded_text.configure(text=path)
 
     def check_orderIsNew(self, orderN: str):
         filename = "planes_entrega_{}.xlsx".format(orderN)
